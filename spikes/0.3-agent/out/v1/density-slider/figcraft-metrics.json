@@ -1,0 +1,223 @@
+{
+  "arm": "figcraft",
+  "variant": "v1",
+  "caseId": "density-slider",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": false,
+  "failures": [
+    "patch scope: touched outside n_features01: new:22, new:23, new:24, new:25, new:26, new:27, new:28, new:29"
+  ],
+  "touched": [
+    "new:22",
+    "new:23",
+    "new:24",
+    "new:25",
+    "new:26",
+    "new:27",
+    "new:28",
+    "new:29"
+  ],
+  "transactions": 3,
+  "turns": 5,
+  "toolCalls": 7,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 12,
+    "outputTokens": 1983,
+    "cacheReadTokens": 59966,
+    "cacheWriteTokens": 10817,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 58890
+  },
+  "wallMs": 18908,
+  "finalText": "Root is a vertical auto layout, so I'll pad the control with a wrapper-free approach: add left padding via a wrapper.\nI added a segmented control above the feature cards with three options: Compact, Comfortable and Spacious. Comfortable is selected, which matches the current card spacing.\n\nIt's a visual control only. Nothing is wired to it, so picking an option doesn't change the card padding or gaps yet. I didn't create separate Compact and Spacious spacing values for the cards either.\n\nI put it in a wrapper (`n_densitywrap1`) so it lines up with the 24px page margin.",
+  "commands": [
+    {
+      "command": "node.create",
+      "as": "c",
+      "params": {
+        "type": "frame",
+        "parent": 2,
+        "index": 2,
+        "name": "n_densityctl01",
+        "props": {
+          "layout": "horizontal",
+          "gap": 4,
+          "padding": 4,
+          "fill": "#F6F6F4",
+          "stroke": "#E4E4E7",
+          "cornerRadius": 9999,
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "crossAlign": "center"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o1",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "c"
+        },
+        "name": "n_densityopt1",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "cornerRadius": 9999,
+          "fill": "none",
+          "sizingH": "hug",
+          "sizingV": "hug"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o1"
+        },
+        "name": "n_densityopt1_label",
+        "text": "Compact",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#6B6B70"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o2",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "c"
+        },
+        "name": "n_densityopt2",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "cornerRadius": 9999,
+          "fill": "#4F46E5",
+          "sizingH": "hug",
+          "sizingV": "hug"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o2"
+        },
+        "name": "n_densityopt2_label",
+        "text": "Comfortable",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o3",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "c"
+        },
+        "name": "n_densityopt3",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "cornerRadius": 9999,
+          "fill": "none",
+          "sizingH": "hug",
+          "sizingV": "hug"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o3"
+        },
+        "name": "n_densityopt3_label",
+        "text": "Spacious",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#6B6B70"
+        }
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 22,
+        "x": 24,
+        "y": 444
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "w",
+      "params": {
+        "type": "frame",
+        "parent": 2,
+        "index": 2,
+        "name": "n_densitywrap1",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            0,
+            24,
+            16,
+            24
+          ],
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.reparent",
+      "params": {
+        "ids": [
+          22
+        ],
+        "parent": {
+          "$ref": "w"
+        }
+      }
+    }
+  ]
+}

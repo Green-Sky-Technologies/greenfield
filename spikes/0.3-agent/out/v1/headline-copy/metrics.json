@@ -1,0 +1,81 @@
+{
+  "case": "headline-copy",
+  "prompt": "Change this headline to 'Design at the speed of thought'.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "v1",
+    "caseId": "headline-copy",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_herotitle1"
+    ],
+    "transactions": 1,
+    "turns": 3,
+    "toolCalls": 2,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 8,
+      "outputTokens": 189,
+      "cacheReadTokens": 15877,
+      "cacheWriteTokens": 8814,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 27116
+    },
+    "wallMs": 3690,
+    "finalText": "I changed the headline to \"Design at the speed of thought\". I left the styling alone. It now wraps onto two lines, with \"thought\" on the second. The layout around it still looks fine in the render.",
+    "commands": [
+      {
+        "command": "text.set",
+        "params": {
+          "id": 8,
+          "characters": "Design at the speed of thought"
+        }
+      }
+    ]
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "headline-copy",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_herotitle1"
+    ],
+    "transactions": 1,
+    "turns": 2,
+    "toolCalls": 1,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 152,
+      "cacheReadTokens": 28190,
+      "cacheWriteTokens": 28342,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 78025
+    },
+    "wallMs": 2302,
+    "finalText": "I changed the headline to \"Design at the speed of thought\". I didn't run lint, since only the text changed.",
+    "commands": [
+      {
+        "ops": [
+          {
+            "op": "setProps",
+            "id": "n_herotitle1",
+            "patch": {
+              "text": "Design at the speed of thought"
+            }
+          }
+        ],
+        "label": "Update headline text"
+      }
+    ]
+  }
+}

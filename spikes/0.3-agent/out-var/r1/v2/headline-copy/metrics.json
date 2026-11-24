@@ -1,0 +1,81 @@
+{
+  "case": "headline-copy",
+  "prompt": "Change this headline to 'Design at the speed of thought'.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "v2",
+    "caseId": "headline-copy",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_herotitle1"
+    ],
+    "transactions": 1,
+    "turns": 3,
+    "toolCalls": 2,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 8,
+      "outputTokens": 184,
+      "cacheReadTokens": 25810,
+      "cacheWriteTokens": 0,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 7018
+    },
+    "wallMs": 3482,
+    "finalText": "I changed the headline to \"Design at the speed of thought\". I checked the render. The new text wraps onto two lines, and the layout still looks fine. I didn't change anything else.",
+    "commands": [
+      {
+        "command": "text.set",
+        "params": {
+          "id": 8,
+          "characters": "Design at the speed of thought"
+        }
+      }
+    ]
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "headline-copy",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_herotitle1"
+    ],
+    "transactions": 1,
+    "turns": 2,
+    "toolCalls": 1,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 163,
+      "cacheReadTokens": 56532,
+      "cacheWriteTokens": 0,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 12948
+    },
+    "wallMs": 2313,
+    "finalText": "I changed the headline to \"Design at the speed of thought\". I didn't touch its styling, and I didn't run lint because this was only a text change.",
+    "commands": [
+      {
+        "ops": [
+          {
+            "op": "setProps",
+            "id": "n_herotitle1",
+            "patch": {
+              "text": "Design at the speed of thought"
+            }
+          }
+        ],
+        "label": "Update headline text"
+      }
+    ]
+  }
+}

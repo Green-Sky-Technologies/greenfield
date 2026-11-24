@@ -1,0 +1,26 @@
+{
+  "arm": "figcraft",
+  "variant": "v2",
+  "caseId": "pricing-page-offers-job",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [],
+  "transactions": 0,
+  "turns": 2,
+  "toolCalls": 1,
+  "jobSuggestion": "generate",
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 361,
+    "cacheReadTokens": 16064,
+    "cacheWriteTokens": 297,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 7577
+  },
+  "wallMs": 4282,
+  "finalText": "A full pricing page with three tiers and an FAQ is a whole new page, so I haven't edited your document. I've offered a background generation job instead. If you start it, the job will build the page in the style of your current landing page. It will include the nav, three tier cards with the middle one highlighted, and an FAQ.",
+  "commands": []
+}

@@ -1,0 +1,26 @@
+{
+  "arm": "figcraft",
+  "variant": "v1-no-render",
+  "caseId": "pricing-page-offers-job",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [],
+  "transactions": 0,
+  "turns": 2,
+  "toolCalls": 1,
+  "jobSuggestion": "generate",
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 350,
+    "cacheReadTokens": 13976,
+    "cacheWriteTokens": 1354,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 9692
+  },
+  "wallMs": 4274,
+  "finalText": "A full pricing page needs a new frame, so I didn't edit your existing layers. I've offered a background generation job instead. It would build the page with a header, three tiers, an FAQ and the same nav. Start it when you're ready.",
+  "commands": []
+}

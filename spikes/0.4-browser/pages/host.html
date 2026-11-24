@@ -1,0 +1,34 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>0.4 host</title>
+<style>html,body{margin:0;height:100%}iframe{border:0;width:100%;height:100%;display:block}</style>
+</head>
+<body>
+<iframe id="ed"></iframe>
+<script>
+  // Host page for the Story 0.4 spike: embeds the editor in host mode and records host messages.
+  window.hostLog = [];
+  window.hostState = { ready: null, dirty: null, saves: [] };
+  addEventListener('message', (e) => {
+    const d = e.data;
+    if (!d || typeof d !== 'object' || typeof d.type !== 'string' || !d.type.startsWith('figcraft:')) return;
+    const at = performance.now();
+    window.hostLog.push({ type: d.type, at, keys: Object.keys(d) });
+    if (d.type === 'figcraft:ready') window.hostState.ready = at;
+    if (d.type === 'figcraft:dirty') window.hostState.dirty = d.dirty;
+    if (d.type === 'figcraft:save') window.hostState.saves.push({ name: d.name, saveAs: d.saveAs, size: d.bytes?.byteLength, at });
+  });
+  window.hostOpen = async (url, name) => {
+    const bytes = new Uint8Array(await (await fetch(url)).arrayBuffer());
+    const sentAt = performance.now();
+    document.getElementById('ed').contentWindow.postMessage({ type: 'figcraft:open', name, bytes }, location.origin);
+    return { sentAt, size: bytes.byteLength };
+  };
+  const q = new URLSearchParams(location.search);
+  const extra = q.get('extra') ? '&' + q.get('extra') : '';
+  document.getElementById('ed').src = '/editor/index.html?host=parent&control&author=spike' + extra;
+</script>
+</body>
+</html>

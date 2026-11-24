@@ -1,0 +1,36 @@
+{
+  "arm": "figcraft",
+  "variant": "v1",
+  "caseId": "headline-copy",
+  "model": "claude-sonnet-5-5",
+  "route": "scripted",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_herotitle1"
+  ],
+  "transactions": 1,
+  "turns": 3,
+  "toolCalls": 2,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 3600,
+    "outputTokens": 450,
+    "cacheReadTokens": 12000,
+    "cacheWriteTokens": 0,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 14100
+  },
+  "wallMs": 8,
+  "finalText": "Updated the headline.",
+  "commands": [
+    {
+      "command": "text.set",
+      "params": {
+        "id": 8,
+        "characters": "Design at the speed of thought"
+      }
+    }
+  ]
+}

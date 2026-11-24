@@ -1,0 +1,26 @@
+{
+  "arm": "figcraft",
+  "variant": "v1",
+  "caseId": "alternatives-offers-job",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [],
+  "transactions": 0,
+  "turns": 2,
+  "toolCalls": 1,
+  "jobSuggestion": "alternatives",
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 362,
+    "cacheReadTokens": 14277,
+    "cacheWriteTokens": 1378,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 9932
+  },
+  "wallMs": 4671,
+  "finalText": "I've offered a background job that would make 3 alternative layouts of the page. Comparing different layouts means building new full-page frames, so I didn't edit your current page. Start the job if you want to compare them.",
+  "commands": []
+}

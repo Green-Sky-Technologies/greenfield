@@ -1,0 +1,225 @@
+{
+  "arm": "figcraft",
+  "variant": "v2",
+  "caseId": "density-slider",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "new:22",
+    "new:23",
+    "new:24",
+    "new:25",
+    "new:26",
+    "new:27",
+    "new:28",
+    "new:29",
+    "new:30"
+  ],
+  "transactions": 1,
+  "turns": 2,
+  "toolCalls": 2,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 1626,
+    "cacheReadTokens": 10604,
+    "cacheWriteTokens": 13577,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 52335
+  },
+  "wallMs": 12327,
+  "finalText": "I added a \"Density\" segmented control above the feature cards, with three options: Compact, Default and Spacious. Default is selected and filled in the primary colour. The control is a new row, `n_density0001`, at the top of the features section. It spans all three columns, so the cards sit below it.\n\nThe control is only visual for now. Clicking an option doesn't change the card spacing, because the document has no interactions set up. To make it work, you'd need to wire each option to the cards' padding and gap.",
+  "commands": [
+    {
+      "command": "node.create",
+      "as": "row",
+      "params": {
+        "type": "frame",
+        "parent": 12,
+        "index": 0,
+        "name": "n_density0001",
+        "props": {
+          "layout": "horizontal",
+          "gap": 12,
+          "crossAlign": "center",
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "gridColumn": 0,
+          "gridRow": 0,
+          "gridColumnSpan": 3,
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "row"
+        },
+        "name": "n_density_label",
+        "text": "Density",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#6B6B70"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "seg",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "row"
+        },
+        "name": "n_density_seg",
+        "props": {
+          "layout": "horizontal",
+          "gap": 4,
+          "padding": 4,
+          "crossAlign": "center",
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "#F6F6F4",
+          "cornerRadius": 9999
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o1",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "seg"
+        },
+        "name": "n_density_compact",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "mainAlign": "center",
+          "crossAlign": "center",
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "none",
+          "cornerRadius": 9999
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o1"
+        },
+        "name": "n_density_compact_label",
+        "text": "Compact",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#6B6B70"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o2",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "seg"
+        },
+        "name": "n_density_default",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "mainAlign": "center",
+          "crossAlign": "center",
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "#4F46E5",
+          "cornerRadius": 9999
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o2"
+        },
+        "name": "n_density_default_label",
+        "text": "Default",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 14,
+          "fill": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o3",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "seg"
+        },
+        "name": "n_density_spacious",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "mainAlign": "center",
+          "crossAlign": "center",
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "none",
+          "cornerRadius": 9999
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o3"
+        },
+        "name": "n_density_spacious_label",
+        "text": "Spacious",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#6B6B70"
+        }
+      }
+    }
+  ]
+}

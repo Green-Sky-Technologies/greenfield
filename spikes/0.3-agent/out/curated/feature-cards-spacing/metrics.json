@@ -1,0 +1,233 @@
+{
+  "case": "feature-cards-spacing",
+  "prompt": "Tighten the spacing in the features section a bit.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "curated",
+    "caseId": "feature-cards-spacing",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_features01",
+      "n_feat1card00",
+      "n_feat2card00",
+      "n_feat3card00"
+    ],
+    "transactions": 1,
+    "turns": 2,
+    "toolCalls": 2,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 505,
+      "cacheReadTokens": 15355,
+      "cacheWriteTokens": 4396,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 19123
+    },
+    "wallMs": 4900,
+    "finalText": "I tightened the features section. I made three changes:\n- **Card padding:** 24 → 16 on all three cards.\n- **Gap between cards:** 16 → 12.\n- **Bottom padding of the section:** 64 → 48.\n\nI checked the render and the cards look fine. I left the gap between each card's title and body text at 8.",
+    "commands": [
+      {
+        "command": "node.set",
+        "params": {
+          "id": 12,
+          "gap": 12,
+          "padding": [
+            0,
+            24,
+            48,
+            24
+          ]
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 13,
+          "padding": 16
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 16,
+          "padding": 16
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 19,
+          "padding": 16
+        }
+      }
+    ]
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "feature-cards-spacing",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_features01",
+      "n_feat1card00",
+      "n_feat2card00",
+      "n_feat3card00"
+    ],
+    "transactions": 1,
+    "turns": 2,
+    "toolCalls": 1,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 923,
+      "cacheReadTokens": 29681,
+      "cacheWriteTokens": 30624,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 91738
+    },
+    "wallMs": 6227,
+    "finalText": "I tightened the features section. The gap between cards is now `space.3` (was `space.4`), and the section's bottom padding is `space.12` (was `space.16`). Each card's padding is `space.4` (was `space.6`). I didn't run the lint check on these changes.",
+    "commands": [
+      {
+        "ops": [
+          {
+            "op": "setStyle",
+            "id": "n_features01",
+            "breakpoint": "base",
+            "prop": "gap",
+            "value": {
+              "token": "space.3"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_features01",
+            "breakpoint": "base",
+            "prop": "paddingBottom",
+            "value": {
+              "token": "space.12"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat1card00",
+            "breakpoint": "base",
+            "prop": "paddingTop",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat1card00",
+            "breakpoint": "base",
+            "prop": "paddingBottom",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat1card00",
+            "breakpoint": "base",
+            "prop": "paddingLeft",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat1card00",
+            "breakpoint": "base",
+            "prop": "paddingRight",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat2card00",
+            "breakpoint": "base",
+            "prop": "paddingTop",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat2card00",
+            "breakpoint": "base",
+            "prop": "paddingBottom",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat2card00",
+            "breakpoint": "base",
+            "prop": "paddingLeft",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat2card00",
+            "breakpoint": "base",
+            "prop": "paddingRight",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat3card00",
+            "breakpoint": "base",
+            "prop": "paddingTop",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat3card00",
+            "breakpoint": "base",
+            "prop": "paddingBottom",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat3card00",
+            "breakpoint": "base",
+            "prop": "paddingLeft",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_feat3card00",
+            "breakpoint": "base",
+            "prop": "paddingRight",
+            "value": {
+              "token": "space.4"
+            }
+          }
+        ],
+        "label": "Tighten features spacing"
+      }
+    ]
+  }
+}

@@ -1,0 +1,672 @@
+{
+  "browser": "webkit-headed",
+  "version": "27.2",
+  "sizes": [
+    {
+      "nodes": 100,
+      "genMs": 30,
+      "gate": {
+        "ms": {
+          "n": 10,
+          "p50": 17,
+          "p95": 18,
+          "max": 18,
+          "mean": 16.9
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 13,
+          "p95": 15,
+          "max": 15,
+          "mean": 9.8
+        },
+        "bytes": 243,
+        "ids": 2
+      },
+      "idsOnly": {
+        "ms": {
+          "n": 10,
+          "p50": 17,
+          "p95": 19,
+          "max": 19,
+          "mean": 17.4
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 6,
+          "p95": 12,
+          "max": 12,
+          "mean": 7.3
+        },
+        "bytes": 1352,
+        "ids": 102
+      },
+      "outline": {
+        "ms": {
+          "n": 10,
+          "p50": 18,
+          "p95": 18,
+          "max": 18,
+          "mean": 17.7
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 10,
+          "p95": 15,
+          "max": 15,
+          "mean": 9.8
+        },
+        "bytes": 6157,
+        "ids": 102
+      },
+      "diffFields": {
+        "ms": {
+          "n": 10,
+          "p50": 18,
+          "p95": 19,
+          "max": 19,
+          "mean": 17.9
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 10,
+          "p95": 16,
+          "max": 16,
+          "mean": 9.2
+        },
+        "bytes": 14418,
+        "ids": 102
+      },
+      "everything": {
+        "ms": {
+          "n": 10,
+          "p50": 18,
+          "p95": 20,
+          "max": 20,
+          "mean": 18.3
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 8,
+          "p95": 14,
+          "max": 14,
+          "mean": 8.2
+        },
+        "bytes": 25201,
+        "ids": 102
+      },
+      "detectorFull": {
+        "fullMs": {
+          "n": 10,
+          "p50": 17,
+          "p95": 19,
+          "max": 19,
+          "mean": 17.3
+        },
+        "diffMs": {
+          "n": 10,
+          "p50": 0,
+          "p95": 1,
+          "max": 1,
+          "mean": 0.4
+        },
+        "nodes": 100
+      }
+    },
+    {
+      "nodes": 1000,
+      "genMs": 51,
+      "gate": {
+        "ms": {
+          "n": 10,
+          "p50": 17,
+          "p95": 18,
+          "max": 18,
+          "mean": 16.9
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 5,
+          "p95": 16,
+          "max": 16,
+          "mean": 8.6
+        },
+        "bytes": 250,
+        "ids": 2
+      },
+      "idsOnly": {
+        "ms": {
+          "n": 10,
+          "p50": 18,
+          "p95": 21,
+          "max": 21,
+          "mean": 18.2
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 10,
+          "p95": 15,
+          "max": 15,
+          "mean": 9.3
+        },
+        "bytes": 12235,
+        "ids": 1002
+      },
+      "outline": {
+        "ms": {
+          "n": 10,
+          "p50": 19,
+          "p95": 24,
+          "max": 24,
+          "mean": 19.9
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 7,
+          "p95": 16,
+          "max": 16,
+          "mean": 7.1
+        },
+        "bytes": 60066,
+        "ids": 1002
+      },
+      "diffFields": {
+        "ms": {
+          "n": 10,
+          "p50": 21,
+          "p95": 24,
+          "max": 24,
+          "mean": 21.3
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 6,
+          "p95": 14,
+          "max": 14,
+          "mean": 7.1
+        },
+        "bytes": 142830,
+        "ids": 1002
+      },
+      "everything": {
+        "ms": {
+          "n": 10,
+          "p50": 22,
+          "p95": 24,
+          "max": 24,
+          "mean": 21.8
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 6,
+          "p95": 14,
+          "max": 14,
+          "mean": 6
+        },
+        "bytes": 252281,
+        "ids": 1002
+      },
+      "detectorFull": {
+        "fullMs": {
+          "n": 10,
+          "p50": 20,
+          "p95": 23,
+          "max": 23,
+          "mean": 20.3
+        },
+        "diffMs": {
+          "n": 10,
+          "p50": 1,
+          "p95": 2,
+          "max": 2,
+          "mean": 1.2
+        },
+        "nodes": 1000
+      }
+    },
+    {
+      "nodes": 5000,
+      "genMs": 236,
+      "gate": {
+        "ms": {
+          "n": 10,
+          "p50": 17,
+          "p95": 18,
+          "max": 18,
+          "mean": 17.4
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 6,
+          "p95": 10,
+          "max": 10,
+          "mean": 5.9
+        },
+        "bytes": 299,
+        "ids": 2
+      },
+      "idsOnly": {
+        "ms": {
+          "n": 10,
+          "p50": 19,
+          "p95": 22,
+          "max": 22,
+          "mean": 19.6
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 7,
+          "p95": 15,
+          "max": 15,
+          "mean": 7.9
+        },
+        "bytes": 64651,
+        "ids": 5002
+      },
+      "outline": {
+        "ms": {
+          "n": 10,
+          "p50": 21,
+          "p95": 28,
+          "max": 28,
+          "mean": 22.1
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 5,
+          "p95": 14,
+          "max": 14,
+          "mean": 7.6
+        },
+        "bytes": 304338,
+        "ids": 5002
+      },
+      "diffFields": {
+        "ms": {
+          "n": 10,
+          "p50": 30,
+          "p95": 36,
+          "max": 36,
+          "mean": 30.2
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 10,
+          "p95": 15,
+          "max": 15,
+          "mean": 9.6
+        },
+        "bytes": 718662,
+        "ids": 5002
+      },
+      "everything": {
+        "ms": {
+          "n": 10,
+          "p50": 35,
+          "p95": 44,
+          "max": 44,
+          "mean": 35.7
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 0,
+          "p95": 8,
+          "max": 8,
+          "mean": 0.9
+        },
+        "bytes": 1270849,
+        "ids": 5002
+      },
+      "detectorFull": {
+        "fullMs": {
+          "n": 10,
+          "p50": 27,
+          "p95": 30,
+          "max": 30,
+          "mean": 27.3
+        },
+        "diffMs": {
+          "n": 10,
+          "p50": 4,
+          "p95": 5,
+          "max": 5,
+          "mean": 3.8
+        },
+        "nodes": 5000
+      }
+    },
+    {
+      "nodes": 10000,
+      "genMs": 422,
+      "gate": {
+        "ms": {
+          "n": 10,
+          "p50": 17,
+          "p95": 18,
+          "max": 18,
+          "mean": 16.9
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 11,
+          "p95": 15,
+          "max": 15,
+          "mean": 9.2
+        },
+        "bytes": 359,
+        "ids": 2
+      },
+      "idsOnly": {
+        "ms": {
+          "n": 10,
+          "p50": 20,
+          "p95": 25,
+          "max": 25,
+          "mean": 21
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 6,
+          "p95": 15,
+          "max": 15,
+          "mean": 8
+        },
+        "bytes": 130173,
+        "ids": 10002
+      },
+      "outline": {
+        "ms": {
+          "n": 10,
+          "p50": 30,
+          "p95": 33,
+          "max": 33,
+          "mean": 29.4
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 10,
+          "p95": 13,
+          "max": 13,
+          "mean": 10.1
+        },
+        "bytes": 609720,
+        "ids": 10002
+      },
+      "diffFields": {
+        "ms": {
+          "n": 10,
+          "p50": 39,
+          "p95": 60,
+          "max": 60,
+          "mean": 41.5
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 0,
+          "p95": 13,
+          "max": 13,
+          "mean": 1.3
+        },
+        "bytes": 1438508,
+        "ids": 10002
+      },
+      "everything": {
+        "ms": {
+          "n": 10,
+          "p50": 65,
+          "p95": 68,
+          "max": 68,
+          "mean": 65.7
+        },
+        "maxGap": {
+          "n": 10,
+          "p50": 0,
+          "p95": 0,
+          "max": 0,
+          "mean": 0
+        },
+        "bytes": 2544306,
+        "ids": 10002
+      },
+      "detectorFull": {
+        "fullMs": {
+          "n": 10,
+          "p50": 54,
+          "p95": 55,
+          "max": 55,
+          "mean": 51.6
+        },
+        "diffMs": {
+          "n": 10,
+          "p50": 9,
+          "p95": 9,
+          "max": 9,
+          "mean": 8
+        },
+        "nodes": 10000
+      }
+    }
+  ],
+  "correctness": [
+    {
+      "label": "node.set fill on 1 rect",
+      "info": {
+        "id": 3
+      },
+      "detected": {
+        "added": 0,
+        "removed": 0,
+        "changed": [
+          {
+            "id": 3,
+            "fields": [
+              "fills"
+            ]
+          }
+        ],
+        "changedCount": 1,
+        "meta": {
+          "selection": false,
+          "page": false,
+          "history": true,
+          "dirty": false
+        }
+      },
+      "fullRan": true
+    },
+    {
+      "label": "node.set x,y on 2 frames",
+      "info": {
+        "ids": [
+          14,
+          26
+        ]
+      },
+      "detected": {
+        "added": 0,
+        "removed": 0,
+        "changed": [
+          {
+            "id": 14,
+            "fields": [
+              "x",
+              "y"
+            ]
+          },
+          {
+            "id": 26,
+            "fields": [
+              "x",
+              "y"
+            ]
+          }
+        ],
+        "changedCount": 2,
+        "meta": {
+          "selection": false,
+          "page": false,
+          "history": true,
+          "dirty": false
+        }
+      },
+      "fullRan": true
+    },
+    {
+      "label": "create 3 nodes",
+      "info": [
+        {
+          "id": 1002
+        },
+        {
+          "id": 1003
+        },
+        {
+          "id": 1004
+        }
+      ],
+      "detected": {
+        "added": 3,
+        "removed": 0,
+        "changed": [],
+        "changedCount": 0,
+        "meta": {
+          "selection": true,
+          "page": false,
+          "history": true,
+          "dirty": false
+        }
+      },
+      "fullRan": true
+    },
+    {
+      "label": "delete 1 frame (12 nodes)",
+      "info": {
+        "id": 38
+      },
+      "detected": {
+        "added": 0,
+        "removed": 12,
+        "changed": [],
+        "changedCount": 0,
+        "meta": {
+          "selection": true,
+          "page": false,
+          "history": true,
+          "dirty": false
+        }
+      },
+      "fullRan": true
+    },
+    {
+      "label": "rename",
+      "info": {
+        "id": 50
+      },
+      "detected": {
+        "added": 0,
+        "removed": 0,
+        "changed": [
+          {
+            "id": 50,
+            "fields": [
+              "name"
+            ]
+          }
+        ],
+        "changedCount": 1,
+        "meta": {
+          "selection": false,
+          "page": false,
+          "history": true,
+          "dirty": false
+        }
+      },
+      "fullRan": true
+    },
+    {
+      "label": "selection only",
+      "info": {
+        "selection": [
+          50
+        ]
+      },
+      "detected": {
+        "added": 0,
+        "removed": 0,
+        "changed": [],
+        "changedCount": 0,
+        "meta": {
+          "selection": true,
+          "page": false,
+          "history": false,
+          "dirty": false
+        }
+      },
+      "fullRan": false
+    },
+    {
+      "label": "undo",
+      "info": {
+        "undone": true
+      },
+      "detected": {
+        "added": 0,
+        "removed": 0,
+        "changed": [
+          {
+            "id": 50,
+            "fields": [
+              "name"
+            ]
+          }
+        ],
+        "changedCount": 1,
+        "meta": {
+          "selection": true,
+          "page": false,
+          "history": true,
+          "dirty": false
+        }
+      },
+      "fullRan": true
+    },
+    {
+      "label": "undo + same-label edit (gate blind spot)",
+      "info": {
+        "note": "detector re-created before undo; expect a change on opacity"
+      },
+      "detected": null,
+      "fullRan": false
+    },
+    {
+      "label": "person: mouse drag on the canvas",
+      "info": {
+        "screen": [
+          451,
+          270
+        ],
+        "view": {
+          "cx": 120,
+          "cy": 90,
+          "zoom": 3.2333333333333334
+        },
+        "lastUndo": "Set properties"
+      },
+      "detected": {
+        "added": 0,
+        "removed": 0,
+        "changed": [],
+        "changedCount": 0,
+        "meta": {
+          "selection": true,
+          "page": false,
+          "history": false,
+          "dirty": false
+        }
+      },
+      "fullRan": false
+    }
+  ],
+  "backend": "[figcraft_web::web] figcraft-web/src/web.rs:58: figcraft-web: wgpu backend BrowserWebGpu",
+  "framesNote": "superseded by change-webkit-headed-frames.json (this run leaked pollers between modes)"
+}

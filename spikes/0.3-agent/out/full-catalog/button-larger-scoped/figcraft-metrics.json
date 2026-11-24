@@ -1,0 +1,53 @@
+{
+  "arm": "figcraft",
+  "variant": "full-catalog",
+  "caseId": "button-larger-scoped",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_herocta001"
+  ],
+  "transactions": 1,
+  "turns": 2,
+  "toolCalls": 2,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 229,
+    "cacheReadTokens": 49119,
+    "cacheWriteTokens": 49412,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 135656
+  },
+  "wallMs": 3424,
+  "finalText": "I made the button larger. I raised the padding from 8/16 to 16/32 and the label font size from 14 to 18. I left the corner radius and colors alone. The render shows the button hugging its text correctly.",
+  "commands": [
+    {
+      "command": "node.set",
+      "params": {
+        "ids": [
+          10
+        ],
+        "padding": [
+          16,
+          32,
+          16,
+          32
+        ],
+        "cornerRadius": 8
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "ids": [
+          11
+        ],
+        "fontSize": 18
+      }
+    }
+  ]
+}

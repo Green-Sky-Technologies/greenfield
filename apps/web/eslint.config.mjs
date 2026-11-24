@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     'out/**',
     'build/**',
     'next-env.d.ts',
+    // The FigCraft web release (Story 0.1 spike), downloaded by spikes/0.1-embed/fetch-editor.mjs.
+    'public/editor/**',
   ]),
 ]);
 

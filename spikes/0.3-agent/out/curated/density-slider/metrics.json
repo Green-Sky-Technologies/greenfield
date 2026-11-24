@@ -1,0 +1,483 @@
+{
+  "case": "density-slider",
+  "prompt": "Give me a control to adjust how dense the feature cards are.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "curated",
+    "caseId": "density-slider",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": false,
+    "failures": [
+      "patch scope: touched outside n_features01: new:22, new:23, new:24, new:25, new:26, new:27, new:28, new:29, new:30"
+    ],
+    "touched": [
+      "new:22",
+      "new:23",
+      "new:24",
+      "new:25",
+      "new:26",
+      "new:27",
+      "new:28",
+      "new:29",
+      "new:30"
+    ],
+    "transactions": 1,
+    "turns": 2,
+    "toolCalls": 2,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 1617,
+      "cacheReadTokens": 15358,
+      "cacheWriteTokens": 6625,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 35816
+    },
+    "wallMs": 12085,
+    "finalText": "I added a \"Card density\" segmented control above the feature cards. It has three options, Compact, Default and Spacious, with Default selected. It uses the surface, primary and muted tokens.\n\nIt's only the control's visuals so far. Nothing is wired to the cards yet, so clicking an option won't change their padding or gap.",
+    "commands": [
+      {
+        "command": "node.create",
+        "as": "w",
+        "params": {
+          "type": "frame",
+          "parent": 2,
+          "index": 2,
+          "name": "n_density0001",
+          "props": {
+            "layout": "horizontal",
+            "gap": 12,
+            "padding": [
+              0,
+              24,
+              16,
+              24
+            ],
+            "crossAlign": "center",
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "w"
+          },
+          "name": "n_density_label",
+          "characters": "Card density",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Medium",
+            "fontSize": 14,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "seg",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "w"
+          },
+          "name": "n_density_seg",
+          "props": {
+            "layout": "horizontal",
+            "gap": 4,
+            "padding": 4,
+            "crossAlign": "center",
+            "sizingH": "hug",
+            "sizingV": "hug",
+            "fill": "#F6F6F4",
+            "cornerRadius": 9999
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "o1",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "seg"
+          },
+          "name": "n_density_compact",
+          "props": {
+            "layout": "horizontal",
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "sizingH": "hug",
+            "sizingV": "hug",
+            "fill": "none",
+            "cornerRadius": 9999
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "o1"
+          },
+          "name": "n_density_compact_label",
+          "characters": "Compact",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Medium",
+            "fontSize": 14,
+            "fill": "#6B6B70"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "o2",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "seg"
+          },
+          "name": "n_density_default",
+          "props": {
+            "layout": "horizontal",
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "sizingH": "hug",
+            "sizingV": "hug",
+            "fill": "#4F46E5",
+            "cornerRadius": 9999
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "o2"
+          },
+          "name": "n_density_default_label",
+          "characters": "Default",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Medium",
+            "fontSize": 14,
+            "fill": "#FFFFFF"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "o3",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "seg"
+          },
+          "name": "n_density_spacious",
+          "props": {
+            "layout": "horizontal",
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "sizingH": "hug",
+            "sizingV": "hug",
+            "fill": "none",
+            "cornerRadius": 9999
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "o3"
+          },
+          "name": "n_density_spacious_label",
+          "characters": "Spacious",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Medium",
+            "fontSize": 14,
+            "fill": "#6B6B70"
+          }
+        }
+      }
+    ]
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "density-slider",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [],
+    "transactions": 1,
+    "turns": 2,
+    "toolCalls": 1,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 1725,
+      "cacheReadTokens": 57064,
+      "cacheWriteTokens": 4049,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 38797
+    },
+    "wallMs": 11344,
+    "finalText": "I added a \"Card density\" slider. It controls the padding inside each feature card, the gap between a card's title and body, and the gap between the cards. The default position of 24 matches your current spacing. Drag it left for tighter cards or right for roomier ones.\n\nI didn't run the lint check, since the slider doesn't change any nodes until you move it.",
+    "commands": [
+      {
+        "ops": [
+          {
+            "op": "upsertSlider",
+            "slider": {
+              "id": "s_density01",
+              "label": "Card density (padding)",
+              "min": 8,
+              "max": 40,
+              "step": 2,
+              "value": 24,
+              "bindings": [
+                {
+                  "target": {
+                    "nodeId": "n_feat1card00",
+                    "prop": "paddingTop",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat1card00",
+                    "prop": "paddingBottom",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat1card00",
+                    "prop": "paddingLeft",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat1card00",
+                    "prop": "paddingRight",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat2card00",
+                    "prop": "paddingTop",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat2card00",
+                    "prop": "paddingBottom",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat2card00",
+                    "prop": "paddingLeft",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat2card00",
+                    "prop": "paddingRight",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat3card00",
+                    "prop": "paddingTop",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat3card00",
+                    "prop": "paddingBottom",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat3card00",
+                    "prop": "paddingLeft",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat3card00",
+                    "prop": "paddingRight",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 8,
+                    "to": 40,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat1card00",
+                    "prop": "gap",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 2,
+                    "to": 14,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat2card00",
+                    "prop": "gap",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 2,
+                    "to": 14,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_feat3card00",
+                    "prop": "gap",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 2,
+                    "to": 14,
+                    "unit": "px"
+                  }
+                },
+                {
+                  "target": {
+                    "nodeId": "n_features01",
+                    "prop": "gap",
+                    "breakpoint": "base"
+                  },
+                  "map": {
+                    "type": "linear",
+                    "from": 4,
+                    "to": 28,
+                    "unit": "px"
+                  }
+                }
+              ],
+              "pinned": false,
+              "createdBy": "agent"
+            }
+          }
+        ],
+        "label": "Add slider “Card density (padding)”"
+      }
+    ]
+  }
+}

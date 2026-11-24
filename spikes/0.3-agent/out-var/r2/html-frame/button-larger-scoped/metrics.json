@@ -1,0 +1,79 @@
+{
+  "arm": "html",
+  "variant": "html-frame",
+  "caseId": "button-larger-scoped",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_herocta001"
+  ],
+  "transactions": 1,
+  "turns": 2,
+  "toolCalls": 2,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 473,
+    "cacheReadTokens": 55765,
+    "cacheWriteTokens": 0,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 15895
+  },
+  "wallMs": 4358,
+  "finalText": "I made the CTA button larger. I increased its padding to 1rem on top and bottom and 2rem on the sides, and raised the font size to 1.125rem. I used design tokens for all of these, and the lint check found no issues.",
+  "commands": [
+    {
+      "ops": [
+        {
+          "op": "setStyle",
+          "id": "n_herocta001",
+          "breakpoint": "base",
+          "prop": "paddingTop",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_herocta001",
+          "breakpoint": "base",
+          "prop": "paddingBottom",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_herocta001",
+          "breakpoint": "base",
+          "prop": "paddingLeft",
+          "value": {
+            "token": "space.8"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_herocta001",
+          "breakpoint": "base",
+          "prop": "paddingRight",
+          "value": {
+            "token": "space.8"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_herocta001",
+          "breakpoint": "base",
+          "prop": "fontSize",
+          "value": {
+            "token": "text.lg"
+          }
+        }
+      ],
+      "label": "Make CTA button larger"
+    }
+  ]
+}

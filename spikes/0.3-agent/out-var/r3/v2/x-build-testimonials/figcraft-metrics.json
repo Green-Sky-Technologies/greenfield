@@ -1,0 +1,583 @@
+{
+  "arm": "figcraft",
+  "variant": "v2",
+  "caseId": "x-build-testimonials",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "new:22",
+    "new:23",
+    "new:24",
+    "new:25",
+    "new:26",
+    "new:27",
+    "new:28",
+    "new:29",
+    "new:30",
+    "new:31",
+    "new:32",
+    "new:33",
+    "new:34",
+    "new:35",
+    "new:36",
+    "new:37",
+    "new:38",
+    "new:39",
+    "new:40",
+    "new:41",
+    "new:42",
+    "new:43",
+    "new:44",
+    "new:45"
+  ],
+  "transactions": 4,
+  "turns": 10,
+  "toolCalls": 16,
+  "jobSuggestion": null,
+  "stopReason": "max_iterations",
+  "usage": {
+    "inputTokens": 22,
+    "outputTokens": 4559,
+    "cacheReadTokens": 143835,
+    "cacheWriteTokens": 12170,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 104826
+  },
+  "wallMs": 38999,
+  "finalText": "Render is cropped to 800 high probably; check the section.\nRow seems collapsed; inspect.",
+  "commands": [
+    {
+      "command": "node.create",
+      "as": "sec",
+      "params": {
+        "type": "frame",
+        "name": "n_testimonials",
+        "parent": 2,
+        "props": {
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            0,
+            24,
+            64,
+            24
+          ],
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi_heading",
+        "parent": {
+          "$ref": "sec"
+        },
+        "text": "Loved by product teams",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Bold",
+          "fontSize": 36,
+          "lineHeight": "115%",
+          "fill": "#18181B",
+          "textAutoResize": "widthAndHeight"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "row",
+      "params": {
+        "type": "frame",
+        "name": "n_testi_row",
+        "parent": {
+          "$ref": "sec"
+        },
+        "props": {
+          "layout": "horizontal",
+          "gap": 16,
+          "crossAlign": "min",
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "c1",
+      "params": {
+        "type": "frame",
+        "name": "n_testi1card",
+        "parent": {
+          "$ref": "row"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 24,
+          "cornerRadius": 16,
+          "fill": "#F6F6F4",
+          "sizingH": "fill",
+          "sizingV": "fill"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi1quote",
+        "parent": {
+          "$ref": "c1"
+        },
+        "text": "“We went from mockup to shipped UI in days, not weeks.”",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 16,
+          "lineHeight": "150%",
+          "fill": "#18181B",
+          "textAutoResize": "height",
+          "sizingH": "fill"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "p1",
+      "params": {
+        "type": "frame",
+        "name": "n_testi1person",
+        "parent": {
+          "$ref": "c1"
+        },
+        "props": {
+          "layout": "horizontal",
+          "gap": 12,
+          "crossAlign": "center",
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "ellipse",
+        "name": "n_testi1avatar",
+        "parent": {
+          "$ref": "p1"
+        },
+        "width": 40,
+        "height": 40,
+        "props": {
+          "fill": "#E4E4E7"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "t1",
+      "params": {
+        "type": "frame",
+        "name": "n_testi1info",
+        "parent": {
+          "$ref": "p1"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 4,
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi1name",
+        "parent": {
+          "$ref": "t1"
+        },
+        "text": "Maya Chen",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 14,
+          "fill": "#18181B",
+          "textAutoResize": "widthAndHeight"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi1company",
+        "parent": {
+          "$ref": "t1"
+        },
+        "text": "Northwind",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "textAutoResize": "widthAndHeight"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "c2",
+      "params": {
+        "type": "frame",
+        "name": "n_testi2card",
+        "parent": {
+          "$ref": "row"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 24,
+          "cornerRadius": 16,
+          "fill": "#F6F6F4",
+          "sizingH": "fill",
+          "sizingV": "fill"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi2quote",
+        "parent": {
+          "$ref": "c2"
+        },
+        "text": "Our design system finally stays consistent across every screen.",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 16,
+          "lineHeight": "150%",
+          "fill": "#18181B",
+          "textAutoResize": "height",
+          "sizingH": "fill"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "p2",
+      "params": {
+        "type": "frame",
+        "name": "n_testi2person",
+        "parent": {
+          "$ref": "c2"
+        },
+        "props": {
+          "layout": "horizontal",
+          "gap": 12,
+          "crossAlign": "center",
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "ellipse",
+        "name": "n_testi2avatar",
+        "parent": {
+          "$ref": "p2"
+        },
+        "width": 40,
+        "height": 40,
+        "props": {
+          "fill": "#E4E4E7"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "t2",
+      "params": {
+        "type": "frame",
+        "name": "n_testi2info",
+        "parent": {
+          "$ref": "p2"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 4,
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi2name",
+        "parent": {
+          "$ref": "t2"
+        },
+        "text": "Jordan Lee",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 14,
+          "fill": "#18181B",
+          "textAutoResize": "widthAndHeight"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi2company",
+        "parent": {
+          "$ref": "t2"
+        },
+        "text": "Lumen Labs",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "textAutoResize": "widthAndHeight"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "c3",
+      "params": {
+        "type": "frame",
+        "name": "n_testi3card",
+        "parent": {
+          "$ref": "row"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 24,
+          "cornerRadius": 16,
+          "fill": "#F6F6F4",
+          "sizingH": "fill",
+          "sizingV": "fill"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi3quote",
+        "parent": {
+          "$ref": "c3"
+        },
+        "text": "Handing off clean React code saved our engineers hours every sprint.",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 16,
+          "lineHeight": "150%",
+          "fill": "#18181B",
+          "textAutoResize": "height",
+          "sizingH": "fill"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "p3",
+      "params": {
+        "type": "frame",
+        "name": "n_testi3person",
+        "parent": {
+          "$ref": "c3"
+        },
+        "props": {
+          "layout": "horizontal",
+          "gap": 12,
+          "crossAlign": "center",
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "ellipse",
+        "name": "n_testi3avatar",
+        "parent": {
+          "$ref": "p3"
+        },
+        "width": 40,
+        "height": 40,
+        "props": {
+          "fill": "#E4E4E7"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "t3",
+      "params": {
+        "type": "frame",
+        "name": "n_testi3info",
+        "parent": {
+          "$ref": "p3"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 4,
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi3name",
+        "parent": {
+          "$ref": "t3"
+        },
+        "text": "Sam Patel",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 14,
+          "fill": "#18181B",
+          "textAutoResize": "widthAndHeight"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_testi3company",
+        "parent": {
+          "$ref": "t3"
+        },
+        "text": "Brightside",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "textAutoResize": "widthAndHeight"
+        }
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 24,
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 25,
+        "sizingV": "fill"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 32,
+        "sizingV": "fill"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 39,
+        "sizingV": "fill"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 25,
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 32,
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 39,
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 25,
+        "gap": 16,
+        "padding": 24
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 32,
+        "gap": 16,
+        "padding": 24
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 39,
+        "gap": 16,
+        "padding": 24
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 24,
+        "gap": 16
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 22,
+        "gap": 24
+      }
+    }
+  ]
+}

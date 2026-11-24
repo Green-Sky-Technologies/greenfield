@@ -1,0 +1,47 @@
+diff --git a/crates/ui-egui/src/theme.rs b/crates/ui-egui/src/theme.rs
+index e8a039ba..d7234542 100644
+--- a/crates/ui-egui/src/theme.rs
++++ b/crates/ui-egui/src/theme.rs
+@@ -54,13 +54,13 @@ pub struct Tokens {
+     pub focus: Color32,
+ }
+ 
+-/// FigCraft's brand green for solid surfaces.
+-pub const BRAND: Color32 = Color32::from_rgb(0x02, 0xDA, 0x96);
++/// Greenfield spike (Story 0.2): hot pink in place of the brand green, to prove the rebrand route.
++pub const BRAND: Color32 = Color32::from_rgb(0xFF, 0x2D, 0xAA);
+ /// Contrast-safe green for thin selection outlines and white-on-green labels.
+ /// It reaches 4.5:1 on white and 3:1 on the dark canvas.
+-pub const ACCENT: Color32 = Color32::from_rgb(0x00, 0x87, 0x5F);
++pub const ACCENT: Color32 = Color32::from_rgb(0xB5, 0x00, 0x6E);
+ /// Ink on the bright green brand surface (white would not have enough contrast).
+-pub const ACCENT_ON: Color32 = Color32::from_rgb(0x07, 0x35, 0x2A);
++pub const ACCENT_ON: Color32 = Color32::from_rgb(0x3D, 0x00, 0x26);
+ /// Id of the canvas overlays' green for this frame ([`set_canvas_page`]).
+ const CANVAS_ACCENT: &str = "figcraft-canvas-accent";
+ 
+@@ -118,10 +118,10 @@ impl Tokens {
+             field: Color32::from_rgb(0xF5, 0xF5, 0xF5),
+             field_hover_border: Color32::from_rgb(0xE6, 0xE6, 0xE6),
+             accent: BRAND,
+-            accent_hover: Color32::from_rgb(0x00, 0xAD, 0x78),
++            accent_hover: Color32::from_rgb(0xD9, 0x1A, 0x8C),
+             accent_on: ACCENT_ON,
+             // Darker green keeps links and labels legible on white and selected rows.
+-            accent_text: Color32::from_rgb(0x00, 0x7A, 0x56),
++            accent_text: Color32::from_rgb(0xA3, 0x00, 0x5F),
+             selected_row: Color32::from_rgb(0xE0, 0xFB, 0xF1),
+             selected_row_child: Color32::from_rgb(0xF1, 0xFC, 0xF7),
+             // A shade darker than the canvas purple: 5.5:1 on white, 4.7:1 on the selected
+@@ -162,9 +162,9 @@ impl Tokens {
+             field: Color32::from_rgb(0x38, 0x38, 0x38),
+             field_hover_border: Color32::from_rgb(0x4D, 0x4D, 0x4D),
+             accent: BRAND,
+-            accent_hover: Color32::from_rgb(0x52, 0xE9, 0xB7),
++            accent_hover: Color32::from_rgb(0xFF, 0x7C, 0xC8),
+             accent_on: ACCENT_ON,
+-            accent_text: Color32::from_rgb(0x52, 0xE9, 0xB7),
++            accent_text: Color32::from_rgb(0xFF, 0x7C, 0xC8),
+             selected_row: Color32::from_rgb(0x16, 0x42, 0x36),
+             selected_row_child: Color32::from_rgb(0x12, 0x37, 0x2D),
+             // 5.4:1 on the panel, 4.6:1 on the selected component row, 4.5:1 on a hovered row

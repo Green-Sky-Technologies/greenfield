@@ -1,0 +1,719 @@
+{
+  "browser": "firefox-headed",
+  "files": [
+    {
+      "file": "glass-and-vectors.figcraft",
+      "bytes": 51903,
+      "nodes": 97,
+      "pages": 1,
+      "readyMs": 185,
+      "wallReadyMs": 571,
+      "openToDocMs": 189,
+      "openToRefinedMs": 707,
+      "canvas": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 569,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "name": "Glass and vectors",
+      "canvasAfterOpen": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 569,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "memIdle": {
+        "wasmMemoryMB": 30.5,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memOpen": {
+        "wasmMemoryMB": 86.5,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memPan": {
+        "wasmMemoryMB": 106.6,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "pan": {
+        "frames": 92,
+        "rafMs": {
+          "n": 92,
+          "p50": 16.7,
+          "p95": 316.7,
+          "max": 416.7,
+          "mean": 54.5
+        },
+        "over25ms": 36,
+        "over50ms": 15,
+        "editorFrameTimes": {
+          "frames": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "framesDrawn": 98,
+        "canvas": {
+          "previewLatencyMs": 25,
+          "quality": "preview",
+          "rect": [
+            296,
+            40,
+            2640,
+            1800
+          ],
+          "refineLatencyMs": 198,
+          "renderWork": {
+            "kind": "partial",
+            "pixels": 941380
+          }
+        }
+      },
+      "thumbs": {
+        "render@0.1": {
+          "ms": 18,
+          "kb": 16
+        },
+        "render@0.25": {
+          "ms": 39,
+          "kb": 66
+        },
+        "render@1": {
+          "ms": 422,
+          "kb": 620
+        }
+      },
+      "backend": "BrowserWebGpu"
+    },
+    {
+      "file": "ridgeline-app.figcraft",
+      "bytes": 58167,
+      "nodes": 348,
+      "pages": 1,
+      "readyMs": 205,
+      "wallReadyMs": 572,
+      "openToDocMs": 112,
+      "openToRefinedMs": 370,
+      "canvas": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 226,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "name": "Ridgeline app",
+      "canvasAfterOpen": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 226,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "memIdle": {
+        "wasmMemoryMB": 30.5,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memOpen": {
+        "wasmMemoryMB": 78.6,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memPan": {
+        "wasmMemoryMB": 98.7,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "pan": {
+        "frames": 255,
+        "rafMs": {
+          "n": 255,
+          "p50": 16.7,
+          "p95": 33.3,
+          "max": 83.3,
+          "mean": 19.6
+        },
+        "over25ms": 25,
+        "over50ms": 8,
+        "editorFrameTimes": {
+          "frames": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "framesDrawn": 259,
+        "canvas": {
+          "previewLatencyMs": 7,
+          "quality": "preview",
+          "rect": [
+            296,
+            40,
+            2640,
+            1800
+          ],
+          "refineLatencyMs": 15,
+          "renderWork": {
+            "kind": "partial",
+            "pixels": 449271
+          }
+        }
+      },
+      "thumbs": {
+        "render@0.1": {
+          "ms": 29,
+          "kb": 16
+        },
+        "render@0.25": {
+          "ms": 48,
+          "kb": 58
+        },
+        "render@1": {
+          "ms": 271,
+          "kb": 381
+        }
+      },
+      "backend": "BrowserWebGpu"
+    },
+    {
+      "file": "ridgeline-design-system.figcraft",
+      "bytes": 44021,
+      "nodes": 362,
+      "pages": 1,
+      "readyMs": 200,
+      "wallReadyMs": 220,
+      "openToDocMs": 101,
+      "openToRefinedMs": 206,
+      "canvas": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 67,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "name": "Ridgeline UI",
+      "canvasAfterOpen": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 67,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "memIdle": {
+        "wasmMemoryMB": 11.8,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memOpen": {
+        "wasmMemoryMB": 73.2,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memPan": {
+        "wasmMemoryMB": 73.2,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "pan": {
+        "frames": 295,
+        "rafMs": {
+          "n": 295,
+          "p50": 16.7,
+          "p95": 16.8,
+          "max": 66.6,
+          "mean": 17
+        },
+        "over25ms": 4,
+        "over50ms": 1,
+        "editorFrameTimes": {
+          "frames": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "framesDrawn": 301,
+        "canvas": {
+          "previewLatencyMs": 10,
+          "quality": "preview",
+          "rect": [
+            296,
+            40,
+            2640,
+            1800
+          ],
+          "refineLatencyMs": 5,
+          "renderWork": {
+            "kind": "partial",
+            "pixels": 220972
+          }
+        }
+      },
+      "thumbs": {
+        "render@0.1": {
+          "ms": 19,
+          "kb": 16
+        },
+        "render@0.25": {
+          "ms": 28,
+          "kb": 60
+        },
+        "render@1": {
+          "ms": 184,
+          "kb": 449
+        }
+      },
+      "backend": "BrowserWebGpu"
+    },
+    {
+      "file": "ridgeline-onboarding.figcraft",
+      "bytes": 44822,
+      "nodes": 142,
+      "pages": 1,
+      "readyMs": 208,
+      "wallReadyMs": 638,
+      "openToDocMs": 130,
+      "openToRefinedMs": 236,
+      "canvas": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 98,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "name": "Ridgeline onboarding",
+      "canvasAfterOpen": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 98,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "memIdle": {
+        "wasmMemoryMB": 30.5,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memOpen": {
+        "wasmMemoryMB": 73.2,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memPan": {
+        "wasmMemoryMB": 93.3,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "pan": {
+        "frames": 278,
+        "rafMs": {
+          "n": 278,
+          "p50": 16.7,
+          "p95": 33.3,
+          "max": 66.7,
+          "mean": 18
+        },
+        "over25ms": 16,
+        "over50ms": 1,
+        "editorFrameTimes": {
+          "frames": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "framesDrawn": 283,
+        "canvas": {
+          "previewLatencyMs": 14,
+          "quality": "refined",
+          "rect": [
+            296,
+            40,
+            2640,
+            1800
+          ],
+          "refineLatencyMs": 10,
+          "renderWork": {
+            "kind": "partial",
+            "pixels": 216938
+          }
+        }
+      },
+      "thumbs": {
+        "render@0.1": {
+          "ms": 26,
+          "kb": 12
+        },
+        "render@0.25": {
+          "ms": 37,
+          "kb": 50
+        },
+        "render@1": {
+          "ms": 145,
+          "kb": 344
+        }
+      },
+      "backend": "BrowserWebGpu"
+    },
+    {
+      "file": "ridgeline-studio-dashboard.figcraft",
+      "bytes": 60080,
+      "nodes": 268,
+      "pages": 1,
+      "readyMs": 194,
+      "wallReadyMs": 572,
+      "openToDocMs": 351,
+      "openToRefinedMs": 489,
+      "canvas": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 347,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "name": "Ridgeline Studio dashboard",
+      "canvasAfterOpen": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 347,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "memIdle": {
+        "wasmMemoryMB": 30.5,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memOpen": {
+        "wasmMemoryMB": 79,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memPan": {
+        "wasmMemoryMB": 99.1,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "pan": {
+        "frames": 67,
+        "rafMs": {
+          "n": 67,
+          "p50": 16.7,
+          "p95": 350,
+          "max": 550.6,
+          "mean": 76.1
+        },
+        "over25ms": 25,
+        "over50ms": 22,
+        "editorFrameTimes": {
+          "frames": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "framesDrawn": 72,
+        "canvas": {
+          "previewLatencyMs": 84,
+          "quality": "refined",
+          "rect": [
+            296,
+            40,
+            2640,
+            1800
+          ],
+          "refineLatencyMs": 158,
+          "renderWork": {
+            "kind": "partial",
+            "pixels": 230208
+          }
+        }
+      },
+      "thumbs": {
+        "render@0.1": {
+          "ms": 24,
+          "kb": 11
+        },
+        "render@0.25": {
+          "ms": 45,
+          "kb": 36
+        },
+        "render@1": {
+          "ms": 299,
+          "kb": 251
+        }
+      },
+      "backend": "BrowserWebGpu"
+    },
+    {
+      "file": "gen-10000.figcraft",
+      "bytes": 296772,
+      "nodes": 10000,
+      "pages": 1,
+      "readyMs": 198,
+      "wallReadyMs": 227,
+      "openToDocMs": 155,
+      "openToRefinedMs": 262,
+      "canvas": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 90,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "name": "gen-10000",
+      "canvasAfterOpen": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 90,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "memIdle": {
+        "wasmMemoryMB": 11.8,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memOpen": {
+        "wasmMemoryMB": 78.8,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memPan": {
+        "wasmMemoryMB": 78.8,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "pan": {
+        "frames": 290,
+        "rafMs": {
+          "n": 290,
+          "p50": 16.7,
+          "p95": 17.2,
+          "max": 33.7,
+          "mean": 17.3
+        },
+        "over25ms": 11,
+        "over50ms": 0,
+        "editorFrameTimes": {
+          "frames": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "framesDrawn": 296,
+        "canvas": {
+          "previewLatencyMs": 7,
+          "quality": "preview",
+          "rect": [
+            296,
+            40,
+            2640,
+            1800
+          ],
+          "refineLatencyMs": 55,
+          "renderWork": {
+            "kind": "full"
+          }
+        }
+      },
+      "thumbs": {
+        "render@0.1": {
+          "ms": 125,
+          "kb": 181
+        },
+        "render@0.25": {
+          "ms": 182,
+          "kb": 549
+        },
+        "render@1": {
+          "ms": 798,
+          "kb": 1879
+        }
+      },
+      "backend": "BrowserWebGpu"
+    },
+    {
+      "file": "gen-30000.figcraft",
+      "bytes": 534201,
+      "nodes": 30000,
+      "pages": 1,
+      "readyMs": 255,
+      "wallReadyMs": 682,
+      "openToDocMs": 325,
+      "openToRefinedMs": 439,
+      "canvas": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 113,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "name": "gen-30000",
+      "canvasAfterOpen": {
+        "previewLatencyMs": null,
+        "quality": "refined",
+        "rect": [
+          296,
+          40,
+          2640,
+          1800
+        ],
+        "refineLatencyMs": 113,
+        "renderWork": {
+          "kind": "full"
+        }
+      },
+      "memIdle": {
+        "wasmMemoryMB": 30.5,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memOpen": {
+        "wasmMemoryMB": 123.9,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "memPan": {
+        "wasmMemoryMB": 123.9,
+        "uaSpecific": "unavailable",
+        "crossOriginIsolated": false
+      },
+      "pan": {
+        "frames": 253,
+        "rafMs": {
+          "n": 253,
+          "p50": 16.7,
+          "p95": 33.3,
+          "max": 50,
+          "mean": 19.8
+        },
+        "over25ms": 46,
+        "over50ms": 0,
+        "editorFrameTimes": {
+          "frames": 0,
+          "maxMs": 0,
+          "meanMs": 0
+        },
+        "framesDrawn": 258,
+        "canvas": {
+          "previewLatencyMs": 16,
+          "quality": "refined",
+          "rect": [
+            296,
+            40,
+            2640,
+            1800
+          ],
+          "refineLatencyMs": 6,
+          "renderWork": {
+            "kind": "partial",
+            "pixels": 230208
+          }
+        }
+      },
+      "thumbs": {
+        "render@0.1": {
+          "ms": 288,
+          "kb": 546
+        },
+        "render@0.25": {
+          "ms": 514,
+          "kb": 1672
+        },
+        "render@1": {
+          "ms": 39,
+          "error": "render failed (empty or too large)"
+        }
+      },
+      "backend": "BrowserWebGpu"
+    }
+  ],
+  "version": "157.0"
+}

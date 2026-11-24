@@ -1,0 +1,36 @@
+{
+  "arm": "figcraft",
+  "variant": "full-catalog",
+  "caseId": "headline-copy",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_herotitle1"
+  ],
+  "transactions": 1,
+  "turns": 2,
+  "toolCalls": 2,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 187,
+    "cacheReadTokens": 49738,
+    "cacheWriteTokens": 50699,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 138577
+  },
+  "wallMs": 3732,
+  "finalText": "I changed the headline to \"Design at the speed of thought\". I checked the render. It wraps to two lines at its current 60px size, with \"thought\" alone on the second line. I didn't change the styling.",
+  "commands": [
+    {
+      "command": "text.set",
+      "params": {
+        "id": 8,
+        "characters": "Design at the speed of thought"
+      }
+    }
+  ]
+}

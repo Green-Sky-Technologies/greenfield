@@ -1,0 +1,136 @@
+{
+  "case": "button-larger-scoped",
+  "prompt": "Make this button larger.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "full-catalog",
+    "caseId": "button-larger-scoped",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_herocta001"
+    ],
+    "transactions": 1,
+    "turns": 2,
+    "toolCalls": 2,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 229,
+      "cacheReadTokens": 49119,
+      "cacheWriteTokens": 49412,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 135656
+    },
+    "wallMs": 3424,
+    "finalText": "I made the button larger. I raised the padding from 8/16 to 16/32 and the label font size from 14 to 18. I left the corner radius and colors alone. The render shows the button hugging its text correctly.",
+    "commands": [
+      {
+        "command": "node.set",
+        "params": {
+          "ids": [
+            10
+          ],
+          "padding": [
+            16,
+            32,
+            16,
+            32
+          ],
+          "cornerRadius": 8
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "ids": [
+            11
+          ],
+          "fontSize": 18
+        }
+      }
+    ]
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "button-larger-scoped",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_herocta001"
+    ],
+    "transactions": 1,
+    "turns": 2,
+    "toolCalls": 2,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 458,
+      "cacheReadTokens": 27621,
+      "cacheWriteTokens": 28144,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 80476
+    },
+    "wallMs": 3648,
+    "finalText": "I made the CTA button larger. It now has more padding (1rem top and bottom, 2rem left and right) and a larger label size (`text.lg`). The lint check found no issues.",
+    "commands": [
+      {
+        "ops": [
+          {
+            "op": "setStyle",
+            "id": "n_herocta001",
+            "breakpoint": "base",
+            "prop": "paddingTop",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_herocta001",
+            "breakpoint": "base",
+            "prop": "paddingBottom",
+            "value": {
+              "token": "space.4"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_herocta001",
+            "breakpoint": "base",
+            "prop": "paddingLeft",
+            "value": {
+              "token": "space.8"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_herocta001",
+            "breakpoint": "base",
+            "prop": "paddingRight",
+            "value": {
+              "token": "space.8"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_herocta001",
+            "breakpoint": "base",
+            "prop": "fontSize",
+            "value": {
+              "token": "text.lg"
+            }
+          }
+        ],
+        "label": "Make CTA button larger"
+      }
+    ]
+  }
+}

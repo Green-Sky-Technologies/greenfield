@@ -1,0 +1,26 @@
+{
+  "arm": "html",
+  "variant": "html-frame",
+  "caseId": "pricing-page-offers-job",
+  "model": "claude-sonnet-5-5",
+  "route": "scripted",
+  "passed": true,
+  "failures": [],
+  "touched": [],
+  "transactions": 0,
+  "turns": 2,
+  "toolCalls": 1,
+  "jobSuggestion": "generate",
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 2400,
+    "outputTokens": 300,
+    "cacheReadTokens": 8000,
+    "cacheWriteTokens": 0,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 9400
+  },
+  "wallMs": 1,
+  "finalText": "That is bigger than a quick edit, so I am offering a background job.\nOffered a job.",
+  "commands": []
+}

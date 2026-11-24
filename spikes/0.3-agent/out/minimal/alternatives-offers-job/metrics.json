@@ -1,0 +1,61 @@
+{
+  "case": "alternatives-offers-job",
+  "prompt": "What would this page look like with a completely different layout? I'd like to compare a few.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "minimal",
+    "caseId": "alternatives-offers-job",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [],
+    "transactions": 0,
+    "turns": 2,
+    "toolCalls": 1,
+    "jobSuggestion": "alternatives",
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 412,
+      "cacheReadTokens": 8191,
+      "cacheWriteTokens": 1389,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 9243
+    },
+    "wallMs": 4919,
+    "finalText": "I haven't changed your page. Comparing several full layouts means making new frames, so I've offered a background job that creates 3 alternatives of the page. They would keep your copy and design tokens. One would have a split hero, one a centered hero with a card grid, and one a stacked feature list. Start the job if you'd like to see them.",
+    "commands": []
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "alternatives-offers-job",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": false,
+    "failures": [
+      "job suggestion: expected alternatives, got null"
+    ],
+    "touched": [],
+    "transactions": 0,
+    "turns": 1,
+    "toolCalls": 1,
+    "jobSuggestion": null,
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 4,
+      "outputTokens": 594,
+      "cacheReadTokens": 27380,
+      "cacheWriteTokens": 613,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 12957
+    },
+    "wallMs": 4654,
+    "finalText": "I can set up a few layout alternatives to compare. First, a few questions to steer them.",
+    "commands": [],
+    "notes": [
+      "turn ended on ask_questions"
+    ]
+  }
+}

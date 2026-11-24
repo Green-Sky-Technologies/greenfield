@@ -1,0 +1,61 @@
+{
+  "case": "pricing-page-offers-job",
+  "prompt": "Now add a full pricing page with three tiers and an FAQ.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "curated",
+    "caseId": "pricing-page-offers-job",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [],
+    "transactions": 0,
+    "turns": 2,
+    "toolCalls": 1,
+    "jobSuggestion": "generate",
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 352,
+      "cacheReadTokens": 12786,
+      "cacheWriteTokens": 1343,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 9447
+    },
+    "wallMs": 4771,
+    "finalText": "A full pricing page with three tiers and an FAQ needs a new frame and a lot of new layers, so I didn't edit the current page. I've offered it as a background generation job instead. If you start it, the new frame will use the same nav, tokens and styling as the landing page.",
+    "commands": []
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "pricing-page-offers-job",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": false,
+    "failures": [
+      "job suggestion: expected generate, got null"
+    ],
+    "touched": [],
+    "transactions": 0,
+    "turns": 1,
+    "toolCalls": 1,
+    "jobSuggestion": null,
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 4,
+      "outputTokens": 605,
+      "cacheReadTokens": 27380,
+      "cacheWriteTokens": 610,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 13059
+    },
+    "wallMs": 4497,
+    "finalText": "I'll ask a few quick questions first so the pricing page fits your product.",
+    "commands": [],
+    "notes": [
+      "turn ended on ask_questions"
+    ]
+  }
+}
