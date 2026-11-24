@@ -144,9 +144,17 @@ and rustc 1.100.
 **Reproducibility:** two clean container builds came out byte-identical. Local and container
 bytes differ because they use different wasm-opt versions (133 vs 131).
 
-**Size:** our build fits under 24 MiB only because it leaves out `storytold/craft-fonts`, which
-wasn't approved. The upstream release with fonts is 24.3 MiB. Upstream's own gate is actually
-25 MiB.
+**Size:** our build fits under 24 MiB only because it leaves out `storytold/craft-fonts`. The
+upstream release with fonts is 24.3 MiB. Upstream's own gate is actually 25 MiB.
+
+Once craft-fonts and the winit fork were approved (2026-11-24), we ran a release-equivalent build:
+craft-fonts at upstream's CI ref `37827adc`, `KEEP_WINIT_FORK=1`, plus our theme patch.
+- Raw wasm: **25,579,895 B (24.39 MiB)**, 76 KB more than upstream's release. It fails the 24 MiB
+  AC and is about 0.6 MiB under upstream's 25 MiB gate.
+- Gzip 10,376,170 B; Brotli 7,366,446 B.
+- Build time: 206 s for the trunk build, 278 s wall in total.
+
+So a build with fonts can't meet the AC as written. See SPEC change 1.
 
 **Inputs:** `build.sh` drops the pinned `storytold/winit` fork. It isn't used on the web.
 
