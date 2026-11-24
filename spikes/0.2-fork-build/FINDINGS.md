@@ -98,6 +98,17 @@ wasm-bindgen 0.2.129, wasm-opt 131 (Debian sid).
 - Upstream's docs say the gate is 24 MiB, but `packaging/web/package.sh` enforces **25 MiB**
   (`26214400`, Cloudflare's per-file cap). The v0.18.1 release passes upstream's gate and fails
   ours.
+- **Release-equivalent build (added 2026-11-24, after craft-fonts and the winit fork were
+  approved):**
+
+  ```sh
+  CRAFT_FONTS_DIR=<craft-fonts at 37827adc> CRAFT_FONTS_REQUIRED=1 KEEP_WINIT_FORK=1 ./build.sh
+  ```
+
+  With the theme patch, the result is 25,579,895 B raw (24.39 MiB), 10,376,170 B gzip-9 and
+  7,366,446 B Brotli-11 (sha256 `a832157d…f24b`). The trunk build took 206 s; 278 s wall in
+  total. That is 76 KB over the upstream release, so it confirms the fonts account for the gap.
+  `build.sh` fails it against the 24 MiB AC; it passes upstream's 25 MiB gate.
 - On GitHub's 4-vCPU `ubuntu-24.04` runners, expect the cold job to take several times the Docker
   number (estimate, not measured). The cargo/tool cache removes the ~4 min of tool installs and
   most of the compile, but every change still re-runs the fat-LTO link.
