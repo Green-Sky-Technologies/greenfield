@@ -1,0 +1,27 @@
+{
+  "name": "spike-0.3-agent",
+  "private": true,
+  "type": "module",
+  "description": "Story 0.3 spike (throwaway): can Claude draw with FigCraft commands vs the HTML-frame agent?",
+  "scripts": {
+    "eval": "tsx src/run.ts",
+    "fixture": "tsx src/fixture-cli.ts",
+    "tools": "tsx src/dump-tools.ts",
+    "report": "tsx src/report.ts",
+    "spike-typecheck": "tsc -p ."
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^1.4.0",
+    "@crunch/agent": "workspace:*",
+    "@crunch/doc-model": "workspace:*",
+    "@crunch/ds-lint": "workspace:*",
+    "@crunch/providers": "workspace:*",
+    "@crunch/renderer": "workspace:*",
+    "@modelcontextprotocol/sdk": "1.32.2",
+    "playwright": "1.64.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5"
+  }
+}

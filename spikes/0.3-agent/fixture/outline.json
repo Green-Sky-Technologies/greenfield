@@ -1,0 +1,209 @@
+{
+  "children": [
+    {
+      "children": [
+        {
+          "characters": "Acme",
+          "height": 21,
+          "id": 4,
+          "name": "n_logo000001",
+          "type": "TEXT",
+          "width": 48,
+          "x": 24,
+          "y": 22.5
+        },
+        {
+          "children": [
+            {
+              "characters": "Sign up",
+              "height": 16,
+              "id": 6,
+              "name": "n_navcta0001_label",
+              "type": "TEXT",
+              "width": 47,
+              "x": 17,
+              "y": 9
+            }
+          ],
+          "height": 34,
+          "id": 5,
+          "name": "n_navcta0001",
+          "type": "FRAME",
+          "width": 81,
+          "x": 1175,
+          "y": 16
+        }
+      ],
+      "height": 67,
+      "id": 3,
+      "name": "n_nav0000001",
+      "type": "FRAME",
+      "width": 1280,
+      "x": 0,
+      "y": 0
+    },
+    {
+      "children": [
+        {
+          "characters": "Ship designs your engineers can build.",
+          "height": 138,
+          "id": 8,
+          "name": "n_herotitle1",
+          "type": "TEXT",
+          "width": 800,
+          "x": 24,
+          "y": 96
+        },
+        {
+          "characters": "Describe what you want. Refine it on a live canvas. Export real code.",
+          "height": 21,
+          "id": 9,
+          "name": "n_herobody01",
+          "type": "TEXT",
+          "width": 501,
+          "x": 24,
+          "y": 258
+        },
+        {
+          "children": [
+            {
+              "characters": "Get started",
+              "height": 16,
+              "id": 11,
+              "name": "n_herocta001_label",
+              "type": "TEXT",
+              "width": 70,
+              "x": 16,
+              "y": 8
+            }
+          ],
+          "height": 32,
+          "id": 10,
+          "name": "n_herocta001",
+          "type": "FRAME",
+          "width": 102,
+          "x": 24,
+          "y": 303
+        }
+      ],
+      "height": 431,
+      "id": 7,
+      "name": "n_hero000001",
+      "type": "FRAME",
+      "width": 1280,
+      "x": 0,
+      "y": 67
+    },
+    {
+      "children": [
+        {
+          "children": [
+            {
+              "characters": "Live HTML frames",
+              "height": 21,
+              "id": 14,
+              "name": "n_feat1title0",
+              "type": "TEXT",
+              "width": 144,
+              "x": 24,
+              "y": 24
+            },
+            {
+              "characters": "Every frame is real DOM, so what you see is what ships.",
+              "height": 21,
+              "id": 15,
+              "name": "n_feat1body00",
+              "type": "TEXT",
+              "width": 352,
+              "x": 24,
+              "y": 53
+            }
+          ],
+          "height": 98,
+          "id": 13,
+          "name": "n_feat1card00",
+          "type": "FRAME",
+          "width": 400,
+          "x": 24,
+          "y": 0
+        },
+        {
+          "children": [
+            {
+              "characters": "Your design system",
+              "height": 21,
+              "id": 17,
+              "name": "n_feat2title0",
+              "type": "TEXT",
+              "width": 155,
+              "x": 24,
+              "y": 24
+            },
+            {
+              "characters": "Tokens and components keep every screen on brand.",
+              "height": 21,
+              "id": 18,
+              "name": "n_feat2body00",
+              "type": "TEXT",
+              "width": 352,
+              "x": 24,
+              "y": 53
+            }
+          ],
+          "height": 98,
+          "id": 16,
+          "name": "n_feat2card00",
+          "type": "FRAME",
+          "width": 400,
+          "x": 440,
+          "y": 0
+        },
+        {
+          "children": [
+            {
+              "characters": "Code handoff",
+              "height": 21,
+              "id": 20,
+              "name": "n_feat3title0",
+              "type": "TEXT",
+              "width": 109,
+              "x": 24,
+              "y": 24
+            },
+            {
+              "characters": "Export React + Tailwind straight from the document.",
+              "height": 21,
+              "id": 21,
+              "name": "n_feat3body00",
+              "type": "TEXT",
+              "width": 352,
+              "x": 24,
+              "y": 53
+            }
+          ],
+          "height": 98,
+          "id": 19,
+          "name": "n_feat3card00",
+          "type": "FRAME",
+          "width": 400,
+          "x": 856,
+          "y": 0
+        }
+      ],
+      "height": 172,
+      "id": 12,
+      "name": "n_features01",
+      "type": "FRAME",
+      "width": 1280,
+      "x": 0,
+      "y": 498
+    }
+  ],
+  "height": 670,
+  "id": 2,
+  "name": "n_root000001",
+  "type": "FRAME",
+  "width": 1280,
+  "x": 0,
+  "y": 0
+}
