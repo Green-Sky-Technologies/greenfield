@@ -41,3 +41,7 @@ yarn-error.log*
 next-env.d.ts
 !.env.example
 .clerk/
+
+# Story 0.1 spike: the FigCraft web release (spikes/0.1-embed/fetch-editor.mjs) and local file storage
+public/editor/
+/.data/
