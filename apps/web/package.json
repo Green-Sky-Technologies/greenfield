@@ -20,6 +20,7 @@
     "@clerk/nextjs": "^7.9.24",
     "@greenfield/agent": "workspace:*",
     "@greenfield/authz": "workspace:*",
+    "@greenfield/bridge": "workspace:*",
     "@greenfield/contracts": "workspace:*",
     "@greenfield/crypto": "workspace:*",
     "@greenfield/db": "workspace:*",
