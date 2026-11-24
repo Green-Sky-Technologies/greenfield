@@ -1,0 +1,33 @@
+{
+  "name": "@greenfield/bridge",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./mock": "./src/mock.ts",
+    "./playwright": "./src/playwright/index.ts",
+    "./playwright/server": "./src/playwright/server.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "lint": "eslint src scripts e2e test",
+    "generate": "tsx scripts/generate-commands.ts",
+    "check:commands": "tsx scripts/generate-commands.ts --check",
+    "e2e": "playwright test -c e2e/playwright.config.ts",
+    "serve": "tsx src/playwright/serve.ts"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.64.1"
+  },
+  "peerDependenciesMeta": {
+    "@playwright/test": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "esbuild": "^0.28.2",
+    "prettier": "^3"
+  }
+}
