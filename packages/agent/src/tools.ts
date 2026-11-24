@@ -46,29 +46,49 @@ export const toolFail = (message: string): ToolResult => ({
   touched: [],
 });
 
+/**
+ * Check a tool call before it goes to a host: a known tool, available in `runtime`, with input
+ * that fits its schema. A failure is the error result to send back to the model.
+ */
+export function checkToolCall(
+  runtime: AgentRuntime,
+  name: string,
+  rawInput: unknown,
+): { ok: true; input: unknown } | { ok: false; result: ToolResult } {
+  if (!isAgentTool(name)) return { ok: false, result: toolFail(`Unknown tool: ${name}`) };
+  const def: AgentToolDef = AGENT_TOOLS[name];
+  if (!def.runtimes.includes(runtime))
+    return {
+      ok: false,
+      result: toolFail(
+        runtime === 'job'
+          ? `${name} is not available in a background job.`
+          : `${name} is only available in background jobs. Offer to start one instead.`,
+      ),
+    };
+  const parsed = (def.input as z.ZodType).safeParse(rawInput);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return {
+      ok: false,
+      result: toolFail(
+        `Invalid input for ${name}: ${issue?.path.join('.') || '(root)'} ${issue?.message ?? ''}`.trim(),
+      ),
+    };
+  }
+  return { ok: true, input: parsed.data };
+}
+
 /** Execute one tool call. Never throws for model mistakes; they come back as error results. */
 export async function executeTool(
   host: ToolHost,
   name: string,
   rawInput: unknown,
 ): Promise<ToolResult> {
-  if (!isAgentTool(name)) return toolFail(`Unknown tool: ${name}`);
-  const def: AgentToolDef = AGENT_TOOLS[name];
-  if (!def.runtimes.includes(host.runtime))
-    return toolFail(
-      host.runtime === 'job'
-        ? `${name} is not available in a background job.`
-        : `${name} is only available in background jobs. Offer to start one instead.`,
-    );
-  const parsed = (def.input as z.ZodType).safeParse(rawInput);
-  if (!parsed.success) {
-    const issue = parsed.error.issues[0];
-    return toolFail(
-      `Invalid input for ${name}: ${issue?.path.join('.') || '(root)'} ${issue?.message ?? ''}`.trim(),
-    );
-  }
+  const checked = checkToolCall(host.runtime, name, rawInput);
+  if (!checked.ok) return checked.result;
   try {
-    return await host.run(name, parsed.data);
+    return await host.run(name, checked.input);
   } catch (e) {
     if (e instanceof ToolError) return toolFail(e.message);
     throw e;

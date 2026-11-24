@@ -46,6 +46,7 @@ export default async function ProjectPage({
       canComment={can(actor.role, 'design:comment') && !archived}
       author={author}
       canEdit={can(actor.role, 'design:edit') && !archived}
+      canRunAgent={can(actor.role, 'agent:run') && !archived}
       webgl={webgl}
     />
   );

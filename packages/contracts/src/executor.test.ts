@@ -376,3 +376,111 @@ describe('executeTool: errors and control tools', () => {
     }
   });
 });
+
+describe('executeTool: scope (Story 4.2)', () => {
+  it('keeps a batch inside the scope, including new children', async () => {
+    const { editor, card, title } = await setup();
+    const r = ok(
+      await executeTool(
+        'run_batch',
+        {
+          label: 'Inside',
+          commands: [
+            { command: 'node.set', params: { id: title, props: { fontSize: 20 } } },
+            { command: 'node.create', params: { type: 'rectangle', parent: card } },
+          ],
+        },
+        editor,
+        { scope: [card] },
+      ),
+    );
+    expect(r.touched).toContain(title);
+  });
+
+  it('undoes a batch that touches a layer outside the scope', async () => {
+    const { editor, card, title } = await setup();
+    const other = (await editor.execute('node.create', { type: 'frame', name: 'Other' })) as {
+      id: number;
+    };
+    const before = await editor.inspect({ fields: ['name', 'fontSize'] });
+    const r = err(
+      await executeTool(
+        'run_batch',
+        {
+          label: 'Too wide',
+          commands: [
+            { command: 'node.set', params: { id: title, props: { fontSize: 20 } } },
+            { command: 'node.set', params: { id: other.id, props: { name: 'Renamed' } } },
+          ],
+        },
+        editor,
+        { scope: [card] },
+      ),
+    );
+    expect(r.error.kind).toBe('scope');
+    expect(r.error.message).toContain(`outside the scope (${other.id})`);
+    expect(r.error.message).toContain('undone: nothing changed');
+    expect(r.touched).toEqual([]);
+    const after = await editor.inspect({ fields: ['name', 'fontSize'] });
+    expect(after.pages).toEqual(before.pages);
+    expect(after.history.undo[0]).toBe('Create layer');
+  });
+
+  it('ignores layout reflow: ancestors and siblings that only moved or resized', async () => {
+    /** Like the real editor: every batch moves every layer (auto layout recomputes bounds). */
+    class Reflowing extends MockEditor {
+      private n = 0;
+      override async batch(...a: Parameters<MockEditor['batch']>) {
+        this.n++;
+        return super.batch(...a);
+      }
+      override async inspect(o?: InspectOptions, c?: Parameters<MockEditor['inspect']>[1]) {
+        const doc = await super.inspect(o, c);
+        const stamp = (n: { children?: unknown[] } & Record<string, unknown>) => {
+          n.absoluteBounds = { y: this.n };
+          n.y = this.n;
+          for (const k of n.children ?? []) stamp(k as typeof n);
+        };
+        for (const p of doc.pages) stamp(p as never);
+        return doc;
+      }
+    }
+    const editor = new Reflowing();
+    const [card, title] = (await editor.batch(
+      [
+        { command: 'node.create', as: 'card', params: { type: 'frame', select: false } },
+        { command: 'node.create', params: { type: 'text', parent: { $ref: 'card' }, text: 'Hi' } },
+        { command: 'node.create', params: { type: 'frame', name: 'Sibling', select: false } },
+      ],
+      { label: 'Setup' },
+    )) as { id: number }[];
+    const r = ok(
+      await executeTool(
+        'run_batch',
+        {
+          label: 'Inside',
+          commands: [{ command: 'node.set', params: { id: title!.id, props: { fontSize: 20 } } }],
+        },
+        editor,
+        { scope: [card!.id] },
+      ),
+    );
+    // Every layer moved, so all are reported as changed; none counts against the scope.
+    expect(r.touched.length).toBeGreaterThan(2);
+  });
+
+  it('a layer created next to the scope counts as outside it', async () => {
+    const { editor, card } = await setup();
+    const r = err(
+      await executeTool(
+        'run_batch',
+        { label: 'Sibling', commands: [{ command: 'node.create', params: { type: 'frame' } }] },
+        editor,
+        { scope: [card] },
+      ),
+    );
+    expect(r.error.kind).toBe('scope');
+    const doc = await editor.inspect({ fields: ['name'] });
+    expect(doc.pages[0]!.children!.map((c) => c.id)).toEqual([card]);
+  });
+});

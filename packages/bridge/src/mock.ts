@@ -5,7 +5,8 @@
  * shapes and error messages:
  *
  * - `file.new`, `node.create`, `node.set` (`props` or flat), `text.set`, `edit.delete`,
- *   `select.set`, `command.batch` (one undo step, `as` / `$ref` / `$step` with `field` paths, `onError`)
+ *   `select.set`, `command.batch` (one undo step, `as` / `$ref` / `$step` with `field` paths, `onError`),
+ *   `edit.undo` (`{undone}`), `variable.list` and `style.list` (what `setDesignSystem()` seeded)
  * - `document.inspect` (`depth`, `fields`, `outline`), `node.get`, `ui.render` (a 1×1 PNG),
  *   `engine.commands` (the pinned editor's full list), `ui.key` Save
  * - host messages: ready, dirty, save (`saveAs` as the editor decides it), open of its own saves
@@ -14,7 +15,7 @@
  * are checked against the pinned editor's key lists, so a typo fails here as it would for real.
  * Other commands from the pinned list reject with "MockEditor doesn't implement …".
  *
- * Test hooks: `setHidden()`, `fail()`, `userExecute()` (an edit "by a person", not counted as a
+ * Test hooks: `setHidden()`, `fail()`, `setDesignSystem()`, `userExecute()` (an edit "by a person", not counted as a
  * control edit), `calls` (every control call), and `ready: false` to post ready yourself.
  */
 import { ChangeDetector } from './change-detect';
@@ -100,6 +101,9 @@ const SUPPORTED = new Set([
   'edit.delete',
   'select.set',
   'command.batch',
+  'edit.undo',
+  'variable.list',
+  'style.list',
 ]);
 
 const fail = (command: string, message: string) =>
@@ -137,6 +141,10 @@ export class MockEditor implements Editor {
   private readonly visibilityCbs = new Set<() => void>();
   private readyWaiters: { resolve(i: ReadyInfo): void; reject(e: Error): void }[] = [];
   private readonly detector: ChangeDetector;
+  /** The document before each undo step, newest last (`edit.undo` restores the last). */
+  private undoSnapshots: MDoc[] = [];
+  private variables: unknown = { collections: [], variables: [] };
+  private styles: unknown[] = [];
 
   constructor(opts: MockEditorOptions = {}) {
     this.appVersion = opts.appVersion ?? EDITOR_VERSION;
@@ -179,6 +187,15 @@ export class MockEditor implements Editor {
   setHidden(hidden: boolean): void {
     this.hidden = hidden;
     for (const cb of [...this.visibilityCbs]) cb();
+  }
+
+  /**
+   * What `variable.list` and `style.list` return, in the real editor's shapes:
+   * `{collections, variables}` and a list of styles.
+   */
+  setDesignSystem(ds: { variables?: unknown; styles?: unknown[] }): void {
+    if (ds.variables !== undefined) this.variables = structuredClone(ds.variables);
+    if (ds.styles !== undefined) this.styles = structuredClone(ds.styles);
   }
 
   /** Run a command as a person would (not counted in `ChangeSet.controlEdits`). */
@@ -237,6 +254,7 @@ export class MockEditor implements Editor {
       undo: [],
     };
     this.hasDocument = true;
+    this.undoSnapshots = [];
   }
 
   async save(opts?: CallOptions): Promise<void> {
@@ -432,6 +450,15 @@ export class MockEditor implements Editor {
 
   /** One top-level command: a single undo step (a batch is one step for all of its steps). */
   private runTop(command: string, params: Record<string, unknown>): unknown {
+    if (command === 'edit.undo') {
+      this.checkParams(command, params);
+      this.needDocument('engine.execute');
+      const prev = this.undoSnapshots.pop();
+      if (!prev) return { undone: false };
+      this.doc = { ...prev, id: this.doc.id, file: this.doc.file, undo: this.doc.undo.slice(1) };
+      this.setDirty(true);
+      return { undone: true };
+    }
     const before = structuredClone(this.doc);
     let result: unknown;
     try {
@@ -450,6 +477,7 @@ export class MockEditor implements Editor {
       label = ok ? (typeof params.label === 'string' ? params.label : 'Batch') : null;
     }
     if (label) {
+      this.undoSnapshots = [...this.undoSnapshots, before].slice(-20);
       this.doc.undo = [label, ...this.doc.undo].slice(0, 20);
       this.setDirty(true);
     }
@@ -508,6 +536,7 @@ export class MockEditor implements Editor {
       case 'file.new': {
         const name = typeof params.name === 'string' ? params.name : 'Untitled';
         this.doc = this.newDoc(name);
+        this.undoSnapshots = [];
         this.hasDocument = true;
         return { index: 1, kind: 'design' };
       }
@@ -556,6 +585,10 @@ export class MockEditor implements Editor {
       }
       case 'command.batch':
         return this.runBatch(params);
+      case 'variable.list':
+        return structuredClone(this.variables);
+      case 'style.list':
+        return structuredClone(this.styles);
     }
     throw fail(command, `MockEditor doesn't implement \`${command}\``);
   }

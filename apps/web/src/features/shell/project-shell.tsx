@@ -13,7 +13,8 @@ import {
   platformFromUserAgent,
   type KeyPlatform,
 } from '@greenfield/bridge';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { AgentPanel } from '@/features/agent/agent-panel';
 import { EditorEmbed, type EditorHandle } from '@/features/editor/editor-embed';
 import { CommentOrAsk } from './comment-or-ask';
 import { shellKeyAction, type ShellAction } from './keys';
@@ -24,11 +25,18 @@ export type ShellMenu = 'comment' | 'share' | 'zoom' | null;
 interface Props extends Omit<TopBarProps, 'editor' | 'menu' | 'onMenu' | 'barRef'> {
   author: string;
   canEdit: boolean;
+  canRunAgent: boolean;
   webgl: boolean;
 }
 
-export function ProjectShell({ author, canEdit, webgl, ...bar }: Props) {
+export function ProjectShell({ author, canEdit, canRunAgent, webgl, ...bar }: Props) {
   const [handle, setHandle] = useState<EditorHandle | null>(null);
+  // The agent panel reads the editor when a turn runs, not when it renders.
+  const handleRef = useRef<EditorHandle | null>(null);
+  useEffect(() => {
+    handleRef.current = handle;
+  }, [handle]);
+  const agentEditor = useCallback(() => handleRef.current?.editor ?? null, []);
   const [menu, setMenu] = useState<ShellMenu>(null);
   const barRef = useRef<HTMLElement>(null);
 
@@ -92,17 +100,20 @@ export function ProjectShell({ author, canEdit, webgl, ...bar }: Props) {
         menu={menu}
         onMenu={setMenu}
       />
-      <div className="relative flex min-h-0 flex-1 flex-col">
-        <EditorEmbed
-          projectId={bar.project.id}
-          author={author}
-          canEdit={canEdit}
-          webgl={webgl}
-          onEditor={setHandle}
-        />
-        {menu === 'comment' && (
-          <CommentOrAsk canComment={bar.canComment} onClose={() => act.current('canvas')} />
-        )}
+      <div className="flex min-h-0 flex-1">
+        {canRunAgent && <AgentPanel projectId={bar.project.id} editor={agentEditor} />}
+        <div className="relative flex min-h-0 flex-1 flex-col">
+          <EditorEmbed
+            projectId={bar.project.id}
+            author={author}
+            canEdit={canEdit}
+            webgl={webgl}
+            onEditor={setHandle}
+          />
+          {menu === 'comment' && (
+            <CommentOrAsk canComment={bar.canComment} onClose={() => act.current('canvas')} />
+          )}
+        </div>
       </div>
     </div>
   );

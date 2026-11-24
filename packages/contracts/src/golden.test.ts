@@ -158,13 +158,16 @@ interface Replay {
   undo: string[];
   labels: string[];
   calls: number;
+  /** run_batch calls refused (and undone) for leaving the scope. */
+  scopeErrors: number;
 }
 
-async function replay(c: GoldenCase): Promise<Replay> {
+async function replay(c: GoldenCase, opts = { enforceScope: true }): Promise<Replay> {
   const editor = new MockEditor();
   const fx = await buildLanding(editor);
   const selection = c.scopeNodeId ? [c.scopeNodeId] : (c.selection ?? []);
-  await editor.execute('select.set', { ids: selection.map((n) => fx.ids[n]!) });
+  const scope = selection.map((n) => fx.ids[n]!);
+  await editor.execute('select.set', { ids: scope });
   const page = async () => {
     const doc = await editor.inspect({ depth: 64 });
     return flatten(doc.pages.find((p) => p.id === doc.currentPage));
@@ -174,12 +177,20 @@ async function replay(c: GoldenCase): Promise<Replay> {
   const touched = new Set<NodeId>();
   const labels: string[] = [];
   let jobSuggestion: string | null = null;
+  let scopeErrors = 0;
   const script = SCRIPTS[c.id]!(fx);
   for (const { name, input } of script) {
     const def = AGENT_TOOLS[name];
     // The call the model sends fits the contract...
     expect(def.input.safeParse(input).success, `${c.id}: ${name} input`).toBe(true);
-    const r = await executeTool(name, input, editor);
+    // As on the interactive path, the selection is the scope (Story 4.2).
+    const r = await executeTool(name, input, editor, {
+      scope: opts.enforceScope && scope.length ? scope : null,
+    });
+    if (!r.ok && r.error.kind === 'scope') {
+      scopeErrors++;
+      continue;
+    }
     if (!r.ok) throw new Error(`${c.id}: ${name} failed: ${r.error.message}`);
     // ...and so does what comes back.
     if (r.output !== undefined)
@@ -223,6 +234,7 @@ async function replay(c: GoldenCase): Promise<Replay> {
     undo: (await editor.inspect({ depth: 0 })).history.undo,
     labels,
     calls: script.length,
+    scopeErrors,
   };
 }
 
@@ -256,11 +268,17 @@ describe('golden prompts replayed against the mock bridge', () => {
       }),
     ];
     try {
-      const r = await replay(c);
+      // Without enforcement the checks see the stray edit...
+      const r = await replay(c, { enforceScope: false });
       expect(checkScope(c.expect, r)).toEqual([
         'touched outside n_herocta001: n_navcta0001',
         'touched 2 layers (max 1)',
       ]);
+      // ...and with it (the interactive path), the stray batch is undone and reported.
+      const enforced = await replay(c);
+      expect(enforced.scopeErrors).toBe(1);
+      expect(checkScope(c.expect, enforced)).toEqual([]);
+      expect(enforced.undo).toEqual(['Make the button larger', 'Landing fixture']);
     } finally {
       SCRIPTS[c.id] = original;
     }

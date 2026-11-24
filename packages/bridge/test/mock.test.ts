@@ -299,4 +299,37 @@ describe('MockEditor', () => {
       { method: 'document.inspect' },
     ]);
   });
+
+  it('edit.undo restores the last undo step (a batch is one step)', async () => {
+    const ed = new MockEditor();
+    const { id } = (await ed.execute('node.create', { type: 'frame', name: 'A' })) as {
+      id: number;
+    };
+    await ed.batch(
+      [
+        { command: 'node.set', params: { id, props: { name: 'B' } } },
+        { command: 'node.create', params: { type: 'rectangle', parent: id } },
+      ],
+      { label: 'Edit' },
+    );
+    expect((await ed.inspect({ depth: 0, fields: [] })).history.undo).toEqual([
+      'Edit',
+      'Create layer',
+    ]);
+    expect(await ed.execute('edit.undo', {})).toEqual({ undone: true });
+    const doc = await ed.inspect({ fields: ['name'] });
+    expect(tree(doc)).toEqual(['A']);
+    expect(doc.history.undo).toEqual(['Create layer']);
+    await ed.execute('edit.undo', {});
+    expect(await ed.execute('edit.undo', {})).toEqual({ undone: false });
+  });
+
+  it('variable.list and style.list return what setDesignSystem seeded', async () => {
+    const ed = new MockEditor();
+    expect(await ed.execute('variable.list', {})).toEqual({ collections: [], variables: [] });
+    ed.setDesignSystem({ styles: [{ id: 'S:1', name: 'Brand', type: 'paint', paints: [] }] });
+    expect(await ed.execute('style.list', {})).toEqual([
+      { id: 'S:1', name: 'Brand', type: 'paint', paints: [] },
+    ]);
+  });
 });

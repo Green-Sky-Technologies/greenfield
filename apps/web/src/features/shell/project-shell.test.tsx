@@ -70,6 +70,7 @@ async function mount(props: { canShare?: boolean } = {}) {
         meId="u1"
         canShare={props.canShare ?? true}
         canExport={false}
+        canRunAgent={false}
         canComment
         author="Ada Lovelace"
         canEdit
