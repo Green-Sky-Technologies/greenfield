@@ -18,6 +18,10 @@
   --danger: #dc322f; /* red */
   --ok: #859900; /* green */
   --focus: #268bd2; /* blue: focus rings and links */
+  /* D24: green marks the user (their primary actions, their presence); ember marks the agent. */
+  --user: #627200; /* Solarized green, darkened to 5:1 under base3 text */
+  --user-ink: #fdf6e3; /* base3 */
+  --agent: #cb4b16; /* ember (Solarized orange): marks only, not body text */
 }
 
 @theme inline {
@@ -31,6 +35,9 @@
   --color-accent-ink: var(--accent-ink);
   --color-danger: var(--danger);
   --color-ok: var(--ok);
+  --color-user: var(--user);
+  --color-user-ink: var(--user-ink);
+  --color-agent: var(--agent);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
@@ -66,6 +73,10 @@ body {
 }
 @utility label {
   @apply mb-1 block text-sm font-medium;
+}
+/* Shell controls: a green focus ring (D24: green marks the user, focus included). */
+@utility shell-focus {
+  @apply cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-user;
 }
 @utility card {
   @apply rounded-lg border border-border bg-surface;

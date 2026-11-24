@@ -12,7 +12,8 @@
  *
  * Editors hold the project's edit lock while the tab is open; a save from a stale lock is
  * refused by the server (Story 3.1). The status element's data-* attributes are what the
- * Playwright spec reads. Bytes are never logged.
+ * Playwright specs read. Bytes are never logged. The shell (features/shell) gets the bridge
+ * through `onEditor`.
  */
 import { createBridge, EditorHiddenError, type Editor, type SaveEvent } from '@greenfield/bridge';
 import { useEffect, useRef, useState } from 'react';
@@ -20,11 +21,31 @@ import { designFileClient, holdEditLock, type LockStatus } from './design-file-c
 
 type Status = 'loading' | 'ready' | 'opened' | 'empty' | 'saving' | 'saved' | 'error';
 
+/** The bridge and the iframe it drives, for the shell (focus, keys, zoom). */
+export interface EditorHandle {
+  editor: Editor;
+  iframe: HTMLIFrameElement;
+}
+
+declare global {
+  interface Window {
+    /** Dev and test builds only: lets `@greenfield/bridge/playwright` drive this page's editor. */
+    __greenfieldBridge?: EditorHandle;
+  }
+}
+
+/**
+ * FigCraft's file tab strip (home, file tabs, new tab, theme) is this tall. Until the fork can hide
+ * it (Story 2.6), the iframe is pulled up under the app's top bar so the strip is covered.
+ */
+const EDITOR_TAB_STRIP_PX = 40;
+
 interface Props {
   projectId: string;
   author: string;
   canEdit: boolean;
   webgl?: boolean;
+  onEditor?: (handle: EditorHandle | null) => void;
 }
 
 /** Run a control call now, or once the tab is visible again (hidden tabs draw no frames). */
@@ -45,7 +66,7 @@ async function whenVisible<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
+export function EditorEmbed({ projectId, author, canEdit, webgl, onEditor }: Props) {
   const iframe = useRef<HTMLIFrameElement>(null);
   const [status, setStatus] = useState<Status>('loading');
   const [dirty, setDirty] = useState(false);
@@ -58,6 +79,10 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
   const [storage, setStorage] = useState<string | null>(null);
   const [lastSave, setLastSave] = useState<string>('');
   const dirtyRef = useRef(false);
+  const onEditorRef = useRef(onEditor);
+  useEffect(() => {
+    onEditorRef.current = onEditor;
+  });
   // One session per mounted editor, kept across effect re-runs: a late lock request from an
   // earlier run must not move the lock away from the current one.
   const session = useRef<string | null>(null);
@@ -79,6 +104,9 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
       author,
       query: webgl ? { webgl: true } : {},
     });
+    const handle = { editor, iframe: el };
+    if (process.env.NODE_ENV !== 'production') window.__greenfieldBridge = handle;
+    onEditorRef.current?.(handle);
     const stopLock = canEdit ? holdEditLock(projectId, sessionId, setLock) : () => {};
 
     async function openDocument() {
@@ -141,6 +169,8 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
     return () => {
       window.removeEventListener('beforeunload', onBeforeUnload);
       for (const off of offs) off();
+      onEditorRef.current?.(null);
+      if (window.__greenfieldBridge === handle) delete window.__greenfieldBridge;
       editor.dispose();
       stopLock();
     };
@@ -168,12 +198,15 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
         {lock === 'lost' && <span>Your edit lock moved or expired. Reload to keep editing.</span>}
         {error && <span role="alert">{error}</span>}
       </div>
-      <iframe
-        ref={iframe}
-        title="Editor"
-        className="min-h-0 w-full flex-1 border-0"
-        allow="fullscreen; clipboard-read; clipboard-write"
-      />
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <iframe
+          ref={iframe}
+          title="Design canvas"
+          className="absolute inset-x-0 bottom-0 w-full border-0"
+          style={{ top: -EDITOR_TAB_STRIP_PX, height: `calc(100% + ${EDITOR_TAB_STRIP_PX}px)` }}
+          allow="fullscreen; clipboard-read; clipboard-write"
+        />
+      </div>
     </div>
   );
 }
