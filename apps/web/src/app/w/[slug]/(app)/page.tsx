@@ -1,4 +1,4 @@
-import { can } from '@crunch/authz';
+import { can } from '@greenfield/authz';
 import Link from 'next/link';
 import { NewProjectButton } from '@/components/new-project';
 import { ProjectCard } from '@/components/project-card';

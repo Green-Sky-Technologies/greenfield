@@ -1,4 +1,4 @@
-import { can } from '@crunch/authz';
+import { can } from '@greenfield/authz';
 import { db, requireActor } from '@/server/context';
 import { getFigmaCredential } from '@/server/services/figma/credentials';
 import { listPluginTokens } from '@/server/services/plugin-tokens';
@@ -22,8 +22,8 @@ export default async function FigmaSettingsPage({ params }: PageProps<'/w/[slug]
       <h1 className="mb-1 text-2xl font-semibold tracking-tight">Figma</h1>
       <p className="mb-6 text-sm text-muted">
         Push designs into Figma, import Figma frames, and sync design tokens with Figma variables
-        through the CrunchDesign Figma plugin. There&apos;s no live two-way sync: each push, import
-        or token sync is an explicit, one-shot action.
+        through the Greenfield Figma plugin. There&apos;s no live two-way sync: each push, import or
+        token sync is an explicit, one-shot action.
       </p>
       <div className="flex flex-col gap-6">
         <PluginTokens initial={tokens} currentUserId={actor.userId} />

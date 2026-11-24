@@ -7,9 +7,9 @@
  * The uploader is injectable; without storage configured (no BLOB_READ_WRITE_TOKEN), images
  * that don't fit inline become placeholders with a clear report entry.
  */
-import { and, assets, eq, type Db } from '@crunch/db';
-import { safeImageSrc } from '@crunch/doc-model';
-import type { ReportItem } from '@crunch/figma-convert';
+import { and, assets, eq, type Db } from '@greenfield/db';
+import { safeImageSrc } from '@greenfield/doc-model';
+import type { ReportItem } from '@greenfield/figma-convert';
 import { createHash } from 'node:crypto';
 import type { Actor } from '../types';
 

@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { activity, docVersions, eq } from '@crunch/db';
-import { newId, sampleLandingDoc, replaceDocOps, type DocOp } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { activity, docVersions, eq } from '@greenfield/db';
+import { newId, sampleLandingDoc, replaceDocOps, type DocOp } from '@greenfield/doc-model';
 import { diffDocs } from '@/features/collab/version-diff';
 import { commitTransaction, getDoc } from '@/server/services/design-docs';
 import { createProject } from '@/server/services/projects';

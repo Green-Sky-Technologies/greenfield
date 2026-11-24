@@ -6,7 +6,7 @@
  * Tool descriptions are part of the cached prompt prefix, so keep them byte-stable (no
  * timestamps or dynamic content).
  */
-import { docOp, frame, node, slider } from '@crunch/doc-model';
+import { docOp, frame, node, slider } from '@greenfield/doc-model';
 import { z } from 'zod';
 
 export const AGENT_RUNTIMES = ['interactive', 'job'] as const;

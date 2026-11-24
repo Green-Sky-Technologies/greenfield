@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { HANDOFF_SCHEMA_VERSION, handoffBundle } from '@crunch/contracts';
-import { activity, agentConversations, eq, projects } from '@crunch/db';
-import { newId, replaceDocOps, sampleLandingDoc, type DocOp } from '@crunch/doc-model';
-import { readZipEntries } from '@crunch/handoff';
+import { HANDOFF_SCHEMA_VERSION, handoffBundle } from '@greenfield/contracts';
+import { activity, agentConversations, eq, projects } from '@greenfield/db';
+import { newId, replaceDocOps, sampleLandingDoc, type DocOp } from '@greenfield/doc-model';
+import { readZipEntries } from '@greenfield/handoff';
 import { commitTransaction, getDoc } from '@/server/services/design-docs';
 import {
   blobAssetFetcher,

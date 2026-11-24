@@ -12,8 +12,8 @@
  *
  * Deliberately free of `server-only`/Clerk imports so it's testable with plain Requests.
  */
-import { ForbiddenError } from '@crunch/authz';
-import { getDb, type Db } from '@crunch/db';
+import { ForbiddenError } from '@greenfield/authz';
+import { getDb, type Db } from '@greenfield/db';
 import { z } from 'zod';
 import { ConflictError, LockedError } from '../design-docs';
 import {

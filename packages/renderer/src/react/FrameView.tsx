@@ -23,7 +23,7 @@ import {
   type ReactNode,
 } from 'react';
 import { createPortal } from 'react-dom';
-import type { DesignDoc, DesignSystemSpec, Node } from '@crunch/doc-model';
+import type { DesignDoc, DesignSystemSpec, Node } from '@greenfield/doc-model';
 import { breakpointsOf, rnodeCss, sharedCss, type RenderContext } from '../core';
 import { layoutKey, layoutOf, ROOT_LAYOUT, type ParentLayouts } from '../css';
 import {

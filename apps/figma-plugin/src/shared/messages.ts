@@ -1,6 +1,6 @@
 /**
  * Messages between the plugin UI iframe (network, rendering) and the main thread (Figma
- * document access). The UI talks to the CrunchDesign API; the main thread never does.
+ * document access). The UI talks to the Greenfield API; the main thread never does.
  */
 import type {
   FigmaNode,
@@ -8,7 +8,7 @@ import type {
   ReportItem,
   VariablesSnapshot,
   VariablesSpec,
-} from '@crunch/figma-convert/plugin';
+} from '@greenfield/figma-convert/plugin';
 
 export interface SelectionPayload {
   nodes: FigmaNode[];

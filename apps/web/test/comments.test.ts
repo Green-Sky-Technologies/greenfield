@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { activity, agentConversations, eq, notifications, projects } from '@crunch/db';
-import { newId, type DocOp } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { activity, agentConversations, eq, notifications, projects } from '@greenfield/db';
+import { newId, type DocOp } from '@greenfield/doc-model';
 import {
   createThread,
   linkAgentConversation,

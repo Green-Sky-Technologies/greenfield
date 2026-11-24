@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { editLocks, eq, docOps } from '@crunch/db';
-import { checkInvariants, newId, type DocOp } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { editLocks, eq, docOps } from '@greenfield/db';
+import { checkInvariants, newId, type DocOp } from '@greenfield/doc-model';
 import {
   commitTransaction,
   ConflictError,

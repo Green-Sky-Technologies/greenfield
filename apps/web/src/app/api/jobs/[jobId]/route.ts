@@ -1,5 +1,5 @@
 /** GET /api/jobs/:id -> JobView */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { after, NextResponse } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { maybeReap } from '@/server/services/agent/opportunistic-reap';

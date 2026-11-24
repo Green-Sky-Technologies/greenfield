@@ -1,5 +1,5 @@
 /**
- * Model access for both arms, through @crunch/providers. Credentials come from the environment
+ * Model access for both arms, through @greenfield/providers. Credentials come from the environment
  * only and are never logged:
  *   AI_GATEWAY_API_KEY  -> Vercel AI Gateway (buildGatewayClient, model id via providerModelId)
  *   VERCEL_OIDC_TOKEN   -> Vercel AI Gateway with the OIDC token (used if no gateway key)
@@ -7,8 +7,8 @@
  * `--scripted` swaps in canned responses (no network at all).
  */
 import type Anthropic from '@anthropic-ai/sdk';
-import { buildClient, buildGatewayClient, providerModelId } from '@crunch/providers';
-import type { ModelGateway } from '@crunch/agent';
+import { buildClient, buildGatewayClient, providerModelId } from '@greenfield/providers';
+import type { ModelGateway } from '@greenfield/agent';
 
 export interface ModelRoute {
   /** What the run is billed against, for the report (never the secret). */

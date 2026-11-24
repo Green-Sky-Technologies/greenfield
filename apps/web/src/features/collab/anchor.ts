@@ -2,8 +2,8 @@
  * Pure comment-anchor helpers shared by the server (orphan detection) and the client (pins,
  * composer). No framework or server imports.
  */
-import type { OverlayRect } from '@crunch/contracts/canvas-overlay';
-import type { DesignDoc, Node } from '@crunch/doc-model';
+import type { OverlayRect } from '@greenfield/contracts/canvas-overlay';
+import type { DesignDoc, Node } from '@greenfield/doc-model';
 
 /** The frame whose tree currently contains `nodeId`, or null if the node is gone or detached. */
 export function frameOfNode(doc: DesignDoc, nodeId: string): string | null {

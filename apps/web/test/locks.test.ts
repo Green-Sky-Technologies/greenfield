@@ -1,6 +1,6 @@
-import { ForbiddenError } from '@crunch/authz';
-import { and, editLocks, eq, notifications, presence } from '@crunch/db';
-import { newId } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { and, editLocks, eq, notifications, presence } from '@greenfield/db';
+import { newId } from '@greenfield/doc-model';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { commitTransaction, getDoc, LockedError } from '@/server/services/design-docs';
 import {

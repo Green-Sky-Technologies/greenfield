@@ -1,9 +1,9 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { generateMasterKey, parseKeyring } from '@crunch/crypto';
-import { parseSse } from '@crunch/agent';
-import { agentConversations, agentMessages, docOps, eq, jobEvents, jobs } from '@crunch/db';
-import { MemoryJobRunner, recordingSandboxApi } from '@crunch/sandbox-runner';
+import { ForbiddenError } from '@greenfield/authz';
+import { generateMasterKey, parseKeyring } from '@greenfield/crypto';
+import { parseSse } from '@greenfield/agent';
+import { agentConversations, agentMessages, docOps, eq, jobEvents, jobs } from '@greenfield/db';
+import { MemoryJobRunner, recordingSandboxApi } from '@greenfield/sandbox-runner';
 import { saveCredential } from '@/server/services/credentials';
 import { getDoc } from '@/server/services/design-docs';
 import { createProject } from '@/server/services/projects';

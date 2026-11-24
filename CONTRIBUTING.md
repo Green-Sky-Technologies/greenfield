@@ -23,7 +23,7 @@ CI runs the same checks, plus the browser suites.
   never "forbidden".
 - **Services are framework-free** (`apps/web/src/server/services`). They take `(db, actor, input)`
   and are tested against real Postgres in `apps/web/test`.
-- **Secrets** are encrypted with `@crunch/crypto`. Never log request bodies or credentials,
+- **Secrets** are encrypted with `@greenfield/crypto`. Never log request bodies or credentials,
   and never send secrets to the browser or into a sandbox.
 - **Schema changes:** edit `packages/db/src/schema`, run `pnpm db:generate`, and commit the
   migration.

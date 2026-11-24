@@ -1,4 +1,4 @@
-import { permissionsForProject } from '@crunch/authz';
+import { permissionsForProject } from '@greenfield/authz';
 import { notFound } from 'next/navigation';
 import { EditorShell } from '@/components/editor/editor-shell';
 import { EditorProvider } from '@/features/doc-store';

@@ -1,6 +1,11 @@
 // @vitest-environment happy-dom
 import { act, cleanup, render } from '@testing-library/react';
-import { applyOps, sampleLandingDoc, starterDesignSystem, type DesignDoc } from '@crunch/doc-model';
+import {
+  applyOps,
+  sampleLandingDoc,
+  starterDesignSystem,
+  type DesignDoc,
+} from '@greenfield/doc-model';
 import { afterEach, describe, expect, it } from 'vitest';
 import { FrameView } from './FrameView';
 

@@ -1,5 +1,5 @@
 /** Test stand-ins for the Clerk membership check used by plugin-token auth. */
-import { and, eq, members, type Db } from '@crunch/db';
+import { and, eq, members, type Db } from '@greenfield/db';
 import type { MembershipVerifier } from '@/server/services/plugin-tokens';
 
 /** "Clerk agrees with the members mirror." */

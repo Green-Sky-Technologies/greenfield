@@ -3,8 +3,8 @@
  * canvas renderer (FrameView, Shadow DOM) exactly as the canvas does. Bundled by esbuild in
  * parity.spec.ts; inputs come from window.__PARITY__.
  */
-import type { DesignDoc, DesignSystemSpec } from '@crunch/doc-model';
-import { FrameView } from '@crunch/renderer/react';
+import type { DesignDoc, DesignSystemSpec } from '@greenfield/doc-model';
+import { FrameView } from '@greenfield/renderer/react';
 import { createRoot } from 'react-dom/client';
 
 declare global {

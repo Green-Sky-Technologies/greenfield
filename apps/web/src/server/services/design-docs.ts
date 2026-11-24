@@ -9,8 +9,8 @@
  * - Writes respect the soft edit lock (Story 3.8): if another user holds a live lock, the write
  *   is rejected with LockedError. Acquiring/heartbeating locks is the canvas stream's job.
  */
-import { assertCan } from '@crunch/authz';
-import { and, designDocs, docOps, editLocks, eq, gt, projects, sql, type Db } from '@crunch/db';
+import { assertCan } from '@greenfield/authz';
+import { and, designDocs, docOps, editLocks, eq, gt, projects, sql, type Db } from '@greenfield/db';
 import {
   applyOps,
   checkInvariants,
@@ -21,7 +21,7 @@ import {
   transaction as transactionSchema,
   type DesignDoc,
   type Transaction,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { getProject } from './projects';
 import { NotFoundError, ValidationError, type Actor } from './types';
 

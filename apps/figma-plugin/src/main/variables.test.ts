@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { VariablesSpec } from '@crunch/figma-convert/plugin';
+import type { VariablesSpec } from '@greenfield/figma-convert/plugin';
 import { fakeVariablesApi } from './fake-variables';
 import { collector } from './note';
 import { upsertVariables } from './variables';
@@ -8,7 +8,7 @@ const red = { r: 1, g: 0, b: 0, a: 1 };
 const blue = { r: 0, g: 0, b: 1, a: 1 };
 
 const spec = (over: Partial<VariablesSpec> = {}): VariablesSpec => ({
-  collectionName: 'CrunchDesign tokens',
+  collectionName: 'Greenfield tokens',
   modes: ['light', 'dark-mode'],
   variables: [
     {
@@ -30,7 +30,7 @@ const spec = (over: Partial<VariablesSpec> = {}): VariablesSpec => ({
 describe('upsertVariables', () => {
   it('matches existing modes by normalized name instead of adding duplicates', async () => {
     const f = fakeVariablesApi();
-    const col = f.addCollection('CrunchDesign tokens', ['Light', 'Dark Mode']);
+    const col = f.addCollection('Greenfield tokens', ['Light', 'Dark Mode']);
     const { note } = collector();
     await upsertVariables(spec(), note, { api: f.api });
     expect(col.modes.map((m) => m.name)).toEqual(['Light', 'Dark Mode']);
@@ -40,7 +40,7 @@ describe('upsertVariables', () => {
 
   it('fills modes the plan does not mention with the base value', async () => {
     const f = fakeVariablesApi();
-    const col = f.addCollection('CrunchDesign tokens', ['Light', 'Dark Mode', 'Print']);
+    const col = f.addCollection('Greenfield tokens', ['Light', 'Dark Mode', 'Print']);
     const { note } = collector();
     await upsertVariables(spec(), note, { api: f.api });
     const print = col.modes[2]!.modeId;
@@ -49,7 +49,7 @@ describe('upsertVariables', () => {
 
   it('design push (create-missing) never overwrites differing values and reports them', async () => {
     const f = fakeVariablesApi();
-    const col = f.addCollection('CrunchDesign tokens', ['Light', 'Dark Mode']);
+    const col = f.addCollection('Greenfield tokens', ['Light', 'Dark Mode']);
     const [light, dark] = col.modes.map((m) => m.modeId);
     const existing = f.addVariable(col, 'color/primary', 'COLOR', {
       [light!]: blue,
@@ -84,7 +84,7 @@ describe('upsertVariables', () => {
 
   it('create-missing does not add modes to an existing collection; overwrite writes values', async () => {
     const f = fakeVariablesApi();
-    const col = f.addCollection('CrunchDesign tokens', ['Light']);
+    const col = f.addCollection('Greenfield tokens', ['Light']);
     const v = f.addVariable(col, 'color/primary', 'COLOR', { [col.modes[0]!.modeId]: blue });
     const { note } = collector();
     await upsertVariables(spec(), note, { api: f.api, policy: 'create-missing' });

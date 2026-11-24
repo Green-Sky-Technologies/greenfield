@@ -4,9 +4,9 @@
  * links it from agent_messages.snapshotVersionId. "Revert agent change" restores that snapshot
  * in the editor as a normal, undoable doc-store transaction.
  */
-import { assertCan } from '@crunch/authz';
-import { agentConversations, agentMessages, and, eq, isNull, type Db } from '@crunch/db';
-import type { DesignDoc } from '@crunch/doc-model';
+import { assertCan } from '@greenfield/authz';
+import { agentConversations, agentMessages, and, eq, isNull, type Db } from '@greenfield/db';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { z } from 'zod';
 import { createSnapshot, getSnapshotDoc } from '../snapshots';
 import { NotFoundError, ValidationError, type Actor } from '../types';

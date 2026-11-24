@@ -1,4 +1,9 @@
-import { applyOps, sampleLandingDoc, starterDesignSystem, type DesignDoc } from '@crunch/doc-model';
+import {
+  applyOps,
+  sampleLandingDoc,
+  starterDesignSystem,
+  type DesignDoc,
+} from '@greenfield/doc-model';
 import JSZip from 'jszip';
 import { describe, expect, it, vi } from 'vitest';
 import { collectImageSources, rewriteImageSources } from './assets';

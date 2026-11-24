@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { agentMessages, eq } from '@crunch/db';
-import { MODEL_TIERS } from '@crunch/providers';
+import { ForbiddenError } from '@greenfield/authz';
+import { agentMessages, eq } from '@greenfield/db';
+import { MODEL_TIERS } from '@greenfield/providers';
 import { sendMessage } from '@/server/services/agent';
 import { startGenerationJob } from '@/server/services/agent/generation';
 import { getAgentSettings, updateModelSettings } from '@/server/services/agent/model-settings';

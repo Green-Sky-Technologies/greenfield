@@ -1,6 +1,6 @@
 /** Helpers for JSON route handlers: auth and domain-error mapping. */
 import 'server-only';
-import { ForbiddenError } from '@crunch/authz';
+import { ForbiddenError } from '@greenfield/authz';
 import { NextResponse } from 'next/server';
 import { getActor } from './context';
 import { ConflictError, LockedError } from './services/design-docs';

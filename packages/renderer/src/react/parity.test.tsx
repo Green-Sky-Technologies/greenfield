@@ -4,7 +4,12 @@
  * same CSS rules for the same doc (Story 2.3 / 7.1 AC foundation).
  */
 import { act, cleanup, render } from '@testing-library/react';
-import { applyOps, sampleLandingDoc, starterDesignSystem, type DesignDoc } from '@crunch/doc-model';
+import {
+  applyOps,
+  sampleLandingDoc,
+  starterDesignSystem,
+  type DesignDoc,
+} from '@greenfield/doc-model';
 import { afterEach, describe, expect, it } from 'vitest';
 import { renderDocumentHtml, renderFrameStatic } from '../static';
 import { FrameView } from './FrameView';

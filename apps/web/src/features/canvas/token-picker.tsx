@@ -1,7 +1,7 @@
 'use client';
 
 /** Token picker popover: design-system tokens filtered to the prop's token kinds. */
-import type { TokenOption } from '@crunch/canvas';
+import type { TokenOption } from '@greenfield/canvas';
 import { useEffect, useRef, useState } from 'react';
 
 export function TokenPicker({

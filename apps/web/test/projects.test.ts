@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
+import { ForbiddenError } from '@greenfield/authz';
 import {
   createProject,
   duplicateProject,

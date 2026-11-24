@@ -2,7 +2,7 @@
  * Serialize the current selection for import (Story 8.3): REST-shaped nodes, SVG exports for
  * vectors/icons, image fills as base64 data URLs, and the names of bound variables.
  */
-import { pluginNodeToRest } from '@crunch/figma-convert/plugin';
+import { pluginNodeToRest } from '@greenfield/figma-convert/plugin';
 import type { SelectionPayload } from '../shared/messages';
 
 const MAX_ROOTS = 20;

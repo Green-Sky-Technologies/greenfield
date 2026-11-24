@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import type { OverlayApi } from '@crunch/contracts/canvas-overlay';
-import { useCanvasOverlays } from '@crunch/contracts/canvas-overlay';
+import type { OverlayApi } from '@greenfield/contracts/canvas-overlay';
+import { useCanvasOverlays } from '@greenfield/contracts/canvas-overlay';
 import { act, cleanup, fireEvent, render } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import type { Thread } from './api';

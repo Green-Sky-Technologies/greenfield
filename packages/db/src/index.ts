@@ -22,7 +22,7 @@ export {
 
 export type Db = NodePgDatabase<typeof schema>;
 
-const globalForDb = globalThis as unknown as { __crunchPool?: Pool; __crunchDb?: Db };
+const globalForDb = globalThis as unknown as { __greenfieldPool?: Pool; __greenfieldDb?: Db };
 
 /**
  * Fail fast on dead connections instead of hanging. A silently dropped TCP connection (NAT or
@@ -51,7 +51,7 @@ export function normalizeSslMode(url: string): string {
 }
 
 export function getDb(rawUrl = process.env.DATABASE_URL): Db {
-  if (globalForDb.__crunchDb) return globalForDb.__crunchDb;
+  if (globalForDb.__greenfieldDb) return globalForDb.__greenfieldDb;
   if (!rawUrl) throw new Error('DATABASE_URL is not set');
   const url = normalizeSslMode(rawUrl);
   const pool = new Pool({
@@ -61,8 +61,8 @@ export function getDb(rawUrl = process.env.DATABASE_URL): Db {
     ...resilience,
   });
   const db = drizzle(pool, { schema });
-  globalForDb.__crunchPool = pool;
-  globalForDb.__crunchDb = db;
+  globalForDb.__greenfieldPool = pool;
+  globalForDb.__greenfieldDb = db;
   return db;
 }
 

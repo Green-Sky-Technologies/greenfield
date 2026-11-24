@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { STYLE_PROP_NAMES, type DocOp } from '@crunch/doc-model';
+import { STYLE_PROP_NAMES, type DocOp } from '@greenfield/doc-model';
 import { act, cleanup, fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { CanvasPane, EditPanel } from './index';

@@ -4,7 +4,7 @@
  * render feedback, job hand-off, metrics and output files. They say nothing about model quality.
  */
 import type Anthropic from '@anthropic-ai/sdk';
-import { SUGGEST_JOB_TOOL, type ModelGateway } from '@crunch/agent';
+import { SUGGEST_JOB_TOOL, type ModelGateway } from '@greenfield/agent';
 import {
   scriptedGateway,
   text,

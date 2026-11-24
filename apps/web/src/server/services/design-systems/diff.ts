@@ -13,7 +13,7 @@ import {
   type DesignSystemSpec,
   type Node,
   type ResponsiveStyle,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { stableStringify } from './spec';
 
 export interface TokenChange {

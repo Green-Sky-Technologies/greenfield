@@ -1,5 +1,5 @@
 {
-  "name": "crunchdesign",
+  "name": "greenfield",
   "private": true,
   "packageManager": "pnpm@10.9.0",
   "engines": {
@@ -14,8 +14,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:up": "docker compose up -d db",
-    "db:generate": "pnpm --filter @crunch/db generate",
-    "db:migrate": "pnpm --filter @crunch/db migrate",
+    "db:generate": "pnpm --filter @greenfield/db generate",
+    "db:migrate": "pnpm --filter @greenfield/db migrate",
     "keygen": "node scripts/keygen.mjs",
     "setup:clerk": "node scripts/setup-clerk.mjs"
   },

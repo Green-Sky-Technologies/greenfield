@@ -1,4 +1,4 @@
-import { can } from '@crunch/authz';
+import { can } from '@greenfield/authz';
 import { currentUser } from '@clerk/nextjs/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
@@ -8,7 +8,7 @@ import { figcraftSpikeEnabled } from '@/server/services/figcraft-spike';
 import { getProject } from '@/server/services/projects';
 import { NotFoundError } from '@/server/services/types';
 
-/** Story 0.1 spike (dev-only, CRUNCH_FIGCRAFT_SPIKE=1): the project in the embedded FigCraft. */
+/** Story 0.1 spike (dev-only, GREENFIELD_FIGCRAFT_SPIKE=1): the project in the embedded FigCraft. */
 export default async function FigcraftSpikePage({
   params,
   searchParams,

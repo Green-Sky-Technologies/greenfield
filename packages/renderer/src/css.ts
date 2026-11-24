@@ -16,7 +16,7 @@ import {
   type ResponsiveStyle,
   type StylePropName,
   type StyleProps,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 
 export const FRAME_CONTAINER = 'cdframe';
 

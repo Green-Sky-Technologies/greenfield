@@ -1,7 +1,7 @@
 /**
  * Applies a PushPlan to the current page (Story 8.2).
  *
- * Every node we create carries the CrunchDesign NodeId in plugin data. On a re-push we collect the
+ * Every node we create carries the Greenfield NodeId in plugin data. On a re-push we collect the
  * managed nodes under the previously pushed frame, `reconcile()` them against the plan, and then
  * update matched nodes in place, create only the new ones and remove only the stale ones. Nodes
  * the user added by hand (no plugin data) are left alone. Unchanged nodes (same hash) skip
@@ -27,7 +27,7 @@ import {
   type PushPlan,
   type ReportItem,
   type TextSpec,
-} from '@crunch/figma-convert/plugin';
+} from '@greenfield/figma-convert/plugin';
 import { collector, type Note } from './note';
 import { dataUrlBytes, effect, gradientPaint, solidPaint } from './paints';
 import { removeKeepingUserLayers, type RemovableNode } from './removal';
@@ -537,7 +537,7 @@ function componentsContainer(): FrameNode {
   );
   if (found) return found as FrameNode;
   const f = figma.createFrame();
-  f.name = 'CrunchDesign components';
+  f.name = 'Greenfield components';
   f.setPluginData(COMPONENTS_ROOT_KEY, '1');
   f.layoutMode = 'HORIZONTAL';
   f.layoutWrap = 'WRAP';

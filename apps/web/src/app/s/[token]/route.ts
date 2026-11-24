@@ -4,7 +4,7 @@
  * workspace. Every failure returns the same 404 page. Rate-limited per client IP (per token
  * when no IP is available; see the deployment note in services/share-links.ts); noindex.
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import type { NextRequest } from 'next/server';
 import { getActor } from '@/server/context';
 import { resolveShareToken, shareRateKey, shareViewLimiter } from '@/server/services/share-links';

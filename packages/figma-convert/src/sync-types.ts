@@ -18,7 +18,7 @@ export interface SnapshotVariable {
   /** modeId -> value */
   valuesByMode: Record<string, SnapshotValue>;
   description?: string;
-  /** Token path from our plugin data, when this variable was pushed by CrunchDesign. */
+  /** Token path from our plugin data, when this variable was pushed by Greenfield. */
   tokenPath?: string;
 }
 
@@ -27,7 +27,7 @@ export interface SnapshotCollection {
   name: string;
   defaultModeId: string;
   modes: { modeId: string; name: string }[];
-  /** Created/managed by CrunchDesign (plugin data marker). */
+  /** Created/managed by Greenfield (plugin data marker). */
   managed?: boolean;
   variables: SnapshotVariable[];
 }

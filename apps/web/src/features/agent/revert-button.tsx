@@ -5,7 +5,7 @@
  * edits. It is applied through the doc store as one 'restore' transaction, so it's undoable
  * like any other edit (Undo here, or Cmd+Z).
  */
-import { replaceDocOps, type DesignDoc } from '@crunch/doc-model';
+import { replaceDocOps, type DesignDoc } from '@greenfield/doc-model';
 import { useState } from 'react';
 import { useDocStoreApi } from '../doc-store';
 

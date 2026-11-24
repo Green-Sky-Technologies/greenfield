@@ -19,7 +19,7 @@
  * Writes <out>/<variant>/<case>/{figcraft.png,html.png,metrics.json,transcript.json,final.figcraft}
  * and regenerates <out>/REPORT.md.
  */
-import { MODEL_TIERS } from '@crunch/providers';
+import { MODEL_TIERS } from '@greenfield/providers';
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { loadCases, stripImages, type ArmMetrics, type GoldenCase } from './common';

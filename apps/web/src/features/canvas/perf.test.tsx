@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { applyOps, sampleLandingDoc } from '@crunch/doc-model';
-import { addFrameOps } from '@crunch/canvas';
+import { applyOps, sampleLandingDoc } from '@greenfield/doc-model';
+import { addFrameOps } from '@greenfield/canvas';
 import { act, cleanup } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { frameChanged } from './canvas-pane';

@@ -18,7 +18,7 @@ import {
   type Node,
   type StylePropName,
   type StyleProps,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { rgbaToCss, parseCssColor, sameColor } from './color';
 import type { FigmaNode, FigmaPaint } from './figma-node';
 import { isVectorish } from './figma-node';
@@ -138,7 +138,7 @@ class Importer {
     if (value === undefined || value === null) return;
     const r = validateStyleValue(prop, value);
     if (!r.success) {
-      this.report.warn(`Value for ${prop} isn't valid in CrunchDesign; dropped`, {
+      this.report.warn(`Value for ${prop} isn't valid in Greenfield; dropped`, {
         nodeId: n.id,
         nodeName: n.name,
         subject: prop,

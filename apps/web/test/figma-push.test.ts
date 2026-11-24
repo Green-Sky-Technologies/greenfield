@@ -1,9 +1,9 @@
 /** Push to Figma (Story 8.2): plan building, permissions, payload validation, link recording. */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { designDocs, eq, figmaLinks } from '@crunch/db';
-import { sampleLandingDoc } from '@crunch/doc-model';
-import type { PushPlan } from '@crunch/figma-convert';
+import { ForbiddenError } from '@greenfield/authz';
+import { designDocs, eq, figmaLinks } from '@greenfield/db';
+import { sampleLandingDoc } from '@greenfield/doc-model';
+import type { PushPlan } from '@greenfield/figma-convert';
 import { buildPushPlan, listFigmaLinks, recordPush } from '@/server/services/figma';
 import { pluginBody, pluginRoute } from '@/server/services/figma/plugin-http';
 import { pushPlanRequest, pushResultRequest } from '@/server/services/figma/schemas';

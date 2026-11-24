@@ -1,5 +1,5 @@
 /** GET /api/comments/members -> { members } (mention autocomplete; caller's workspace only) */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { listMentionableMembers } from '@/server/services/comments';

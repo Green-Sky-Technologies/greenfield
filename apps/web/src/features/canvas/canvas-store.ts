@@ -8,8 +8,14 @@
  * The camera changes on every pan/zoom frame. The world layer applies it by subscribing and
  * writing `transform` directly, so frames never re-render for camera moves (ADR 0001).
  */
-import { frameBreakpoint, type Camera, type Distance, type Rect, type Tool } from '@crunch/canvas';
-import type { Breakpoint, DesignSystemSpec, Frame } from '@crunch/doc-model';
+import {
+  frameBreakpoint,
+  type Camera,
+  type Distance,
+  type Rect,
+  type Tool,
+} from '@greenfield/canvas';
+import type { Breakpoint, DesignSystemSpec, Frame } from '@greenfield/doc-model';
 import { useStore } from 'zustand';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 import { useDocStoreApi, type DocStore, type UndoStep } from '../doc-store';

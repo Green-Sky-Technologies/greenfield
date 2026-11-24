@@ -1,5 +1,5 @@
 /** Workspace model defaults and allowed models (Story 5.9), stored in workspace_agent_settings. */
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import {
   DEFAULT_MODEL_SETTINGS,
   formatRelativeCost,
@@ -10,8 +10,8 @@ import {
   resolveModel,
   type ModelTier,
   type WorkspaceModelSettings,
-} from '@crunch/agent';
-import { eq, workspaceAgentSettings, type Db } from '@crunch/db';
+} from '@greenfield/agent';
+import { eq, workspaceAgentSettings, type Db } from '@greenfield/db';
 import { z } from 'zod';
 import { ValidationError, type Actor } from '../types';
 

@@ -14,7 +14,7 @@
  * duplicateProject should copy `designSystemVersionId`. Until then the "no pin" rule above keeps
  * those projects on the latest published version, and the next publish pins them.
  */
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import {
   and,
   asc,
@@ -25,8 +25,12 @@ import {
   projects,
   type Db,
   type Project,
-} from '@crunch/db';
-import { designSystemSpec, starterDesignSystem, type DesignSystemSpec } from '@crunch/doc-model';
+} from '@greenfield/db';
+import {
+  designSystemSpec,
+  starterDesignSystem,
+  type DesignSystemSpec,
+} from '@greenfield/doc-model';
 import { z } from 'zod';
 import { getDoc } from './design-docs';
 import { ensurePublished } from './design-systems';

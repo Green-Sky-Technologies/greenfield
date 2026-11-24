@@ -7,10 +7,10 @@
  * which the UI only sends after the user approves a wider change. Follow-ups from the same
  * comment thread continue the same conversation.
  */
-import { agentEditRequest, type AgentEditResponse } from '@crunch/contracts';
-import { assertCan } from '@crunch/authz';
-import { agentConversations, and, desc, eq, type Db } from '@crunch/db';
-import { frameOf } from '@crunch/doc-model';
+import { agentEditRequest, type AgentEditResponse } from '@greenfield/contracts';
+import { assertCan } from '@greenfield/authz';
+import { agentConversations, and, desc, eq, type Db } from '@greenfield/db';
+import { frameOf } from '@greenfield/doc-model';
 import { messageStreamUrl, sendMessage, type SentMessage } from '../agent';
 import { getDoc } from '../design-docs';
 import { NotFoundError, ValidationError, type Actor } from '../types';

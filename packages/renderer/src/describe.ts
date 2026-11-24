@@ -8,7 +8,7 @@ import {
   type DesignSystemSpec,
   type Node,
   type ResponsiveStyle,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { sanitizeSvg } from './svg';
 
 export interface RenderOptions {

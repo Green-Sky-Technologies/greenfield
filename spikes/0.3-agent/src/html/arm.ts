@@ -10,9 +10,9 @@ import {
   memoryHost,
   runAgentTurn,
   type ModelGateway,
-} from '@crunch/agent';
-import { sampleLandingDoc, starterDesignSystem, type DesignDoc } from '@crunch/doc-model';
-import { lintDoc } from '@crunch/ds-lint';
+} from '@greenfield/agent';
+import { sampleLandingDoc, starterDesignSystem, type DesignDoc } from '@greenfield/doc-model';
+import { lintDoc } from '@greenfield/ds-lint';
 import { assistantText, checkExpect, metering, type ArmMetrics, type GoldenCase } from '../common';
 import { renderDocPng } from './render';
 

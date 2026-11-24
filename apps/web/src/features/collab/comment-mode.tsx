@@ -5,8 +5,8 @@
  * two actions. "Comment" posts a human comment thread (shown in the comments pane over the chat);
  * "Send to agent" posts the text into the open agent chat with the element as context.
  */
-import type { OverlayApi, OverlayRect } from '@crunch/contracts/canvas-overlay';
-import { registerOverlay } from '@crunch/contracts/canvas-overlay';
+import type { OverlayApi, OverlayRect } from '@greenfield/contracts/canvas-overlay';
+import { registerOverlay } from '@greenfield/contracts/canvas-overlay';
 import { useEffect, useReducer, useRef, useState } from 'react';
 import { useAgentOutbox } from '../agent/outbox';
 import { useCanvas } from '../canvas/canvas-store';

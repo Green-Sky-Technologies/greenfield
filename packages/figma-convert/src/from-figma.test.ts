@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { applyOps, emptyDoc, parseDoc, starterDesignSystem, type Node } from '@crunch/doc-model';
+import {
+  applyOps,
+  emptyDoc,
+  parseDoc,
+  starterDesignSystem,
+  type Node,
+} from '@greenfield/doc-model';
 import {
   checkImportLimits,
   collectImageRefs,

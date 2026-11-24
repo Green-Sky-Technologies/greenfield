@@ -5,8 +5,8 @@
  * applies ops locally through the doc store (zero tokens) and lands as one undo step per drag.
  * Sliders can be pinned, renamed and deleted. Viewers see them read-only.
  */
-import { sliderOps, snap } from '@crunch/agent/sliders';
-import type { DocOp, Slider } from '@crunch/doc-model';
+import { sliderOps, snap } from '@greenfield/agent/sliders';
+import type { DocOp, Slider } from '@greenfield/doc-model';
 import { useRef, useState } from 'react';
 import type { DocStore } from '../doc-store';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';

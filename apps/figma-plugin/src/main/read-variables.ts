@@ -1,5 +1,5 @@
 /** Read the file's local variables into a snapshot for token sync (Story 8.4). */
-import { PLUGIN_TOKEN_KEY, type VariablesSnapshot } from '@crunch/figma-convert/plugin';
+import { PLUGIN_TOKEN_KEY, type VariablesSnapshot } from '@greenfield/figma-convert/plugin';
 import { COLLECTION_KEY } from './variables';
 
 export async function readVariablesSnapshot(): Promise<VariablesSnapshot> {

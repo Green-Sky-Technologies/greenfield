@@ -9,9 +9,13 @@
  * The diff is always recomputed server-side from the snapshot; the client only sends selections.
  * Conflicts are never auto-resolved.
  */
-import { assertCan } from '@crunch/authz';
-import { and, designSystems, eq, figmaVariableLinks, type Db } from '@crunch/db';
-import { designSystemSpec, starterDesignSystem, type DesignSystemSpec } from '@crunch/doc-model';
+import { assertCan } from '@greenfield/authz';
+import { and, designSystems, eq, figmaVariableLinks, type Db } from '@greenfield/db';
+import {
+  designSystemSpec,
+  starterDesignSystem,
+  type DesignSystemSpec,
+} from '@greenfield/doc-model';
 import {
   agreedBase,
   applyTokenPatch,
@@ -28,7 +32,7 @@ import {
   type TokenPatch,
   type TokenSet,
   type VariablesSpec,
-} from '@crunch/figma-convert';
+} from '@greenfield/figma-convert';
 import { z } from 'zod';
 import { getProject } from '../projects';
 import { NotFoundError, ValidationError, type Actor } from '../types';

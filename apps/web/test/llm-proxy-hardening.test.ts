@@ -1,11 +1,11 @@
 /** Proxy hardening (review #5, #10) and the real BYOK injection path (review test gap). */
-import { generateMasterKey } from '@crunch/crypto';
+import { generateMasterKey } from '@greenfield/crypto';
 // The env keyring is read lazily on first use; set it before anything decrypts.
 process.env.CREDENTIALS_MASTER_KEYS = `t1:${generateMasterKey()}`;
 
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { encodeSse, type Anthropic } from '@crunch/agent';
-import { jobs, llmCalls } from '@crunch/db';
+import { encodeSse, type Anthropic } from '@greenfield/agent';
+import { jobs, llmCalls } from '@greenfield/db';
 import { saveCredential } from '@/server/services/credentials';
 import { createProject } from '@/server/services/projects';
 import { issueJobToken } from '@/server/services/agent/job-tokens';
@@ -83,7 +83,11 @@ describe('request allowlist', () => {
         ...base,
         system: [{ type: 'text', text: 'sys', cache_control: { type: 'ephemeral' } }],
         tools: [
-          { name: 'mcp__crunch__get_outline', description: 'd', input_schema: { type: 'object' } },
+          {
+            name: 'mcp__greenfield__get_outline',
+            description: 'd',
+            input_schema: { type: 'object' },
+          },
         ],
         tool_choice: { type: 'auto' },
         thinking: { type: 'adaptive' },

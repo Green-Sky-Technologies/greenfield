@@ -3,7 +3,7 @@
  * Tools render first in the prompt, so this output must be byte-stable (sorted tools via
  * toolsFor(), sorted keys via stableStringify round-trip, no dynamic content).
  */
-import { toolsFor, type AgentRuntime, type AgentToolDef } from '@crunch/contracts';
+import { toolsFor, type AgentRuntime, type AgentToolDef } from '@greenfield/contracts';
 import { z } from 'zod';
 import { sortKeys } from './stable';
 

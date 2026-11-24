@@ -1,7 +1,7 @@
 'use client';
 
-import { newId, type ComponentDef, type DesignSystemSpec } from '@crunch/doc-model';
-import { FrameView } from '@crunch/renderer/react';
+import { newId, type ComponentDef, type DesignSystemSpec } from '@greenfield/doc-model';
+import { FrameView } from '@greenfield/renderer/react';
 import { useState } from 'react';
 import { buildComponentPreviewDoc } from '../preview-doc';
 import { IssueList, issuesAt, SectionTitle, type PanelProps, type Update } from './shared';

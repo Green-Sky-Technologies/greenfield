@@ -11,7 +11,7 @@ import {
   type Node,
   type StyleProps,
   type TokenRef,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import type { Point } from './geometry';
 
 export type InsertTool =

@@ -1,7 +1,7 @@
 /** Conversation history stays bounded and carries the document only on the newest turn (review #9). */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import type { Anthropic } from '@crunch/agent';
-import { agentMessages } from '@crunch/db';
+import type { Anthropic } from '@greenfield/agent';
+import { agentMessages } from '@greenfield/db';
 import {
   MAX_HISTORY_CHARS,
   runAssistantMessage,
@@ -54,7 +54,7 @@ describe('document context', () => {
     const first = await sendMessage(db, editor, { projectId: project.id, prompt: 'first' });
     await runAssistantMessage(db, editor, first.messageId, { proxy });
     // Simulate a legacy row: the document inside the stored turn.
-    const { eq } = await import('@crunch/db');
+    const { eq } = await import('@greenfield/db');
     await db
       .update(agentMessages)
       .set({

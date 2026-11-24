@@ -2,7 +2,7 @@
  * GET /api/agent/messages/:id/snapshot -> { snapshotId, doc }: the auto snapshot taken before
  * this message's edits. The editor applies it as a 'restore' transaction (undoable). design:edit.
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { getRevertTarget } from '@/server/services/agent/snapshots';

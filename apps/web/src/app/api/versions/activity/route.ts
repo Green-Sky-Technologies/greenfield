@@ -4,7 +4,7 @@
  * Project history feed (Story 6.4): design edits from doc_ops (grouped) merged with activity rows.
  * Lives under /api/versions because it's the project's history alongside named versions.
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { listActivity } from '@/server/services/activity';

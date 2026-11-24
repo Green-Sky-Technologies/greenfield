@@ -1,4 +1,4 @@
-import { can } from '@crunch/authz';
+import { can } from '@greenfield/authz';
 import { notFound } from 'next/navigation';
 import { DesignSystemEditor } from '@/features/design-system';
 import { db, requireActor } from '@/server/context';

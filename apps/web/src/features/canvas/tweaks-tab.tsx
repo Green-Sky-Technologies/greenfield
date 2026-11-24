@@ -5,7 +5,7 @@
  * project's design-token overrides, which re-theme every frame without touching nodes. Overrides
  * are setTokenOverride ops (one undo step each); values are validated by type at render time.
  */
-import { resolveToken } from '@crunch/doc-model';
+import { resolveToken } from '@greenfield/doc-model';
 import { useState } from 'react';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';
 import { SliderTray } from '../agent/slider-tray';

@@ -1,8 +1,9 @@
 /** Creates (if needed) and migrates the integration-test database. */
-import { ensureDatabase, runMigrations } from '@crunch/db/admin';
+import { ensureDatabase, runMigrations } from '@greenfield/db/admin';
 
 const TEST_DB_URL =
-  process.env.TEST_DATABASE_URL ?? 'postgres://crunch:crunch@localhost:5433/crunch_test';
+  process.env.TEST_DATABASE_URL ??
+  'postgres://greenfield:greenfield@localhost:5433/greenfield_test';
 
 export default async function setup() {
   await ensureDatabase(TEST_DB_URL);

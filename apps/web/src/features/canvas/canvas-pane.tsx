@@ -11,9 +11,9 @@ import {
   viewportWorldRect,
   wheelCamera,
   type Camera,
-} from '@crunch/canvas';
-import type { DesignDoc, DesignSystemSpec, Frame } from '@crunch/doc-model';
-import { FrameView } from '@crunch/renderer/react';
+} from '@greenfield/canvas';
+import type { DesignDoc, DesignSystemSpec, Frame } from '@greenfield/doc-model';
+import { FrameView } from '@greenfield/renderer/react';
 import { memo, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';
 import { fitAll } from './camera-actions';

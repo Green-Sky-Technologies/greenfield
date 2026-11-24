@@ -1,5 +1,5 @@
 /**
- * @crunch/sandbox-runner: JobRunner on Vercel Sandbox plus the in-sandbox Agent SDK entrypoint
+ * @greenfield/sandbox-runner: JobRunner on Vercel Sandbox plus the in-sandbox Agent SDK entrypoint
  * (Story 5.1). Server-only.
  */
 export * from './env';

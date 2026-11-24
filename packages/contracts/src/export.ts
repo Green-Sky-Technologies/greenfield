@@ -3,7 +3,7 @@
  * instruction. Producer: stream-collab-export (packages/handoff). Consumers: codegen job (7.3),
  * Figma export, external agents (Claude Code). Versioned: bump schemaVersion on breaking changes.
  */
-import { designSystemSpec, frame, node } from '@crunch/doc-model';
+import { designSystemSpec, frame, node } from '@greenfield/doc-model';
 import { z } from 'zod';
 
 export const HANDOFF_SCHEMA_VERSION = 1 as const;

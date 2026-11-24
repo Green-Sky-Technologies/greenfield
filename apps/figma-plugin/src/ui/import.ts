@@ -1,5 +1,5 @@
-/** Import tab (Story 8.3): send the current Figma selection into a CrunchDesign project. */
-import type { ReportItem } from '@crunch/figma-convert/plugin';
+/** Import tab (Story 8.3): send the current Figma selection into a Greenfield project. */
+import type { ReportItem } from '@greenfield/figma-convert/plugin';
 import { h } from './dom';
 import { callMain, registerTab, render, state, task } from './main';
 import { reportView } from './report';
@@ -14,7 +14,7 @@ async function run() {
   const projectId = imp.projectId || state.projectId;
   if (!api || !projectId) return;
   const { payload, file } = await callMain({ type: 'read-selection' }, 'selection');
-  state.busy = 'Converting in CrunchDesign…';
+  state.busy = 'Converting in Greenfield…';
   render();
   const res = await api.importNodes(projectId, {
     fileKey: file.fileKey,

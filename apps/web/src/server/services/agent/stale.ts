@@ -3,7 +3,7 @@
  * doesn't show them as streaming forever. Job messages are settled by the job lifecycle.
  * Runs on read (chat load, message stream) and from the job reaper cron.
  */
-import { agentMessages, and, eq, inArray, isNull, lt, type Db } from '@crunch/db';
+import { agentMessages, and, eq, inArray, isNull, lt, type Db } from '@greenfield/db';
 
 /** Older than the longest possible turn (route maxDuration 300s) plus slack. */
 export const STALE_TURN_MS = 6 * 60_000;

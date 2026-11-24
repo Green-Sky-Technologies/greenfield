@@ -4,14 +4,14 @@
  */
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { NextRequest } from 'next/server';
-import type { Db } from '@crunch/db';
+import type { Db } from '@greenfield/db';
 import type { Actor } from '@/server/services/types';
 
 const h = vi.hoisted(() => ({ db: null as unknown as Db, actor: null as Actor | null }));
 
 vi.mock('@/server/context', () => ({ getActor: vi.fn(async () => h.actor) }));
-vi.mock('@crunch/db', async (importOriginal) => ({
-  ...(await importOriginal<typeof import('@crunch/db')>()),
+vi.mock('@greenfield/db', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('@greenfield/db')>()),
   getDb: () => h.db,
 }));
 
@@ -19,7 +19,7 @@ const { GET } = await import('@/app/s/[token]/route');
 const { createShareLink } = await import('@/server/services/share-links');
 const { createProject } = await import('@/server/services/projects');
 const { commitTransaction, getDoc } = await import('@/server/services/design-docs');
-const { newId, replaceDocOps, sampleLandingDoc } = await import('@crunch/doc-model');
+const { newId, replaceDocOps, sampleLandingDoc } = await import('@greenfield/doc-model');
 const { makeActor, reset, testDb } = await import('./helpers');
 
 const { db, close } = testDb();

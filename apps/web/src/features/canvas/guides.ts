@@ -1,8 +1,8 @@
 'use client';
 
 /** Snap targets for smart guides: a node's visible siblings and its parent, in world coordinates. */
-import type { Camera, Rect } from '@crunch/canvas';
-import type { DesignDoc } from '@crunch/doc-model';
+import type { Camera, Rect } from '@greenfield/canvas';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { nodeElement, worldRect } from './dom';
 
 export const SNAP_PX = 6; // screen px

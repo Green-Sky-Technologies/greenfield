@@ -3,8 +3,8 @@
  * static renderer's markup plus a tiny CSS-only width switcher (radio inputs + :checked).
  * It deliberately includes nothing but the design (no workspace, project or member data).
  */
-import type { DesignDoc, DesignSystemSpec } from '@crunch/doc-model';
-import { renderFrameStatic, sharedCss } from '@crunch/renderer';
+import type { DesignDoc, DesignSystemSpec } from '@greenfield/doc-model';
+import { renderFrameStatic, sharedCss } from '@greenfield/renderer';
 
 const esc = (s: string) =>
   s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');

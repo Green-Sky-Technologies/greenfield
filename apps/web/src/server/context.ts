@@ -1,7 +1,7 @@
 import 'server-only';
 import { auth, clerkClient } from '@clerk/nextjs/server';
-import { roleFromClerk } from '@crunch/authz';
-import { getDb } from '@crunch/db';
+import { roleFromClerk } from '@greenfield/authz';
+import { getDb } from '@greenfield/db';
 import { redirect } from 'next/navigation';
 import { cache } from 'react';
 import type { Actor } from './services/types';

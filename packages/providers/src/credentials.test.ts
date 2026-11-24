@@ -13,7 +13,7 @@ import {
 
 const SA = JSON.stringify({
   type: 'service_account',
-  client_email: 'crunch@proj.iam.gserviceaccount.com',
+  client_email: 'greenfield@proj.iam.gserviceaccount.com',
   private_key: '-----BEGIN PRIVATE KEY-----\nMIIEsecretsecret\n-----END PRIVATE KEY-----\n',
   private_key_id: 'abcdef1234567890',
 });
@@ -29,7 +29,7 @@ describe('credential input validation', () => {
         provider: 'bedrock',
         authMode: 'assume_role',
         region: 'us-east-1',
-        roleArn: 'arn:aws:iam::123456789012:role/CrunchDesignBedrock',
+        roleArn: 'arn:aws:iam::123456789012:role/GreenfieldBedrock',
       }).success,
     ).toBe(true);
     expect(
@@ -104,7 +104,7 @@ describe('secret handling', () => {
       updatedAt: new Date(),
     });
     expect(JSON.stringify(pub)).not.toContain('PRIVATE KEY');
-    expect(pub.details['Service account']).toBe('crunch@proj.iam.gserviceaccount.com');
+    expect(pub.details['Service account']).toBe('greenfield@proj.iam.gserviceaccount.com');
   });
 
   it('assume-role credentials have no secret and include the external id', () => {

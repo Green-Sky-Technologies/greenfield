@@ -1,5 +1,5 @@
-import type { Role } from '@crunch/authz';
-import type { Workspace } from '@crunch/db';
+import type { Role } from '@greenfield/authz';
+import type { Workspace } from '@greenfield/db';
 
 /** The authenticated caller, resolved once per request. */
 export interface Actor {

@@ -1,7 +1,7 @@
 'use client';
 
 /** Comments drawer (Story 6.1): composer for the selected element, thread list, replies, resolve. */
-import type { DesignDoc } from '@crunch/doc-model';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { useState } from 'react';
 import { useDocStore, useEditor } from '../doc-store';
 import { commentsApi, memberLabel, type Anchor, type Thread } from './api';

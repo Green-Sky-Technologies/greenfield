@@ -1,5 +1,5 @@
 /** GET /api/agent/chat?projectId=… -> { conversationId, messages } for the project's main chat. */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { getProjectChat } from '@/server/services/agent';

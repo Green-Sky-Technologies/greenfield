@@ -4,7 +4,7 @@ import { loadEnv } from './support/env';
 /**
  * App suite: the real app (`next build` + `next start`) with real Clerk sign-in, on Chromium.
  *
- *   pnpm --filter @crunch/web e2e:app
+ *   pnpm --filter @greenfield/web e2e:app
  *
  * Needs Clerk development keys (apps/web/.env.local or the environment), CREDENTIALS_MASTER_KEYS
  * and a migrated DATABASE_URL. The `setup` project creates this run's Clerk users and

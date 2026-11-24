@@ -5,8 +5,8 @@
  * per-request (time, ids, user names, the document) goes here; that lives in the user turn.
  */
 import type Anthropic from '@anthropic-ai/sdk';
-import type { AgentRuntime } from '@crunch/contracts';
-import type { DesignSystemSpec } from '@crunch/doc-model';
+import type { AgentRuntime } from '@greenfield/contracts';
+import type { DesignSystemSpec } from '@greenfield/doc-model';
 import { z } from 'zod';
 import { contractToolDefs, jsonSchemaFor, type JsonToolDef } from './tool-defs';
 import { stableStringify } from './stable';
@@ -49,7 +49,7 @@ const askQuestionsDef: JsonToolDef = {
   input_schema: jsonSchemaFor(askQuestionsInput),
 };
 
-const SYSTEM_COMMON = `You are CrunchDesign's design agent. You edit a structured design document (DesignDoc), not HTML.
+const SYSTEM_COMMON = `You are Greenfield's design agent. You edit a structured design document (DesignDoc), not HTML.
 
 The document has frames (artboards), each with a root node. Nodes are box, text, image, svg or instance (a design-system component). Each node has responsive styles per breakpoint: base (mobile-first), md and lg. Style values are either literals or design-system token references like {"token":"color.primary"}.
 

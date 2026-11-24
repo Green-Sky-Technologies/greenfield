@@ -1,5 +1,5 @@
 /**
- * @crunch/figma-convert: DesignDoc <-> Figma conversion (Stories 8.2-8.4). Pure functions only;
+ * @greenfield/figma-convert: DesignDoc <-> Figma conversion (Stories 8.2-8.4). Pure functions only;
  * network and Figma API access live in apps/web and apps/figma-plugin.
  */
 export * from './plan';

@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Anthropic, parseSse } from '@crunch/agent';
-import { eq, jobs, jobTokens, llmCalls, workspaceAgentSettings, type Db } from '@crunch/db';
+import { Anthropic, parseSse } from '@greenfield/agent';
+import { eq, jobs, jobTokens, llmCalls, workspaceAgentSettings, type Db } from '@greenfield/db';
 import { createProject } from '@/server/services/projects';
 import {
   issueJobToken,

@@ -1,6 +1,6 @@
 'use client';
 
-import { TOKEN_TYPES, tokenPath, type TokenDef, type TokenType } from '@crunch/doc-model';
+import { TOKEN_TYPES, tokenPath, type TokenDef, type TokenType } from '@greenfield/doc-model';
 import { useState } from 'react';
 import { compatibleTokenTypes } from '@/server/services/design-systems/spec';
 import {

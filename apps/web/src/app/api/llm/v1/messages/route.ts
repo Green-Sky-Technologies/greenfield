@@ -3,7 +3,7 @@
  * The sandbox's ANTHROPIC_BASE_URL is /api/llm and its auth token is a job token, so the Agent
  * SDK calls this exactly like the Anthropic API. Auth is the job token, not a Clerk session.
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { handleMessagesProxy } from '@/server/services/llm-proxy';
 
 export const maxDuration = 800;

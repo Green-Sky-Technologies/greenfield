@@ -3,8 +3,8 @@
  *                -> JobView (queued). The sandbox is provisioned after the response.
  * Follow progress at /api/jobs/:id/events (SSE, resume with Last-Event-ID).
  */
-import { getDb } from '@crunch/db';
-import { jobEventsUrl } from '@crunch/contracts';
+import { getDb } from '@greenfield/db';
+import { jobEventsUrl } from '@greenfield/contracts';
 import { after, NextResponse } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { jobRunner } from '@/server/services/agent/runner';

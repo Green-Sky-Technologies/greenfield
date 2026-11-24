@@ -6,7 +6,7 @@
  * Fails timed-out jobs, reaps orphaned sandboxes, retries lost ones that made no changes, and
  * starts queued jobs whose start was lost.
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse } from 'next/server';
 import { cronAuthorized } from '@/server/services/agent/cron';
 import { jobRunner } from '@/server/services/agent/runner';

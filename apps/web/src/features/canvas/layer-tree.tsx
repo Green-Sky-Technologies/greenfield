@@ -19,8 +19,8 @@ import {
   textPreview,
   toggleSelection,
   type LayerRow,
-} from '@crunch/canvas';
-import type { DesignDoc, Node } from '@crunch/doc-model';
+} from '@greenfield/canvas';
+import type { DesignDoc, Node } from '@greenfield/doc-model';
 import { memo, useCallback, useState } from 'react';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';
 import { useCanvas, useCanvasStoreApi } from './canvas-store';

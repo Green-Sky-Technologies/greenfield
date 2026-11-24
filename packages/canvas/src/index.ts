@@ -1,5 +1,5 @@
 /**
- * @crunch/canvas: framework-free canvas engine pieces (ADR 0001): camera maths, geometry,
+ * @greenfield/canvas: framework-free canvas engine pieces (ADR 0001): camera maths, geometry,
  * frame op builders and the minimap projection. React UI lives in apps/web/src/features/canvas.
  */
 export * from './geometry';

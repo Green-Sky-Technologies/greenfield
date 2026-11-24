@@ -1,4 +1,4 @@
-import { can } from '@crunch/authz';
+import { can } from '@greenfield/authz';
 import { SettingsNav } from '@/components/settings-nav';
 import { requireActor } from '@/server/context';
 

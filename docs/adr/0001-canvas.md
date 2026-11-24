@@ -6,7 +6,7 @@
 
 ## Context
 
-CrunchDesign frames are live HTML rendered from the DesignDoc by `@crunch/renderer`'s
+Greenfield frames are live HTML rendered from the DesignDoc by `@greenfield/renderer`'s
 `FrameView` (SPEC D1). The canvas must:
 
 1. Pan and zoom an infinite surface of many frames at 60fps (3.1).
@@ -106,7 +106,7 @@ frames; the variance (Firefox/WebKit) is timer granularity in headless mode, not
    `elementFromPoint` into open shadow roots and resolves the closest `data-cd-id`; instance parts
    (`data-cd-part`) resolve to their instance.
 3. **Overlays are screen-space.** Selection, hover, drop indicators, resize handles and
-   registered overlays (`@crunch/contracts/canvas-overlay`) render in an overlay layer above the
+   registered overlays (`@greenfield/contracts/canvas-overlay`) render in an overlay layer above the
    world, computed from node rects and the camera, so they stay crisp at every zoom and don't
    reflow frame content.
 4. Don't depend on tldraw. It stays installed in `packages/canvas` until integration removes it

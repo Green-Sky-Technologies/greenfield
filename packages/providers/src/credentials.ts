@@ -3,7 +3,7 @@
  *
  * Each credential splits into:
  *  - `config`: non-secret settings (region, project, role ARN), stored as plain JSON
- *  - `secret`: secret material, stored only as an encrypted envelope (@crunch/crypto)
+ *  - `secret`: secret material, stored only as an encrypted envelope (@greenfield/crypto)
  *
  * Nothing in this module returns secret material to a caller that renders UI;
  * use `toPublicCredential` for anything sent to the browser.

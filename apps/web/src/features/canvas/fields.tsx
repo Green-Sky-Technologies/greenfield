@@ -6,7 +6,7 @@
  * Everything writes through the StyleEditor (style-editing.tsx), so every control is one undo step
  * and applies to every selected node at the panel's breakpoint.
  */
-import type { StylePropName } from '@crunch/doc-model';
+import type { StylePropName } from '@greenfield/doc-model';
 import { useState, type ReactNode } from 'react';
 import { MIXED, useStyle } from './style-editing';
 import { StyleField } from './style-field';

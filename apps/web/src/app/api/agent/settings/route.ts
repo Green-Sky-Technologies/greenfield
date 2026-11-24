@@ -2,7 +2,7 @@
  * GET /api/agent/settings -> AgentSettingsView (model catalog with relative cost, defaults, allowed list)
  * PUT /api/agent/settings <- { modelDefaults, allowedModels } (admins only)
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { getAgentSettings, updateModelSettings } from '@/server/services/agent/model-settings';

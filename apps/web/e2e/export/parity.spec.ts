@@ -7,7 +7,7 @@
  * Both are screenshotted and diffed pixel by pixel in the browser; the share of differing
  * pixels must stay under THRESHOLD.
  *
- * The harness is bundled with esbuild (a devDependency of @crunch/handoff, loaded from there).
+ * The harness is bundled with esbuild (a devDependency of @greenfield/handoff, loaded from there).
  */
 import { createRequire } from 'node:module';
 import path from 'node:path';
@@ -19,8 +19,8 @@ import {
   starterDesignSystem,
   type DesignDoc,
   type DesignSystemSpec,
-} from '@crunch/doc-model';
-import { buildExportZip, exportHtml, readZipEntries } from '@crunch/handoff';
+} from '@greenfield/doc-model';
+import { buildExportZip, exportHtml, readZipEntries } from '@greenfield/handoff';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const webRoot = path.resolve(here, '../..');
@@ -93,7 +93,7 @@ const FIXTURES: { name: string; doc: () => DesignDoc }[] = [
 let harnessJs = '';
 
 test.beforeAll(async () => {
-  // esbuild isn't an apps/web dependency; resolve it from @crunch/handoff (minimal typing).
+  // esbuild isn't an apps/web dependency; resolve it from @greenfield/handoff (minimal typing).
   const esbuild = createRequire(handoffPkg)('esbuild') as {
     build(opts: Record<string, unknown>): Promise<{ outputFiles: { text: string }[] }>;
   };

@@ -38,7 +38,7 @@ importers:
 
   apps/figma-plugin:
     dependencies:
-      '@crunch/figma-convert':
+      '@greenfield/figma-convert':
         specifier: workspace:*
         version: link:../../packages/figma-convert
     devDependencies:
@@ -54,43 +54,43 @@ importers:
       '@clerk/nextjs':
         specifier: ^7.9.24
         version: 7.9.24(next@16.4.5(@babel/core@7.29.7)(@opentelemetry/api@1.10.0)(@playwright/test@1.64.1)(@types/node@20.19.43)(babel-plugin-react-compiler@1.0.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      '@crunch/agent':
+      '@greenfield/agent':
         specifier: workspace:*
         version: link:../../packages/agent
-      '@crunch/authz':
+      '@greenfield/authz':
         specifier: workspace:*
         version: link:../../packages/authz
-      '@crunch/canvas':
+      '@greenfield/canvas':
         specifier: workspace:*
         version: link:../../packages/canvas
-      '@crunch/contracts':
+      '@greenfield/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
-      '@crunch/crypto':
+      '@greenfield/crypto':
         specifier: workspace:*
         version: link:../../packages/crypto
-      '@crunch/db':
+      '@greenfield/db':
         specifier: workspace:*
         version: link:../../packages/db
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../../packages/doc-model
-      '@crunch/ds-lint':
+      '@greenfield/ds-lint':
         specifier: workspace:*
         version: link:../../packages/ds-lint
-      '@crunch/figma-convert':
+      '@greenfield/figma-convert':
         specifier: workspace:*
         version: link:../../packages/figma-convert
-      '@crunch/handoff':
+      '@greenfield/handoff':
         specifier: workspace:*
         version: link:../../packages/handoff
-      '@crunch/providers':
+      '@greenfield/providers':
         specifier: workspace:*
         version: link:../../packages/providers
-      '@crunch/renderer':
+      '@greenfield/renderer':
         specifier: workspace:*
         version: link:../../packages/renderer
-      '@crunch/sandbox-runner':
+      '@greenfield/sandbox-runner':
         specifier: workspace:*
         version: link:../../packages/sandbox-runner
       '@vercel/blob':
@@ -166,16 +166,16 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^1.4.0
         version: 1.4.0(zod@4.6.7)
-      '@crunch/contracts':
+      '@greenfield/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../doc-model
-      '@crunch/ds-lint':
+      '@greenfield/ds-lint':
         specifier: workspace:*
         version: link:../ds-lint
-      '@crunch/providers':
+      '@greenfield/providers':
         specifier: workspace:*
         version: link:../providers
       zod:
@@ -190,13 +190,13 @@ importers:
 
   packages/canvas:
     dependencies:
-      '@crunch/contracts':
+      '@greenfield/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../doc-model
-      '@crunch/renderer':
+      '@greenfield/renderer':
         specifier: workspace:*
         version: link:../renderer
     devDependencies:
@@ -218,7 +218,7 @@ importers:
 
   packages/contracts:
     dependencies:
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../doc-model
       zod:
@@ -268,10 +268,10 @@ importers:
 
   packages/ds-lint:
     dependencies:
-      '@crunch/contracts':
+      '@greenfield/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../doc-model
       culori:
@@ -284,7 +284,7 @@ importers:
 
   packages/figma-convert:
     dependencies:
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../doc-model
       zod:
@@ -297,13 +297,13 @@ importers:
 
   packages/handoff:
     dependencies:
-      '@crunch/contracts':
+      '@greenfield/contracts':
         specifier: workspace:*
         version: link:../contracts
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../doc-model
-      '@crunch/renderer':
+      '@greenfield/renderer':
         specifier: workspace:*
         version: link:../renderer
       jszip:
@@ -343,7 +343,7 @@ importers:
 
   packages/renderer:
     dependencies:
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../doc-model
     devDependencies:
@@ -371,7 +371,7 @@ importers:
       '@anthropic-ai/claude-agent-sdk':
         specifier: ^0.3.318
         version: 0.3.318(@anthropic-ai/sdk@1.4.0(zod@4.6.7))(@modelcontextprotocol/sdk@1.32.2(zod@4.6.7))(zod@4.6.7)
-      '@crunch/contracts':
+      '@greenfield/contracts':
         specifier: workspace:*
         version: link:../contracts
       '@vercel/sandbox':
@@ -386,19 +386,19 @@ importers:
       '@anthropic-ai/sdk':
         specifier: ^1.4.0
         version: 1.4.0(zod@4.6.7)
-      '@crunch/agent':
+      '@greenfield/agent':
         specifier: workspace:*
         version: link:../../packages/agent
-      '@crunch/doc-model':
+      '@greenfield/doc-model':
         specifier: workspace:*
         version: link:../../packages/doc-model
-      '@crunch/ds-lint':
+      '@greenfield/ds-lint':
         specifier: workspace:*
         version: link:../../packages/ds-lint
-      '@crunch/providers':
+      '@greenfield/providers':
         specifier: workspace:*
         version: link:../../packages/providers
-      '@crunch/renderer':
+      '@greenfield/renderer':
         specifier: workspace:*
         version: link:../../packages/renderer
       '@modelcontextprotocol/sdk':

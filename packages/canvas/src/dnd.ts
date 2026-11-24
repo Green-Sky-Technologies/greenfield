@@ -9,7 +9,7 @@ import {
   type Breakpoint,
   type DesignDoc,
   type DocOp,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import type { Point, Rect } from './geometry';
 import { ancestors } from './tree';
 

@@ -3,7 +3,7 @@ import {
   sampleLandingDoc,
   starterDesignSystem,
   type InstanceNode,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { describe as suite, expect, it } from 'vitest';
 import { layoutOf, nodeRules, ROOT_LAYOUT } from './css';
 import { describe, expandInstance, rnodeFor, DEFAULT_OPTIONS } from './describe';

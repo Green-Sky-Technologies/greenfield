@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { generateMasterKey, parseKeyring } from '@crunch/crypto';
-import { eq, providerCredentials } from '@crunch/db';
-import type { TestResult } from '@crunch/providers';
+import { ForbiddenError } from '@greenfield/authz';
+import { generateMasterKey, parseKeyring } from '@greenfield/crypto';
+import { eq, providerCredentials } from '@greenfield/db';
+import type { TestResult } from '@greenfield/providers';
 import {
   deleteCredential,
   getExternalId,
@@ -103,7 +103,7 @@ describe('provider credentials', () => {
   it('bedrock assume-role uses a stable server-generated external id', async () => {
     const admin = await makeActor(db, 'admin');
     const ext = await getExternalId(db, admin.workspace.id);
-    expect(ext).toMatch(/^crunch-[0-9a-f]{32}$/);
+    expect(ext).toMatch(/^greenfield-[0-9a-f]{32}$/);
     const pub = await saveCredential(
       db,
       admin,
@@ -111,7 +111,7 @@ describe('provider credentials', () => {
         provider: 'bedrock',
         authMode: 'assume_role',
         region: 'us-east-1',
-        roleArn: 'arn:aws:iam::123456789012:role/Crunch',
+        roleArn: 'arn:aws:iam::123456789012:role/Greenfield',
       },
       { keyring },
     );

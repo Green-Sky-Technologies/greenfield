@@ -26,10 +26,10 @@ import {
   usageFromEvent,
   type LlmTask,
   type UsageTotals,
-} from '@crunch/agent';
-import type { JobKind } from '@crunch/contracts';
-import { llmCalls, type Db, type JobRow } from '@crunch/db';
-import { providerModelId, redact, type Provider } from '@crunch/providers';
+} from '@greenfield/agent';
+import type { JobKind } from '@greenfield/contracts';
+import { llmCalls, type Db, type JobRow } from '@greenfield/db';
+import { providerModelId, redact, type Provider } from '@greenfield/providers';
 import { z } from 'zod';
 import { JobTokenError, tokenFromHeaders, verifyJobToken } from './agent/job-tokens';
 import { getModelSettings } from './agent/model-settings';
@@ -110,7 +110,7 @@ export class ProviderError extends Error {
 
 async function defaultLoadClient(db: Db, workspaceId: string) {
   const { client, config } = await loadWorkspaceClient(db, workspaceId, {
-    sessionName: `crunch-llm-${workspaceId}`,
+    sessionName: `greenfield-llm-${workspaceId}`,
   });
   return { messages: client.messages as unknown as MessagesApi, provider: config.provider };
 }

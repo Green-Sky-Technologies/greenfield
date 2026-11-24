@@ -1,6 +1,6 @@
 'use client';
 
-import type { DesignSystemSpec } from '@crunch/doc-model';
+import type { DesignSystemSpec } from '@greenfield/doc-model';
 import { useState, useTransition } from 'react';
 import { getDesignSystemVersionSpecAction } from '@/server/actions/design-systems';
 

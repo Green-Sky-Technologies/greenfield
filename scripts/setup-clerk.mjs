@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Configure a Clerk instance for CrunchDesign with only its secret key (Backend API):
+ * Configure a Clerk instance for Greenfield with only its secret key (Backend API):
  *  - Organizations on (workspaces), with slugs (workspace URLs are /w/<slug>) and forced selection
  *  - the org:editor and org:viewer roles next to org:admin (see packages/authz)
  *  - org:viewer as the default role for new members

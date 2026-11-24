@@ -1,8 +1,8 @@
 /** Scope enforcement on retries and for jobs, and the atomic auto snapshot (review #12, #13). */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { executeTool } from '@crunch/agent';
-import { agentConversations, agentMessages, docVersions, eq } from '@crunch/db';
-import type { Node } from '@crunch/doc-model';
+import { executeTool } from '@greenfield/agent';
+import { agentConversations, agentMessages, docVersions, eq } from '@greenfield/db';
+import type { Node } from '@greenfield/doc-model';
 import { snapshotBeforeAgentEdit } from '@/server/services/agent/snapshots';
 import { createDbToolHost } from '@/server/services/agent/tool-host';
 import { jobFrameScope } from '@/server/services/agent/job-mcp';

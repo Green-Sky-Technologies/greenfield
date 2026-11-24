@@ -3,9 +3,17 @@
  * The user starts one explicitly (SPEC §2.4); it gets an assistant message in the conversation
  * that its transactions are attributed to, and a job card that streams its events.
  */
-import { assertCan } from '@crunch/authz';
-import { ModelNotAllowedError, resolveModel } from '@crunch/agent';
-import { agentConversations, agentMessages, and, eq, sql, type Db, type JobRow } from '@crunch/db';
+import { assertCan } from '@greenfield/authz';
+import { ModelNotAllowedError, resolveModel } from '@greenfield/agent';
+import {
+  agentConversations,
+  agentMessages,
+  and,
+  eq,
+  sql,
+  type Db,
+  type JobRow,
+} from '@greenfield/db';
 import { z } from 'zod';
 import { toMessageView, type MessageView, type StoredAssistantContent } from '../agent';
 import { getDoc } from '../design-docs';

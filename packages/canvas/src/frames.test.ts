@@ -4,7 +4,7 @@ import {
   initialDoc,
   sampleLandingDoc,
   starterDesignSystem,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { describe, expect, it } from 'vitest';
 import {
   addFrameOps,

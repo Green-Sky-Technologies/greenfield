@@ -3,10 +3,10 @@
  * The plugin reaches these through `/api/figma/plugin/**` (bearer plugin tokens); the web app
  * reaches them through server actions and `/api/figma/**` (Clerk session).
  */
-import { assertCan } from '@crunch/authz';
-import type { Keyring } from '@crunch/crypto';
-import { and, eq, figmaLinks, type Db, type FigmaLinkRow } from '@crunch/db';
-import { newId, walk, type Frame, type Node } from '@crunch/doc-model';
+import { assertCan } from '@greenfield/authz';
+import type { Keyring } from '@greenfield/crypto';
+import { and, eq, figmaLinks, type Db, type FigmaLinkRow } from '@greenfield/db';
+import { newId, walk, type Frame, type Node } from '@greenfield/doc-model';
 import {
   checkImportLimits,
   collectImageRefs,
@@ -19,8 +19,8 @@ import {
   type FigmaNode,
   type PushPlan,
   type ReportItem,
-} from '@crunch/figma-convert';
-import { sanitizeSvg } from '@crunch/renderer';
+} from '@greenfield/figma-convert';
+import { sanitizeSvg } from '@greenfield/renderer';
 import { z } from 'zod';
 import { commitTransaction, ConflictError, getDoc } from './design-docs';
 import { defaultImageUploader, storeImportImages, type ImageUploader } from './figma/assets';

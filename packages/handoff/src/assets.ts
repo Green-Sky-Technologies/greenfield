@@ -3,7 +3,7 @@
  * instance prop values), optionally fetched by a caller-supplied fetcher (the server restricts it
  * to our own asset storage), and rewritten to relative paths inside the ZIP.
  */
-import type { DesignDoc } from '@crunch/doc-model';
+import type { DesignDoc } from '@greenfield/doc-model';
 
 export interface FetchedAsset {
   bytes: Uint8Array;

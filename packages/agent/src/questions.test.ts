@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type Anthropic from '@anthropic-ai/sdk';
-import { sampleLandingDoc, starterDesignSystem } from '@crunch/doc-model';
+import { sampleLandingDoc, starterDesignSystem } from '@greenfield/doc-model';
 import {
   ASK_QUESTIONS_TOOL,
   AnswerError,

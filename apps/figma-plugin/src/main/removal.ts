@@ -8,7 +8,7 @@ import {
   PLUGIN_DATA_KEY,
   PLUGIN_KIND_KEY,
   type LiveNode,
-} from '@crunch/figma-convert/plugin';
+} from '@greenfield/figma-convert/plugin';
 
 /** The parts of a Figma SceneNode/PageNode this module touches. */
 export interface RemovableNode {

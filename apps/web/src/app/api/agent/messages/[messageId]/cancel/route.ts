@@ -1,5 +1,5 @@
 /** POST /api/agent/messages/:id/cancel: stop a running reply (the turn aborts its model call). */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { cancelMessage } from '@/server/services/agent';

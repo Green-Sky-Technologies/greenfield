@@ -1,6 +1,6 @@
 /** DesignDoc -> standalone HTML (repo static renderer) -> PNG (headless Chromium via Playwright). */
-import type { DesignDoc, DesignSystemSpec } from '@crunch/doc-model';
-import { renderDocumentHtml } from '@crunch/renderer';
+import type { DesignDoc, DesignSystemSpec } from '@greenfield/doc-model';
+import { renderDocumentHtml } from '@greenfield/renderer';
 import { chromium, type Browser } from 'playwright';
 
 let browser: Browser | null = null;

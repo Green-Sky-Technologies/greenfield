@@ -1,5 +1,5 @@
 /**
- * @crunch/agent: agent tool handlers, prompts, the interactive agent loop, model catalog and
+ * @greenfield/agent: agent tool handlers, prompts, the interactive agent loop, model catalog and
  * usage accounting (Epic 5). Server-side; browser code imports the client-safe subpaths only.
  */
 export { default as Anthropic } from '@anthropic-ai/sdk';

@@ -14,7 +14,7 @@ import {
   tokensForProp,
   type PropState,
   type TokenOption,
-} from '@crunch/canvas';
+} from '@greenfield/canvas';
 import {
   BREAKPOINTS,
   STYLE_PROP_NAMES,
@@ -25,8 +25,8 @@ import {
   type Node,
   type StylePropName,
   type StyleProps,
-} from '@crunch/doc-model';
-import { declarations } from '@crunch/renderer';
+} from '@greenfield/doc-model';
+import { declarations } from '@greenfield/renderer';
 import { createContext, useCallback, useContext, useMemo, useRef } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';

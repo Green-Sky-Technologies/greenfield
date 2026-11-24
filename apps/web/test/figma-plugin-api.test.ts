@@ -4,7 +4,7 @@
  */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { z } from 'zod';
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import { createProject } from '@/server/services/projects';
 import { listFramesForPlugin, listProjectsForPlugin } from '@/server/services/figma';
 import {

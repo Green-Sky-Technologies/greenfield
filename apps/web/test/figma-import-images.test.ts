@@ -4,8 +4,8 @@
  */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { randomBytes } from 'node:crypto';
-import { assets, eq } from '@crunch/db';
-import { parseDoc } from '@crunch/doc-model';
+import { assets, eq } from '@greenfield/db';
+import { parseDoc } from '@greenfield/doc-model';
 import { getDoc } from '@/server/services/design-docs';
 import { importFigmaNodes } from '@/server/services/figma';
 import { decodeRasterDataUrl, type ImageUploader } from '@/server/services/figma/assets';

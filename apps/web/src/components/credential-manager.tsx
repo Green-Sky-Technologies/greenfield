@@ -1,6 +1,6 @@
 'use client';
 
-import type { Provider, PublicCredential } from '@crunch/providers';
+import type { Provider, PublicCredential } from '@greenfield/providers';
 import { useState, useTransition } from 'react';
 import {
   deleteCredentialAction,
@@ -227,7 +227,7 @@ function CredentialForm({
       Statement: [
         {
           Effect: 'Allow',
-          Principal: { AWS: awsPrincipalArn ?? '<CrunchDesign AWS principal ARN>' },
+          Principal: { AWS: awsPrincipalArn ?? '<Greenfield AWS principal ARN>' },
           Action: 'sts:AssumeRole',
           Condition: { StringEquals: { 'sts:ExternalId': externalId } },
         },
@@ -323,7 +323,7 @@ function CredentialForm({
                     id="roleArn"
                     name="roleArn"
                     className="input font-mono"
-                    placeholder="arn:aws:iam::123456789012:role/CrunchDesignBedrock"
+                    placeholder="arn:aws:iam::123456789012:role/GreenfieldBedrock"
                     required
                   />
                   {err('roleArn')}

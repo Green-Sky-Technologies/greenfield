@@ -14,7 +14,7 @@ import {
   nodeTag,
   sizingMode,
   type SizingMode,
-} from '@crunch/canvas';
+} from '@greenfield/canvas';
 import {
   STYLE_PROPS,
   isTokenRef,
@@ -23,7 +23,7 @@ import {
   type InstanceNode,
   type StylePropName,
   type TextNode,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { useState } from 'react';
 import { useDocStoreApi, useEditor } from '../doc-store';
 import { useCanvas } from './canvas-store';

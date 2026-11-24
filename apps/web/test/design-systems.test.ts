@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { designSystems, eq } from '@crunch/db';
-import { starterDesignSystem, type ComponentDef } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { designSystems, eq } from '@greenfield/db';
+import { starterDesignSystem, type ComponentDef } from '@greenfield/doc-model';
 import {
   archiveDesignSystem,
   createDesignSystem,

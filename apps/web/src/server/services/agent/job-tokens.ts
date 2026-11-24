@@ -3,8 +3,8 @@
  * provider credential. Only the SHA-256 hash is stored; the plaintext is returned once.
  * Revocation is immediate: every request re-checks the row and the job's status.
  */
-import { TERMINAL_STATUSES, type JobStatus } from '@crunch/contracts';
-import { and, eq, isNull, jobs, jobTokens, type Db, type JobRow } from '@crunch/db';
+import { TERMINAL_STATUSES, type JobStatus } from '@greenfield/contracts';
+import { and, eq, isNull, jobs, jobTokens, type Db, type JobRow } from '@greenfield/db';
 import { createHash, randomBytes } from 'node:crypto';
 
 export const JOB_TOKEN_PREFIX = 'cjt_';

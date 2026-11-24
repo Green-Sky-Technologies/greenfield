@@ -2,7 +2,7 @@
  * Compact views of a DesignDoc for the model (SPEC §2.3): an outline of the whole document and
  * full JSON for just the relevant subtree. The model never gets the whole doc for a local change.
  */
-import { walk, type DesignDoc, type Node } from '@crunch/doc-model';
+import { walk, type DesignDoc, type Node } from '@greenfield/doc-model';
 
 const SHORT_TEXT = 48;
 

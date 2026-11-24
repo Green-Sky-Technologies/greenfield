@@ -25,8 +25,8 @@ import {
   widthToPin,
   type ChildBox,
   type Rect,
-} from '@crunch/canvas';
-import type { Breakpoint, DesignDoc, DesignSystemSpec, DocOp } from '@crunch/doc-model';
+} from '@greenfield/canvas';
+import type { Breakpoint, DesignDoc, DesignSystemSpec, DocOp } from '@greenfield/doc-model';
 import type { DocStore } from '../doc-store';
 import { gestureBreakpoint, type CanvasStore } from './canvas-store';
 import { frameIndex } from './context';

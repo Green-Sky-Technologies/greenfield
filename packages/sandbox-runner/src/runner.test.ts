@@ -54,7 +54,7 @@ describe('VercelSandboxRunner', () => {
         ANTHROPIC_BASE_URL: 'https://app.example.com/api/llm',
         ANTHROPIC_AUTH_TOKEN: 'cjt_test-token',
         ANTHROPIC_MODEL: 'claude-opus-5-5',
-        CRUNCH_JOB_ID: job.jobId,
+        GREENFIELD_JOB_ID: job.jobId,
       },
     });
     expect(rec.params.env).not.toHaveProperty('ANTHROPIC_API_KEY');
@@ -112,7 +112,7 @@ describe('assertNoSecrets patterns (defense in depth)', () => {
       assertNoSecrets(
         {
           ANTHROPIC_AUTH_TOKEN: 'cjt_' + 'a'.repeat(43),
-          CRUNCH_JOB_ID: '11111111-1111-4111-8111-111111111111',
+          GREENFIELD_JOB_ID: '11111111-1111-4111-8111-111111111111',
           ANTHROPIC_MODEL: 'claude-opus-5-5',
         },
         [
@@ -129,7 +129,7 @@ describe('assertNoSecrets patterns (defense in depth)', () => {
 
 describe('sandbox entrypoint', () => {
   async function load() {
-    const dir = mkdtempSync(join(tmpdir(), 'crunch-entry-'));
+    const dir = mkdtempSync(join(tmpdir(), 'greenfield-entry-'));
     const file = join(dir, 'entry.mjs');
     writeFileSync(file, ENTRYPOINT_SOURCE);
     return (await import(pathToFileURL(file).href)) as {
@@ -138,7 +138,7 @@ describe('sandbox entrypoint', () => {
   }
 
   const env = {
-    CRUNCH_API_URL: 'https://app.example.com',
+    GREENFIELD_API_URL: 'https://app.example.com',
     ANTHROPIC_AUTH_TOKEN: 'cjt_tok',
     ANTHROPIC_MODEL: 'claude-opus-5-5',
   };
@@ -167,7 +167,7 @@ describe('sandbox entrypoint', () => {
         yield { type: 'assistant', message: { content: [{ type: 'text', text: 'Building' }] } };
         yield {
           type: 'assistant',
-          message: { content: [{ type: 'tool_use', name: 'mcp__crunch__insert_frame' }] },
+          message: { content: [{ type: 'tool_use', name: 'mcp__greenfield__insert_frame' }] },
         };
         yield { type: 'result', subtype: 'success', result: 'Created 1 frame' };
       })();
@@ -176,11 +176,11 @@ describe('sandbox entrypoint', () => {
     expect(code).toBe(0);
     expect(options).toMatchObject({
       tools: [],
-      allowedTools: ['mcp__crunch__insert_frame'],
+      allowedTools: ['mcp__greenfield__insert_frame'],
       permissionMode: 'dontAsk',
       settingSources: [],
       mcpServers: {
-        crunch: {
+        greenfield: {
           type: 'http',
           url: 'https://app.example.com/api/jobs/j1/mcp',
           headers: { authorization: 'Bearer cjt_tok' },

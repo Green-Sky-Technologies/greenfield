@@ -5,7 +5,7 @@
  * Calling it ends the turn; the tool_result stays pending until the user answers, then the
  * answers go back as that tool_result and the agent continues.
  *
- * Client-safe (zod only): the browser imports this through `@crunch/agent/questions`.
+ * Client-safe (zod only): the browser imports this through `@greenfield/agent/questions`.
  */
 import { z } from 'zod';
 

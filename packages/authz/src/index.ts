@@ -1,5 +1,5 @@
 /**
- * CrunchDesign roles and permissions. The only source of truth for what each role may do.
+ * Greenfield roles and permissions. The only source of truth for what each role may do.
  *
  * Roles come from the Clerk organization role in the session:
  *   org:admin  -> admin

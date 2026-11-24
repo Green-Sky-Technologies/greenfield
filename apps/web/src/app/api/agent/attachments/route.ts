@@ -3,8 +3,8 @@
  * Uploads an image for a chat message to Vercel Blob and records it in `assets`.
  * The URL is unguessable (random suffix) and public so the model provider can fetch it.
  */
-import { assertCan } from '@crunch/authz';
-import { assets, getDb } from '@crunch/db';
+import { assertCan } from '@greenfield/authz';
+import { assets, getDb } from '@greenfield/db';
 import { put } from '@vercel/blob';
 import { NextResponse } from 'next/server';
 import { apiActor, apiError } from '@/server/api';

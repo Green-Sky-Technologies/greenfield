@@ -1,11 +1,11 @@
 /**
- * POST /api/agent/edit: the requestAgentEdit contract (Story 5.7, @crunch/contracts agent-edit).
+ * POST /api/agent/edit: the requestAgentEdit contract (Story 5.7, @greenfield/contracts agent-edit).
  *   <- AgentEditRequest { projectId, frameId, nodeId, prompt, commentThreadId?, allowWiderScope? }
  *   -> AgentEditResponse { conversationId, messageId, streamUrl }
  * The edit runs after the response; follow it on streamUrl (SSE). Requires agent:run.
  */
-import { agentEditResponse } from '@crunch/contracts';
-import { getDb } from '@crunch/db';
+import { agentEditResponse } from '@greenfield/contracts';
+import { getDb } from '@greenfield/db';
 import { after, NextResponse } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { runAssistantMessage } from '@/server/services/agent';

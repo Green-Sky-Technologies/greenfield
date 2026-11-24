@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { applyOps, sampleLandingDoc, type Slider } from '@crunch/doc-model';
+import { applyOps, sampleLandingDoc, type Slider } from '@greenfield/doc-model';
 import { mapBinding, sliderOps, snap } from './sliders';
 
 const density: Slider = {

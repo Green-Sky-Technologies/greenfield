@@ -1,5 +1,5 @@
 /** POST /api/comments/:threadId/replies  <- { body, mentions? }  -> { thread } */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { replyToThread } from '@/server/services/comments';

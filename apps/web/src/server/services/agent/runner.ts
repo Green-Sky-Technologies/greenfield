@@ -9,16 +9,17 @@ import {
   resolveModel,
   serializeDesignSystem,
   systemPromptFor,
-} from '@crunch/agent';
-import type { JobRunner, StartJob } from '@crunch/contracts';
-import { agentMessages, eq, jobs, type Db } from '@crunch/db';
-import { VercelSandboxRunner, type PreparedJob, type SandboxApi } from '@crunch/sandbox-runner';
+} from '@greenfield/agent';
+import type { JobRunner, StartJob } from '@greenfield/contracts';
+import { agentMessages, eq, jobs, type Db } from '@greenfield/db';
+import { VercelSandboxRunner, type PreparedJob, type SandboxApi } from '@greenfield/sandbox-runner';
 import { getDoc } from '../design-docs';
 import { jobActor } from '../jobs';
 import { resolveProjectDesignSystem } from '../project-design-system';
 import { getProject } from '../projects';
 import { issueJobToken } from './job-tokens';
 import { getModelSettings } from './model-settings';
+import { readEnv } from '@/server/env';
 
 /** Slack on top of the job timeout before its token expires. */
 const TOKEN_SLACK_SECONDS = 10 * 60;
@@ -62,12 +63,13 @@ export async function prepareJob(db: Db, job: StartJob): Promise<PreparedJob> {
 }
 
 /**
- * Base URL sandboxes call back to (LLM proxy, job API). CRUNCH_APP_URL wins. Otherwise a preview
+ * Base URL sandboxes call back to (LLM proxy, job API). GREENFIELD_APP_URL wins. Otherwise a preview
  * deployment calls back to itself (VERCEL_URL), never to production; production uses its
  * production URL.
  */
 export function appUrl(env: Record<string, string | undefined> = process.env): string {
-  if (env.CRUNCH_APP_URL) return env.CRUNCH_APP_URL.replace(/\/+$/, '');
+  const configured = readEnv('GREENFIELD_APP_URL', env);
+  if (configured) return configured.replace(/\/+$/, '');
   if (env.VERCEL_ENV === 'production' && env.VERCEL_PROJECT_PRODUCTION_URL)
     return `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;
   if (env.VERCEL_URL) return `https://${env.VERCEL_URL}`;
@@ -76,7 +78,7 @@ export function appUrl(env: Record<string, string | undefined> = process.env): s
 
 const bypass = () => process.env.VERCEL_AUTOMATION_BYPASS_SECRET || undefined;
 
-const g = globalThis as unknown as { __crunchJobRunner?: JobRunner };
+const g = globalThis as unknown as { __greenfieldJobRunner?: JobRunner };
 
 /** The app's JobRunner. Tests pass their own; `api` lets local dev inject a fake sandbox. */
 export function jobRunner(db: Db, opts: { api?: SandboxApi } = {}): JobRunner {
@@ -87,7 +89,7 @@ export function jobRunner(db: Db, opts: { api?: SandboxApi } = {}): JobRunner {
       protectionBypassSecret: bypass(),
       prepare: (j) => prepareJob(db, j),
     });
-  return (g.__crunchJobRunner ??= new VercelSandboxRunner({
+  return (g.__greenfieldJobRunner ??= new VercelSandboxRunner({
     appUrl: appUrl(),
     protectionBypassSecret: bypass(),
     prepare: (j) => prepareJob(db, j),

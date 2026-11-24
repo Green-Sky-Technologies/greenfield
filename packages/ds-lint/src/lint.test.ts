@@ -7,7 +7,7 @@ import {
   type DesignDoc,
   type Node,
   type StyleProps,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { lintDoc } from './index';
 
 type Kid = {

@@ -1,13 +1,13 @@
 /** Token sync with Figma variables (Story 8.4): diff, pull patch, push plan, sync base. */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { eq, figmaVariableLinks, projects } from '@crunch/db';
-import { starterDesignSystem, type DesignSystemSpec } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { eq, figmaVariableLinks, projects } from '@greenfield/db';
+import { starterDesignSystem, type DesignSystemSpec } from '@greenfield/doc-model';
 import {
   tokensToVariables,
   type VariablesSnapshot,
   type VariablesSpec,
-} from '@crunch/figma-convert';
+} from '@greenfield/figma-convert';
 import { syncRequest } from '@/server/services/figma/schemas';
 import {
   diffVariables,

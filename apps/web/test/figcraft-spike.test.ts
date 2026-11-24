@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
+import { ForbiddenError } from '@greenfield/authz';
 import {
   figcraftSpikeEnabled,
   loadDesignFile,
@@ -26,9 +26,9 @@ const bytes = (...b: number[]) => new Uint8Array(b);
 
 describe('figcraft spike (Story 0.1)', () => {
   it('is enabled only with the flag outside production', () => {
-    vi.stubEnv('CRUNCH_FIGCRAFT_SPIKE', '');
+    vi.stubEnv('GREENFIELD_FIGCRAFT_SPIKE', '');
     expect(figcraftSpikeEnabled()).toBe(false);
-    vi.stubEnv('CRUNCH_FIGCRAFT_SPIKE', '1');
+    vi.stubEnv('GREENFIELD_FIGCRAFT_SPIKE', '1');
     expect(figcraftSpikeEnabled()).toBe(true);
     vi.stubEnv('NODE_ENV', 'production');
     expect(figcraftSpikeEnabled()).toBe(false);

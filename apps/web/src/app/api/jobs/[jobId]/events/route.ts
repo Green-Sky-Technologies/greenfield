@@ -2,8 +2,8 @@
  * GET /api/jobs/:id/events: the job's events as SSE (id = seq). Resume with the Last-Event-ID
  * header (EventSource sends it automatically) or ?after=N. Ends with a `done` event.
  */
-import { getDb } from '@crunch/db';
-import { sseStream, SSE_HEADERS } from '@crunch/agent';
+import { getDb } from '@greenfield/db';
+import { sseStream, SSE_HEADERS } from '@greenfield/agent';
 import type { NextRequest } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { getJob, jobEventFrames, parseLastEventId } from '@/server/services/jobs';

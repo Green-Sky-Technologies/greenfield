@@ -3,9 +3,9 @@
  * Restoring applies a normal transaction after an automatic backup snapshot, so it creates a
  * new doc version, is itself undoable/restorable, and never deletes history.
  */
-import { assertCan } from '@crunch/authz';
-import { inArray, users, type Db } from '@crunch/db';
-import type { DesignDoc } from '@crunch/doc-model';
+import { assertCan } from '@greenfield/authz';
+import { inArray, users, type Db } from '@greenfield/db';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { z } from 'zod';
 import { recordActivity } from './activity';
 import type { CommitResult } from './design-docs';

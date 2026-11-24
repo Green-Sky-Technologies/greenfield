@@ -3,8 +3,8 @@
  *                      -> { job, message, eventsUrl }
  * Starts a generation job (generate / redesign / alternatives) from the chat.
  */
-import { jobEventsUrl } from '@crunch/contracts';
-import { getDb } from '@crunch/db';
+import { jobEventsUrl } from '@greenfield/contracts';
+import { getDb } from '@greenfield/db';
 import { after, NextResponse } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { startGenerationJob } from '@/server/services/agent/generation';

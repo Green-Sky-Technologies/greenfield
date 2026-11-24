@@ -1,6 +1,6 @@
 /**
  * Epic 2 (+ 5.12, 6.2): DesignDocs, the append-only op log, version snapshots, assets.
- * The DesignDoc JSON shape is defined and validated by @crunch/doc-model.
+ * The DesignDoc JSON shape is defined and validated by @greenfield/doc-model.
  */
 import {
   bigserial,

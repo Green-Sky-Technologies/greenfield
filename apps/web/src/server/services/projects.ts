@@ -1,4 +1,4 @@
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import {
   and,
   designSystems,
@@ -9,7 +9,7 @@ import {
   projects,
   type Db,
   type Project,
-} from '@crunch/db';
+} from '@greenfield/db';
 import { z } from 'zod';
 // Circular with project-design-system.ts (it imports getProject); safe because both sides only
 // call each other's functions at request time, never during module initialization.

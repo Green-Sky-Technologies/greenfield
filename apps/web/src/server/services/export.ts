@@ -3,10 +3,10 @@
  * bundle (7.2: handoff.json, or a ZIP with handoff.json + schema + reference HTML).
  * Needs export:deterministic, which Viewers have (SPEC §3, D17). Reads are workspace-scoped.
  */
-import { assertCan } from '@crunch/authz';
-import { agentConversations, and, designDocs, desc, eq, type Db } from '@crunch/db';
-import type { DesignDoc } from '@crunch/doc-model';
-import type { HandoffBundle } from '@crunch/contracts';
+import { assertCan } from '@greenfield/authz';
+import { agentConversations, and, designDocs, desc, eq, type Db } from '@greenfield/db';
+import type { DesignDoc } from '@greenfield/doc-model';
+import type { HandoffBundle } from '@greenfield/contracts';
 import {
   buildExportZip,
   buildHandoffBundle,
@@ -16,7 +16,7 @@ import {
   handoffJsonSchema,
   slugify,
   type AssetFetcher,
-} from '@crunch/handoff';
+} from '@greenfield/handoff';
 import { z } from 'zod';
 import { recordActivity } from './activity';
 import { getDoc } from './design-docs';

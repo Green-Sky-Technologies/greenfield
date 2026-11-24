@@ -6,10 +6,10 @@ import { loadEnv } from '../app/support/env';
  * WebKit and Firefox.
  *
  *   node spikes/0.1-embed/fetch-editor.mjs
- *   pnpm --filter @crunch/web exec playwright test -c e2e/figcraft-spike/playwright.config.ts
+ *   pnpm --filter @greenfield/web exec playwright test -c e2e/figcraft-spike/playwright.config.ts
  *
  * Reuses the app suite's setup/teardown (Clerk users and orgs for this run, deleted afterwards).
- * The spike is dev-only, so the web server is `next dev` with CRUNCH_FIGCRAFT_SPIKE=1 on 3101.
+ * The spike is dev-only, so the web server is `next dev` with GREENFIELD_FIGCRAFT_SPIKE=1 on 3101.
  */
 loadEnv();
 const PORT = Number(process.env.E2E_PORT ?? 3101);
@@ -51,7 +51,7 @@ export default defineConfig({
   webServer: {
     command: `pnpm exec next dev --port ${PORT}`,
     cwd: '../..',
-    env: { CRUNCH_FIGCRAFT_SPIKE: '1' },
+    env: { GREENFIELD_FIGCRAFT_SPIKE: '1' },
     url: `http://localhost:${PORT}/editor/index.html`,
     reuseExistingServer: true,
     timeout: 120_000,

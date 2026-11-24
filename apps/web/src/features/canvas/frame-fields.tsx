@@ -1,8 +1,8 @@
 'use client';
 
 /** Frame fields for the edit panel when a frame (no node) is selected (Story 3.1). */
-import { frameBreakpoint } from '@crunch/canvas';
-import type { DocOp, Frame } from '@crunch/doc-model';
+import { frameBreakpoint } from '@greenfield/canvas';
+import type { DocOp, Frame } from '@greenfield/doc-model';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';
 
 export function FrameFields({ frame }: { frame: Frame }) {

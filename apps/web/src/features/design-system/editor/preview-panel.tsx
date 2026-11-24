@@ -1,7 +1,7 @@
 'use client';
 
-import type { DesignSystemSpec } from '@crunch/doc-model';
-import { FrameView } from '@crunch/renderer/react';
+import type { DesignSystemSpec } from '@greenfield/doc-model';
+import { FrameView } from '@greenfield/renderer/react';
 import { buildPreviewDoc, PREVIEW_FRAME_ID } from '../preview-doc';
 
 /** Renders every token and component of `spec` through the real renderer (Story 4.1 AC). */

@@ -18,8 +18,8 @@ import {
   sibling,
   toggleSelection,
   topLevelSelection,
-} from '@crunch/canvas';
-import type { Tool } from '@crunch/canvas';
+} from '@greenfield/canvas';
+import type { Tool } from '@greenfield/canvas';
 import { useEffect, type RefObject } from 'react';
 import { useDocStoreApi, useEditor, type DocStore } from '../doc-store';
 import { saveEditSession, useCanvasStoreApi } from './canvas-store';

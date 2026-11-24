@@ -6,8 +6,8 @@
  * duplicate/delete actions. Moves and resizes preview locally and commit one op on release,
  * so a gesture is always a single undo step.
  */
-import { duplicateFrameOps, FRAME_PRESETS, frameRect, worldRectToScreen } from '@crunch/canvas';
-import type { Frame } from '@crunch/doc-model';
+import { duplicateFrameOps, FRAME_PRESETS, frameRect, worldRectToScreen } from '@greenfield/canvas';
+import type { Frame } from '@greenfield/doc-model';
 import { useState } from 'react';
 import { useDocStore, useDocStoreApi } from '../doc-store';
 import { useCanvas, useCanvasStoreApi } from './canvas-store';

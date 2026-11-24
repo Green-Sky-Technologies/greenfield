@@ -1,8 +1,8 @@
 /** Interactive turns never stay "streaming" forever (review #8). */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import type { Anthropic } from '@crunch/agent';
-import { agentConversations, agentMessages, eq } from '@crunch/db';
-import { MemoryJobRunner } from '@crunch/sandbox-runner';
+import type { Anthropic } from '@greenfield/agent';
+import { agentConversations, agentMessages, eq } from '@greenfield/db';
+import { MemoryJobRunner } from '@greenfield/sandbox-runner';
 import { getProjectChat, runAssistantMessage, sendMessage } from '@/server/services/agent';
 import { reapJobs } from '@/server/services/jobs';
 import { createProject } from '@/server/services/projects';

@@ -3,17 +3,17 @@
  * source 'agent' attributed to an agent message (Story 5.3 AC). Used by the interactive path and
  * by the job tool API that sandboxes call.
  */
-import { frameScopeViolation, scopeViolation, type ToolHost } from '@crunch/agent';
-import type { AgentRuntime } from '@crunch/contracts';
-import { assertCan } from '@crunch/authz';
-import { agentMessages, eq, sql, type Db } from '@crunch/db';
+import { frameScopeViolation, scopeViolation, type ToolHost } from '@greenfield/agent';
+import type { AgentRuntime } from '@greenfield/contracts';
+import { assertCan } from '@greenfield/authz';
+import { agentMessages, eq, sql, type Db } from '@greenfield/db';
 import {
   newId,
   type DesignDoc,
   type DesignSystemSpec,
   type DocOp,
   type Frame,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { commitTransaction, ConflictError, getDoc } from '../design-docs';
 import { resolveProjectDesignSystem } from '../project-design-system';
 import { getProject } from '../projects';

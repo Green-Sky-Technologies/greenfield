@@ -1,5 +1,5 @@
 /** GET /api/versions/:versionId?projectId=…  -> { version, doc } */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { NotFoundError } from '@/server/services/types';

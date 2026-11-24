@@ -3,8 +3,8 @@
  * canvas OverlayApi (so the composer can measure the selected node). One store per editor tab;
  * it's module-level because the canvas renders our overlay in its own subtree.
  */
-import type { OverlayApi } from '@crunch/contracts/canvas-overlay';
-import type { DesignDoc } from '@crunch/doc-model';
+import type { OverlayApi } from '@greenfield/contracts/canvas-overlay';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { create } from 'zustand';
 import { commentsApi, type Thread } from './api';
 
