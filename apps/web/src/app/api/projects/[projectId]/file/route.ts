@@ -6,6 +6,7 @@
  *      Both carry x-file-name (the document's name), x-storage and x-upload-prefix.
  * POST /api/projects/:projectId/file <- { key, sessionId } -> { size, storage }
  *      Commit an object the browser uploaded to Blob (./upload) as the document.
+ *      Both saves also answer `comments`: threads mirrored into comment_index, or null.
  * PUT  /api/projects/:projectId/file <- the raw bytes, x-session-id -> { size, storage }
  *      The local-folder fallback (dev and tests). On Vercel, bodies cap at 4.5 MB, so the browser
  *      uploads to Blob and POSTs the commit instead.
@@ -67,7 +68,7 @@ export async function POST(req: NextRequest, ctx: Ctx) {
     if (!body.success) throw new ValidationError('Expected { key, sessionId }');
     const storage = defaultDesignFileStorage();
     const r = await commitDesignFile(getDb(), actor, storage, { projectId, ...body.data });
-    return NextResponse.json({ size: r.size, storage: storage.kind });
+    return NextResponse.json({ size: r.size, storage: storage.kind, comments: r.comments });
   } catch (e) {
     return apiError(e);
   }
@@ -89,7 +90,7 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
       bytes,
       sessionId: req.headers.get('x-session-id'),
     });
-    return NextResponse.json({ size: r.size, storage: storage.kind });
+    return NextResponse.json({ size: r.size, storage: storage.kind, comments: r.comments });
   } catch (e) {
     return apiError(e);
   }

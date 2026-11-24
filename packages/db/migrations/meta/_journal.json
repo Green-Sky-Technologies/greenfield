@@ -43,6 +43,13 @@
       "when": 1795548351267,
       "tag": "0005_files",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1795562333107,
+      "tag": "0006_comment_index",
+      "breakpoints": true
     }
   ]
 }

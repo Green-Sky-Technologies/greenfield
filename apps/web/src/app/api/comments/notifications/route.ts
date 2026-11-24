@@ -6,7 +6,7 @@ import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { apiActor, apiError, jsonBody } from '@/server/api';
-import { listNotifications, markNotificationsRead } from '@/server/services/comments';
+import { listNotifications, markNotificationsRead } from '@/server/services/notifications';
 import { ValidationError } from '@/server/services/types';
 
 const readBody = z.union([

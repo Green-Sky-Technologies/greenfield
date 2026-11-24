@@ -18,6 +18,7 @@ import { randomUUID } from 'node:crypto';
 import { createReadStream } from 'node:fs';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { mirrorFileComments } from './comments';
 import { Readable } from 'node:stream';
 import { EDIT_LOCK_TTL_MS } from './locks';
 import { getProject } from './projects';
@@ -275,13 +276,14 @@ export async function authorizeDesignFileUpload(
  * Make an uploaded object the project's document. Refused (ConflictError) when the caller's tab
  * no longer holds the edit lock; the refused object is deleted and the stored document is
  * untouched. The previous object is deleted once the row has moved (versions are Story 3.3).
+ * Then its comment threads are mirrored into comment_index (Story 6.1).
  */
 export async function commitDesignFile(
   db: Db,
   actor: Actor,
   storage: DesignFileStorage,
-  input: { projectId: string; key: unknown; sessionId: unknown },
-): Promise<{ size: number }> {
+  input: { projectId: string; key: unknown; sessionId: unknown; bytes?: Uint8Array },
+): Promise<{ size: number; comments: number | null }> {
   const sessionId = checkSession(input.sessionId);
   const project = await editableProject(db, actor, input.projectId);
   const key = checkSaveKey(actor, project.id, input.key);
@@ -326,7 +328,11 @@ export async function commitDesignFile(
     throw new ConflictError(STALE_LOCK);
   }
   if (r.current !== key) await storage.delete(r.current).catch(() => {});
-  return { size: stored.size };
+  const bytes = input.bytes ?? (await readAll(storage, key));
+  const mirrored = bytes
+    ? await mirrorFileComments(db, actor, { projectId: project.id, bytes })
+    : null;
+  return { size: stored.size, comments: mirrored?.threads ?? null };
 }
 
 /** Save bytes the server received (the local fallback, and small files): write, then commit. */
@@ -335,14 +341,19 @@ export async function saveDesignFile(
   actor: Actor,
   storage: DesignFileStorage,
   input: { projectId: string; bytes: Uint8Array; sessionId: unknown },
-): Promise<{ size: number }> {
+): Promise<{ size: number; comments: number | null }> {
   const sessionId = checkSession(input.sessionId);
   const project = await checkCanSave(db, actor, input.projectId, sessionId);
   if (input.bytes.byteLength === 0) throw new ValidationError('Empty file');
   if (input.bytes.byteLength > MAX_DESIGN_FILE_BYTES) throw new ValidationError('File too large');
   const key = newDesignFileKey(actor.workspace.id, project.id);
   await storage.put(key, input.bytes);
-  return commitDesignFile(db, actor, storage, { projectId: project.id, key, sessionId });
+  return commitDesignFile(db, actor, storage, {
+    projectId: project.id,
+    key,
+    sessionId,
+    bytes: input.bytes,
+  });
 }
 
 /** Copy one project's document to another (duplicating a project). No-op when there is none. */
@@ -366,4 +377,10 @@ export async function copyDesignFile(
     .insert(files)
     .values({ ...row, workspaceId: actor.workspace.id, projectId: to.id })
     .onConflictDoUpdate({ target: files.projectId, set: { ...row, updatedAt: new Date() } });
+}
+
+/** The whole object at `key`, or null when it's gone. */
+async function readAll(storage: DesignFileStorage, key: string): Promise<Uint8Array | null> {
+  const r = await storage.read(key);
+  return r ? new Uint8Array(await new Response(r.body).arrayBuffer()) : null;
 }

@@ -80,6 +80,19 @@ Control
 
 Every control call takes `{ timeoutMs }` (default 35 s; the editor itself gives up after 30 s).
 
+### Comments (Story 6.1)
+
+Comment threads live in the `.figcraft` file (D23). Typed helpers over `comment.*`:
+`addComment(editor, {x, y, text, anchor?, author?})`, `replyToComment`, `resolveComment`,
+`deleteComment` and `listComments` (`CommentThread[]`: page, `anchor` layer, pin `x`/`y`, author,
+replies, mentions, resolved). A thread pinned to a layer stores its offset from that layer, so it
+follows the layer when it moves. Thread ids are per document and reused after a delete; only a
+message's author may edit or delete it (pass `author` to act as someone else).
+
+`readFileComments(bytes)` from `@greenfield/bridge/file` reads the threads out of saved bytes
+without an editor (the zip's `document.json`, format `figcraft` version 1); the server mirrors
+them into `comment_index` on every save. It returns null for anything else.
+
 ### Errors
 
 All extend `BridgeError` (`code` in parentheses):
@@ -198,6 +211,7 @@ pnpm --filter @greenfield/bridge test     # unit: mock, host messages, control, 
 pnpm --filter @greenfield/bridge e2e      # real editor in Chromium, WebKit and Firefox (port 3103)
 ```
 
-The e2e suite covers execute, batch (references, one undo step, rollback, continue), typed
+The e2e suite covers comments (a pin follows its layer when it moves, before and after a save
+and reopen; the saved file carries the threads), execute, batch (references, one undo step, rollback, continue), typed
 errors, inspect, render, open → edit → save → reopen (including the platform save chord),
 change detection of a control-channel edit, and `EditorHiddenError`.

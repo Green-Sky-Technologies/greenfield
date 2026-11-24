@@ -31,7 +31,8 @@ Read `SPEC.md` for product scope. Stories are referenced by number (e.g. "Story 
   variables and styles), not in the app chrome.
 - **The editor** is FigCraft, served from `/editor/` (downloaded by `apps/web/scripts/fetch-editor.mjs`,
   pinned by sha256, gitignored) and embedded on the project page. App code talks to it only
-  through `packages/bridge` (Story 1.3). A project's file goes through `services/design-files`.
+  through `packages/bridge` (Story 1.3). A project's file goes through `services/design-files`;
+  each save mirrors its comment threads into `comment_index` (`services/comments`, Story 6.1).
 - **The agent** runs interactive turns (Stories 4.1, 4.2): the server runs the model one step at
   a time (`services/agent/turn.ts`); tool calls go to the sender's editor tab over SSE and run
   there through `ToolRunner` (`features/agent`) and `executeTool` in `@greenfield/contracts`.

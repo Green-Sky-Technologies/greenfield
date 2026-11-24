@@ -1,114 +1,201 @@
 /**
- * Comment threads (Story 6.1) and ask-agent threads (Story 5.7, UI side).
+ * Comments (Story 6.1). Threads live in the project's `.figcraft` file (D23): people write,
+ * reply, resolve and delete them in the editor's own comment UI, anchored to layer ids so they
+ * follow their layer. Every save mirrors the file's threads into `comment_index`, which
+ * notifications and @mentions (6.3) read without opening the file.
  *
- * - A thread is anchored to a node (`{ type: 'node', frameId, nodeId, offset? }`) or to a canvas
- *   position (`{ type: 'canvas', x, y }`). Node anchors reference the stable node id, so threads
- *   follow the node when it moves or is restyled.
- * - `fallback` is the last known canvas position, measured by the client.
- * - Node anchors are not checked against the document, which lives in the editor rather than
- *   Postgres (Story 1.2 removed the HTML model's checks; Epic 6 moves comments into the file).
- * - @mentions are validated against workspace members and create in-app notifications.
- * - Reading needs project:read; writing needs design:comment (viewers can't comment);
- *   agent_request threads also need agent:run.
+ * The server reads the threads out of the saved bytes rather than trusting a list the client
+ * sends with the save: the file is the record, and the mirror can't drift from it.
+ *
+ * Comments reach the server only inside a saved file, so writing them takes what saving takes
+ * (`design:edit`, not archived). Viewers can't: their role is view-only (`design:comment` is
+ * editors' and admins'), and their editor never saves.
  */
 import { assertCan } from '@greenfield/authz';
 import {
-  agentConversations,
   and,
   asc,
-  commentThreads,
-  comments,
-  desc,
+  commentIndex,
   eq,
   inArray,
-  isNull,
   members,
-  notifications,
-  projects,
+  sql,
   users,
-  type CommentRow,
-  type CommentThreadRow,
+  type CommentIndexRow,
   type Db,
+  type IndexedCommentReply,
 } from '@greenfield/db';
-import { z } from 'zod';
-import { recordActivity } from './activity';
+import { readFileComments, type FileCommentThread } from '@greenfield/bridge/file';
 import { getProject } from './projects';
-import { NotFoundError, ValidationError, type Actor } from './types';
+import { ValidationError, type Actor } from './types';
 
-/** Editor node id (opaque to the server: the document lives in the editor). */
-const nodeIdSchema = z.string().min(1).max(64);
-const point = z.object({ x: z.number().finite(), y: z.number().finite() }).strict();
-
-export const commentAnchor = z.discriminatedUnion('type', [
-  z
-    .object({
-      type: z.literal('node'),
-      frameId: nodeIdSchema,
-      nodeId: nodeIdSchema,
-      offset: point.optional(),
-    })
-    .strict(),
-  z.object({ type: z.literal('canvas'), x: z.number().finite(), y: z.number().finite() }).strict(),
-]);
-export type CommentAnchor = z.infer<typeof commentAnchor>;
-export type CanvasPoint = z.infer<typeof point>;
-
-const body = z.string().trim().min(1, 'Write a comment').max(5000);
-const mentionList = z.array(z.string().min(1).max(64)).max(20).default([]);
-
-const createThreadInput = z
-  .object({
-    projectId: z.string(),
-    anchor: commentAnchor,
-    body,
-    mentions: mentionList,
-    kind: z.enum(['discussion', 'agent_request']).default('discussion'),
-    /** Canvas position of the anchor when created (client-measured); used if the node is deleted. */
-    fallback: point.optional(),
-  })
-  .strict();
-
-const replyInput = z.object({ body, mentions: mentionList }).strict();
-
-export interface CommentView {
-  id: string;
-  authorType: CommentRow['authorType'];
-  authorId: string;
-  authorName: string | null;
+export interface CommentThreadView {
+  threadId: number;
+  pageId: number;
+  nodeId: number | null;
+  author: string;
+  authorId: string | null;
   body: string;
-  mentions: string[];
+  replies: IndexedCommentReply[];
+  resolved: boolean;
   createdAt: Date;
+  updatedAt: Date;
 }
 
-export interface ThreadView {
-  id: string;
-  projectId: string;
-  kind: CommentThreadRow['kind'];
-  status: CommentThreadRow['status'];
-  anchor: CommentAnchor;
-  fallback: CanvasPoint | null;
-  agentConversationId: string | null;
-  createdBy: string;
-  createdAt: Date;
-  resolvedBy: string | null;
-  resolvedAt: Date | null;
-  comments: CommentView[];
+const toView = (r: CommentIndexRow): CommentThreadView => ({
+  threadId: r.threadId,
+  pageId: r.pageId,
+  nodeId: r.nodeId,
+  author: r.author,
+  authorId: r.authorId,
+  body: r.body,
+  replies: r.replies,
+  resolved: r.resolved,
+  createdAt: r.createdAt,
+  updatedAt: r.updatedAt,
+});
+
+/** The project's mirrored threads, oldest first. */
+export async function listComments(
+  db: Db,
+  actor: Actor,
+  projectId: string,
+  opts: { resolved?: boolean } = {},
+): Promise<CommentThreadView[]> {
+  const project = await getProject(db, actor, projectId); // project:read, workspace-scoped
+  const rows = await db
+    .select()
+    .from(commentIndex)
+    .where(
+      and(
+        eq(commentIndex.projectId, project.id),
+        eq(commentIndex.workspaceId, actor.workspace.id),
+        opts.resolved === undefined ? undefined : eq(commentIndex.resolved, opts.resolved),
+      ),
+    )
+    .orderBy(asc(commentIndex.createdAt), asc(commentIndex.threadId));
+  return rows.map(toView);
 }
 
-function parse<T>(schema: z.ZodType<T>, input: unknown): T {
-  const r = schema.safeParse(input);
-  if (!r.success) {
-    const fieldErrors: Record<string, string[]> = {};
-    for (const issue of r.error.issues) {
-      const k = issue.path.join('.') || '_';
-      (fieldErrors[k] ??= []).push(issue.message);
+/**
+ * Mirror the threads in a saved file into `comment_index`: new threads are added, changed ones
+ * updated, and ones gone from the file removed. Idempotent: a later save repairs a missed one.
+ * Bytes that aren't a readable `.figcraft` document leave the index as it was (returns null).
+ */
+export async function mirrorFileComments(
+  db: Db,
+  actor: Actor,
+  input: { projectId: string; bytes: Uint8Array },
+): Promise<{ threads: number } | null> {
+  assertCan(actor.role, 'design:edit');
+  const project = await getProject(db, actor, input.projectId);
+  if (project.archivedAt)
+    throw new ValidationError('This project is archived. Restore it to edit.');
+  const threads = await readFileComments(input.bytes);
+  if (!threads) return null;
+
+  const memberIds = await membersByName(db, actor, threads);
+  const id = (name: string) => memberIds.get(name) ?? null;
+  // Thread ids are unique in a file the editor wrote; keep the last if one isn't. Ids that
+  // don't fit the int columns can't come from the editor either.
+  const fits = (n: number | null) => n === null || (n >= 0 && n <= INT4_MAX);
+  const byId = new Map(
+    threads.filter((t) => fits(t.id) && fits(t.page) && fits(t.anchor)).map((t) => [t.id, t]),
+  );
+  const rows = [...byId.values()].map((t) => ({
+    workspaceId: actor.workspace.id,
+    projectId: project.id,
+    threadId: t.id,
+    pageId: t.page,
+    nodeId: t.anchor,
+    author: t.author,
+    authorId: id(t.author),
+    body: t.text,
+    replies: t.replies.map((r) => ({
+      author: r.author,
+      authorId: id(r.author),
+      text: r.text,
+      createdAt: date(r.created).toISOString(),
+      editedAt: r.edited ? date(r.edited).toISOString() : null,
+    })),
+    resolved: t.resolved,
+    createdAt: date(t.created),
+    updatedAt: date(latest(t)),
+  }));
+
+  await db.transaction(async (tx) => {
+    const existing = await tx
+      .select({
+        id: commentIndex.id,
+        threadId: commentIndex.threadId,
+        createdAt: commentIndex.createdAt,
+      })
+      .from(commentIndex)
+      .where(eq(commentIndex.projectId, project.id));
+    // Gone from the file, or the editor reused the id for a new thread: drop the old row.
+    const created = new Map(rows.map((r) => [r.threadId, r.createdAt.getTime()]));
+    const stale = existing
+      .filter((e) => created.get(e.threadId) !== e.createdAt.getTime())
+      .map((e) => e.id);
+    for (let i = 0; i < stale.length; i += CHUNK)
+      await tx.delete(commentIndex).where(inArray(commentIndex.id, stale.slice(i, i + CHUNK)));
+
+    for (let i = 0; i < rows.length; i += CHUNK) {
+      await tx
+        .insert(commentIndex)
+        .values(rows.slice(i, i + CHUNK))
+        .onConflictDoUpdate({
+          target: [commentIndex.projectId, commentIndex.threadId],
+          set: {
+            pageId: sql`excluded.page_id`,
+            nodeId: sql`excluded.node_id`,
+            author: sql`excluded.author`,
+            authorId: sql`excluded.author_id`,
+            body: sql`excluded.body`,
+            replies: sql`excluded.replies`,
+            resolved: sql`excluded.resolved`,
+            updatedAt: sql`excluded.updated_at`,
+            indexedAt: sql`now()`,
+          },
+        });
     }
-    throw new ValidationError(r.error.issues[0]?.message ?? 'Invalid input', fieldErrors);
-  }
-  return r.data;
+  });
+  return { threads: rows.length };
 }
 
-/** Workspace members a comment may mention (for autocomplete and validation). */
+const CHUNK = 500;
+const INT4_MAX = 2_147_483_647;
+
+const date = (unixSeconds: number) => new Date(unixSeconds * 1000);
+
+function latest(t: FileCommentThread): number {
+  return Math.max(...[t, ...t.replies].map((m) => Math.max(m.created, m.edited ?? 0)));
+}
+
+/**
+ * The editor knows authors by display name. Map each name to the workspace member who has it,
+ * when exactly one does; other names (guests, the agent, duplicates) stay unmatched.
+ */
+async function membersByName(
+  db: Db,
+  actor: Actor,
+  threads: FileCommentThread[],
+): Promise<Map<string, string>> {
+  const names = [...new Set(threads.flatMap((t) => [t.author, ...t.replies.map((r) => r.author)]))];
+  if (!names.length) return new Map();
+  const rows = await db
+    .select({ userId: members.userId, name: users.name })
+    .from(members)
+    .innerJoin(users, eq(users.id, members.userId))
+    .where(and(eq(members.workspaceId, actor.workspace.id), inArray(users.name, names)));
+  const byName = new Map<string, string[]>();
+  for (const r of rows) if (r.name) byName.set(r.name, [...(byName.get(r.name) ?? []), r.userId]);
+  return new Map(
+    [...byName].flatMap(([name, ids]) => (ids.length === 1 ? [[name, ids[0]!] as const] : [])),
+  );
+}
+
+/** Workspace members a comment may mention, and the people shown in the top bar. */
 export async function listMentionableMembers(
   db: Db,
   actor: Actor,
@@ -128,389 +215,4 @@ export async function listMentionableMembers(
     .where(eq(members.workspaceId, actor.workspace.id))
     .orderBy(asc(users.name), asc(members.userId))
     .limit(500);
-}
-
-/** Keep only mentions of real workspace members, minus the author. */
-async function validMentions(db: Db, actor: Actor, ids: string[]): Promise<string[]> {
-  const unique = [...new Set(ids)].filter((id) => id !== actor.userId);
-  if (!unique.length) return [];
-  const rows = await db
-    .select({ userId: members.userId })
-    .from(members)
-    .where(and(eq(members.workspaceId, actor.workspace.id), inArray(members.userId, unique)));
-  const ok = new Set(rows.map((r) => r.userId));
-  return unique.filter((id) => ok.has(id));
-}
-
-async function notifyMentions(
-  db: Db,
-  actor: Actor,
-  args: { projectId: string; threadId: string; commentId: string; body: string; ids: string[] },
-) {
-  if (!args.ids.length) return;
-  await db.insert(notifications).values(
-    args.ids.map((userId) => ({
-      workspaceId: actor.workspace.id,
-      userId,
-      kind: 'mention',
-      projectId: args.projectId,
-      data: {
-        threadId: args.threadId,
-        commentId: args.commentId,
-        by: actor.userId,
-        excerpt: args.body.slice(0, 200),
-      },
-    })),
-  );
-}
-
-async function getThreadRow(db: Db, actor: Actor, threadId: string): Promise<CommentThreadRow> {
-  assertCan(actor.role, 'project:read');
-  if (!z.uuid().safeParse(threadId).success) throw new NotFoundError('Thread not found');
-  const [row] = await db
-    .select()
-    .from(commentThreads)
-    .where(and(eq(commentThreads.id, threadId), eq(commentThreads.workspaceId, actor.workspace.id)))
-    .limit(1);
-  if (!row) throw new NotFoundError('Thread not found');
-  return row;
-}
-
-export const ARCHIVED_MESSAGE = 'This project is archived. Restore it to comment.';
-
-/** A thread the caller may change: in their workspace and in a project that isn't archived. */
-async function getMutableThreadRow(
-  db: Db,
-  actor: Actor,
-  threadId: string,
-): Promise<CommentThreadRow> {
-  const row = await getThreadRow(db, actor, threadId);
-  const [p] = await db
-    .select({ archivedAt: projects.archivedAt })
-    .from(projects)
-    .where(and(eq(projects.id, row.projectId), eq(projects.workspaceId, actor.workspace.id)))
-    .limit(1);
-  if (!p) throw new NotFoundError('Thread not found');
-  if (p.archivedAt) throw new ValidationError(ARCHIVED_MESSAGE);
-  return row;
-}
-
-async function hydrate(db: Db, threads: CommentThreadRow[]): Promise<ThreadView[]> {
-  if (!threads.length) return [];
-  const rows = await db
-    .select({
-      id: comments.id,
-      threadId: comments.threadId,
-      authorType: comments.authorType,
-      authorId: comments.authorId,
-      authorName: users.name,
-      authorEmail: users.email,
-      body: comments.body,
-      mentions: comments.mentions,
-      createdAt: comments.createdAt,
-    })
-    .from(comments)
-    .leftJoin(users, eq(users.id, comments.authorId))
-    .where(
-      and(
-        inArray(
-          comments.threadId,
-          threads.map((t) => t.id),
-        ),
-        isNull(comments.deletedAt),
-      ),
-    )
-    .orderBy(asc(comments.createdAt), asc(comments.id));
-  const byThread = new Map<string, CommentView[]>();
-  for (const r of rows) {
-    const list = byThread.get(r.threadId) ?? [];
-    list.push({
-      id: r.id,
-      authorType: r.authorType,
-      authorId: r.authorId,
-      authorName: r.authorName ?? r.authorEmail ?? null,
-      body: r.body,
-      mentions: r.mentions,
-      createdAt: r.createdAt,
-    });
-    byThread.set(r.threadId, list);
-  }
-  return threads.map((t) => {
-    const anchor = commentAnchor.parse(t.anchor);
-    const fb = point.safeParse(t.fallback);
-    return {
-      id: t.id,
-      projectId: t.projectId,
-      kind: t.kind,
-      status: t.status,
-      anchor,
-      fallback: fb.success ? fb.data : null,
-      agentConversationId: t.agentConversationId,
-      createdBy: t.createdBy,
-      createdAt: t.createdAt,
-      resolvedBy: t.resolvedBy,
-      resolvedAt: t.resolvedAt,
-      comments: byThread.get(t.id) ?? [],
-    };
-  });
-}
-
-export async function listThreads(
-  db: Db,
-  actor: Actor,
-  projectId: string,
-  opts: { status?: 'open' | 'resolved' } = {},
-): Promise<ThreadView[]> {
-  assertCan(actor.role, 'project:read');
-  await getProject(db, actor, projectId); // scopes the project to the workspace
-  const threads = await db
-    .select()
-    .from(commentThreads)
-    .where(
-      and(
-        eq(commentThreads.projectId, projectId),
-        eq(commentThreads.workspaceId, actor.workspace.id),
-        opts.status ? eq(commentThreads.status, opts.status) : undefined,
-      ),
-    )
-    .orderBy(desc(commentThreads.createdAt))
-    .limit(500);
-  return hydrate(db, threads);
-}
-
-export async function getThread(db: Db, actor: Actor, threadId: string): Promise<ThreadView> {
-  const row = await getThreadRow(db, actor, threadId);
-  return (await hydrate(db, [row]))[0]!;
-}
-
-export async function createThread(db: Db, actor: Actor, input: unknown): Promise<ThreadView> {
-  assertCan(actor.role, 'design:comment');
-  const data = parse(createThreadInput, input);
-  if (data.kind === 'agent_request') assertCan(actor.role, 'agent:run');
-  const project = await getProject(db, actor, data.projectId);
-  if (project.archivedAt) throw new ValidationError(ARCHIVED_MESSAGE);
-  const fallback: CanvasPoint | null =
-    data.anchor.type === 'node' ? (data.fallback ?? null) : { x: data.anchor.x, y: data.anchor.y };
-  const mentions = await validMentions(db, actor, data.mentions);
-
-  const { thread, comment } = await db.transaction(async (tx) => {
-    const [thread] = await tx
-      .insert(commentThreads)
-      .values({
-        workspaceId: actor.workspace.id,
-        projectId: project.id,
-        kind: data.kind,
-        anchor: data.anchor,
-        fallback,
-        createdBy: actor.userId,
-      })
-      .returning();
-    const [comment] = await tx
-      .insert(comments)
-      .values({
-        threadId: thread!.id,
-        workspaceId: actor.workspace.id,
-        authorId: actor.userId,
-        body: data.body,
-        mentions,
-      })
-      .returning();
-    return { thread: thread!, comment: comment! };
-  });
-  await notifyMentions(db, actor, {
-    projectId: project.id,
-    threadId: thread.id,
-    commentId: comment.id,
-    body: data.body,
-    ids: mentions,
-  });
-  await recordActivity(db, actor, {
-    projectId: project.id,
-    verb: data.kind === 'agent_request' ? 'comment.agent_requested' : 'comment.created',
-    targetType: 'comment_thread',
-    targetId: thread.id,
-    data: { excerpt: data.body.slice(0, 140) },
-  });
-  return (await hydrate(db, [thread]))[0]!;
-}
-
-export async function replyToThread(
-  db: Db,
-  actor: Actor,
-  threadId: string,
-  input: unknown,
-): Promise<ThreadView> {
-  assertCan(actor.role, 'design:comment');
-  const data = parse(replyInput, input);
-  const thread = await getMutableThreadRow(db, actor, threadId);
-  const mentions = await validMentions(db, actor, data.mentions);
-  const [comment] = await db
-    .insert(comments)
-    .values({
-      threadId: thread.id,
-      workspaceId: actor.workspace.id,
-      authorId: actor.userId,
-      body: data.body,
-      mentions,
-    })
-    .returning();
-  await db
-    .update(commentThreads)
-    .set({ updatedAt: new Date() })
-    .where(eq(commentThreads.id, thread.id));
-  await notifyMentions(db, actor, {
-    projectId: thread.projectId,
-    threadId: thread.id,
-    commentId: comment!.id,
-    body: data.body,
-    ids: mentions,
-  });
-  await recordActivity(db, actor, {
-    projectId: thread.projectId,
-    verb: 'comment.replied',
-    targetType: 'comment_thread',
-    targetId: thread.id,
-    data: { excerpt: data.body.slice(0, 140) },
-  });
-  return getThread(db, actor, thread.id);
-}
-
-export async function setThreadStatus(
-  db: Db,
-  actor: Actor,
-  threadId: string,
-  status: 'open' | 'resolved',
-): Promise<ThreadView> {
-  assertCan(actor.role, 'design:comment');
-  const s = parse(z.enum(['open', 'resolved']), status);
-  const thread = await getMutableThreadRow(db, actor, threadId);
-  if (thread.status !== s) {
-    await db
-      .update(commentThreads)
-      .set(
-        s === 'resolved'
-          ? { status: s, resolvedBy: actor.userId, resolvedAt: new Date() }
-          : { status: s, resolvedBy: null, resolvedAt: null },
-      )
-      .where(eq(commentThreads.id, thread.id));
-    await recordActivity(db, actor, {
-      projectId: thread.projectId,
-      verb: s === 'resolved' ? 'comment.resolved' : 'comment.reopened',
-      targetType: 'comment_thread',
-      targetId: thread.id,
-    });
-  }
-  return getThread(db, actor, thread.id);
-}
-
-/** Update the remembered canvas position of a node-anchored thread (client re-measures it). */
-export async function updateThreadFallback(
-  db: Db,
-  actor: Actor,
-  threadId: string,
-  fallback: unknown,
-): Promise<void> {
-  assertCan(actor.role, 'design:comment');
-  const p = parse(point, fallback);
-  const thread = await getMutableThreadRow(db, actor, threadId);
-  await db.update(commentThreads).set({ fallback: p }).where(eq(commentThreads.id, thread.id));
-}
-
-/** Link an ask-agent thread to the agent conversation handling it (Story 5.7). */
-export async function linkAgentConversation(
-  db: Db,
-  actor: Actor,
-  threadId: string,
-  conversationId: unknown,
-): Promise<ThreadView> {
-  assertCan(actor.role, 'design:comment');
-  assertCan(actor.role, 'agent:run');
-  const cid = parse(z.uuid(), conversationId);
-  const thread = await getMutableThreadRow(db, actor, threadId);
-  if (thread.kind !== 'agent_request')
-    throw new ValidationError('Only ask-agent threads can link a conversation');
-  // The conversation must exist in this workspace and belong to the thread's project.
-  const [conv] = await db
-    .select({ id: agentConversations.id })
-    .from(agentConversations)
-    .where(
-      and(
-        eq(agentConversations.id, cid),
-        eq(agentConversations.workspaceId, actor.workspace.id),
-        eq(agentConversations.projectId, thread.projectId),
-      ),
-    )
-    .limit(1);
-  if (!conv) throw new NotFoundError('Conversation not found');
-  await db
-    .update(commentThreads)
-    .set({ agentConversationId: cid })
-    .where(eq(commentThreads.id, thread.id));
-  return getThread(db, actor, thread.id);
-}
-
-// ---------------------------------------------------------------------------------------------
-// Notifications (mentions). Always scoped to the caller's own user id and workspace.
-// ---------------------------------------------------------------------------------------------
-
-export interface NotificationView {
-  id: string;
-  kind: string;
-  projectId: string | null;
-  data: Record<string, unknown>;
-  readAt: Date | null;
-  createdAt: Date;
-}
-
-export async function listNotifications(
-  db: Db,
-  actor: Actor,
-  opts: { unreadOnly?: boolean; limit?: number } = {},
-): Promise<NotificationView[]> {
-  assertCan(actor.role, 'workspace:read');
-  const rows = await db
-    .select()
-    .from(notifications)
-    .where(
-      and(
-        eq(notifications.workspaceId, actor.workspace.id),
-        eq(notifications.userId, actor.userId),
-        opts.unreadOnly ? isNull(notifications.readAt) : undefined,
-      ),
-    )
-    .orderBy(desc(notifications.createdAt))
-    .limit(Math.min(opts.limit ?? 50, 200));
-  return rows.map((r) => ({
-    id: r.id,
-    kind: r.kind,
-    projectId: r.projectId,
-    data: (r.data ?? {}) as Record<string, unknown>,
-    readAt: r.readAt,
-    createdAt: r.createdAt,
-  }));
-}
-
-/** Mark the caller's notifications read: the given ids, or all of them. */
-export async function markNotificationsRead(
-  db: Db,
-  actor: Actor,
-  ids: unknown,
-): Promise<{ updated: number }> {
-  assertCan(actor.role, 'workspace:read');
-  const list = ids === 'all' ? null : parse(z.array(z.uuid()).max(200), ids);
-  const rows = await db
-    .update(notifications)
-    .set({ readAt: new Date() })
-    .where(
-      and(
-        eq(notifications.workspaceId, actor.workspace.id),
-        eq(notifications.userId, actor.userId),
-        isNull(notifications.readAt),
-        list
-          ? inArray(notifications.id, list.length ? list : ['00000000-0000-0000-0000-000000000000'])
-          : undefined,
-      ),
-    )
-    .returning({ id: notifications.id });
-  return { updated: rows.length };
 }
