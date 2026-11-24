@@ -50,5 +50,8 @@ if (isProd) {
   }
 }
 
+console.log('▸ Fetching the editor');
+run('node scripts/fetch-editor.mjs', web);
+
 console.log('▸ next build');
 run('pnpm next build', web);

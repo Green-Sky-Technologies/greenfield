@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db, requireActor } from '../context';
+import { copyDesignFile, defaultDesignFileStorage } from '../services/design-files';
 import {
   createProject,
   duplicateProject,
@@ -40,7 +41,11 @@ export async function renameProjectAction(projectId: string, name: string): Prom
 export async function duplicateProjectAction(projectId: string): Promise<ActionResult> {
   const actor = await requireActor();
   const res = await run(async () => {
-    await duplicateProject(db(), actor, projectId);
+    const copy = await duplicateProject(db(), actor, projectId);
+    await copyDesignFile(db(), actor, defaultDesignFileStorage(), {
+      fromProjectId: projectId,
+      toProjectId: copy.id,
+    });
     return undefined;
   });
   revalidatePath(`/w/${actor.workspace.slug}`);

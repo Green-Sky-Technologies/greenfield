@@ -1,30 +1,27 @@
 /**
- * Story 0.1 spike (dev-only, GREENFIELD_FIGCRAFT_SPIKE=1): the project's FigCraft document bytes.
+ * The project's design file (a `.figcraft` document) as raw bytes.
  *
- * GET /api/spike/figcraft/:projectId -> 200 application/octet-stream (x-file-name, x-storage)
- *                                       | 204 when nothing is saved yet
- * PUT /api/spike/figcraft/:projectId <- the raw document bytes -> { size, storage }
+ * GET /api/projects/:projectId/file -> 200 application/octet-stream (x-file-name, x-storage)
+ *                                     | 204 when nothing is saved yet
+ * PUT /api/projects/:projectId/file <- the raw document bytes -> { size, storage }
  *
- * 404 for everything when the flag is off. Bodies are never logged.
+ * Reading needs project:read, saving design:edit (services/design-files). Bodies are never
+ * logged.
  */
 import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import {
   defaultDesignFileStorage,
-  figcraftSpikeEnabled,
   loadDesignFile,
   MAX_DESIGN_FILE_BYTES,
   saveDesignFile,
-} from '@/server/services/figcraft-spike';
+} from '@/server/services/design-files';
 import { ValidationError } from '@/server/services/types';
 
-type Ctx = RouteContext<'/api/spike/figcraft/[projectId]'>;
-
-const notFound = () => NextResponse.json({ error: 'not_found' }, { status: 404 });
+type Ctx = RouteContext<'/api/projects/[projectId]/file'>;
 
 export async function GET(_req: NextRequest, ctx: Ctx) {
-  if (!figcraftSpikeEnabled()) return notFound();
   try {
     const actor = await apiActor();
     const { projectId } = await ctx.params;
@@ -45,7 +42,6 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 }
 
 export async function PUT(req: NextRequest, ctx: Ctx) {
-  if (!figcraftSpikeEnabled()) return notFound();
   try {
     const actor = await apiActor();
     const { projectId } = await ctx.params;

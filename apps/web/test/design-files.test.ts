@@ -1,20 +1,20 @@
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
-import { afterAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
 import {
-  figcraftSpikeEnabled,
+  copyDesignFile,
   loadDesignFile,
   localFsStorage,
   saveDesignFile,
-} from '@/server/services/figcraft-spike';
-import { createProject, setProjectArchived } from '@/server/services/projects';
+} from '@/server/services/design-files';
+import { createProject, duplicateProject, setProjectArchived } from '@/server/services/projects';
 import { NotFoundError, ValidationError } from '@/server/services/types';
 import { makeActor, reset, testDb } from './helpers';
 
 const { db, close } = testDb();
-const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'figcraft-spike-'));
+const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'design-files-'));
 const storage = localFsStorage(dir);
 afterAll(async () => {
   await close();
@@ -24,15 +24,32 @@ beforeEach(() => reset(db));
 
 const bytes = (...b: number[]) => new Uint8Array(b);
 
-describe('figcraft spike (Story 0.1)', () => {
-  it('is enabled only with the flag outside production', () => {
-    vi.stubEnv('GREENFIELD_FIGCRAFT_SPIKE', '');
-    expect(figcraftSpikeEnabled()).toBe(false);
-    vi.stubEnv('GREENFIELD_FIGCRAFT_SPIKE', '1');
-    expect(figcraftSpikeEnabled()).toBe(true);
-    vi.stubEnv('NODE_ENV', 'production');
-    expect(figcraftSpikeEnabled()).toBe(false);
-    vi.unstubAllEnvs();
+describe('design files', () => {
+  it('copies the document when a project is duplicated, within the workspace only', async () => {
+    const editor = await makeActor(db, 'editor');
+    const viewer = await makeActor(db, 'viewer', editor.workspace);
+    const outsider = await makeActor(db, 'admin');
+    const p = await createProject(db, editor, { name: 'Original' });
+    const empty = await createProject(db, editor, { name: 'Empty' });
+    await saveDesignFile(db, editor, storage, { projectId: p.id, bytes: bytes(4, 5) });
+
+    const copy = await duplicateProject(db, editor, p.id);
+    await copyDesignFile(db, editor, storage, { fromProjectId: p.id, toProjectId: copy.id });
+    const file = await loadDesignFile(db, editor, storage, { projectId: copy.id });
+    expect([...file!.bytes]).toEqual([4, 5]);
+
+    // Nothing saved yet: nothing to copy.
+    const copy2 = await duplicateProject(db, editor, empty.id);
+    await copyDesignFile(db, editor, storage, { fromProjectId: empty.id, toProjectId: copy2.id });
+    expect(await loadDesignFile(db, editor, storage, { projectId: copy2.id })).toBeNull();
+
+    await expect(
+      copyDesignFile(db, viewer, storage, { fromProjectId: p.id, toProjectId: copy.id }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
+    const theirs = await createProject(db, outsider, { name: 'Theirs' });
+    await expect(
+      copyDesignFile(db, outsider, storage, { fromProjectId: p.id, toProjectId: theirs.id }),
+    ).rejects.toBeInstanceOf(NotFoundError);
   });
 
   it('saves and loads the project document, scoped to the workspace', async () => {

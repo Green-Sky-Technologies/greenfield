@@ -3,14 +3,18 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "fetch-editor": "node scripts/fetch-editor.mjs",
+    "predev": "node scripts/fetch-editor.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/fetch-editor.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "next typegen && tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "e2e": "playwright test",
-    "e2e:app": "playwright test -c e2e/app/playwright.config.ts"
+    "e2e:app": "playwright test -c e2e/app/playwright.config.ts",
+    "e2e:editor": "playwright test -c e2e/editor/playwright.config.ts"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.9.24",

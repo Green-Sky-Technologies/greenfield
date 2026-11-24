@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * Story 0.1 spike: download the pinned upstream figcraft-web release, verify its sha256 and
- * unpack it into apps/web/public/editor/ (gitignored), so the app serves it at /editor/.
+ * Download the pinned upstream figcraft-web release, verify its sha256 and unpack it into
+ * apps/web/public/editor/ (gitignored), so the app serves the editor at /editor/. Runs before
+ * `dev` and `build` (package.json `predev`/`prebuild`, scripts/vercel-build.mjs) and does
+ * nothing when the pinned version is already there. Epic 2 swaps the release for the fork's
+ * CI bundle.
  *
- *   node spikes/0.1-embed/fetch-editor.mjs          # skip if the pinned version is already there
- *   node spikes/0.1-embed/fetch-editor.mjs --force  # re-download
+ *   node scripts/fetch-editor.mjs          # from apps/web; skip if already there
+ *   node scripts/fetch-editor.mjs --force  # re-download
  *
  * Needs `unzip` on PATH (macOS, most Linux images, Vercel's build image).
  */
@@ -19,8 +22,8 @@ const VERSION = '0.18.1';
 const URL_ = `https://github.com/storytold/figcraft/releases/download/v${VERSION}/figcraft-web-${VERSION}.zip`;
 const SHA256 = '2fbeb93f5022b0a7cc9d8528f1ed7e2b54c94d213ef79e65128aa898c399f02b';
 
-const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
-const dest = path.join(root, 'apps/web/public/editor');
+const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'); // apps/web
+const dest = path.join(root, 'public/editor');
 const stamp = path.join(dest, '.figcraft-version');
 
 if (!process.argv.includes('--force') && fs.existsSync(stamp)) {

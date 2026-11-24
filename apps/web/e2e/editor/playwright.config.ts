@@ -2,23 +2,24 @@ import { defineConfig, devices } from '@playwright/test';
 import { loadEnv } from '../app/support/env';
 
 /**
- * Story 0.1 spike: the embedded FigCraft editor, signed in through real Clerk, in Chromium,
- * WebKit and Firefox.
+ * The embedded editor on the project page, signed in through real Clerk, in Chromium, WebKit
+ * and Firefox.
  *
- *   node spikes/0.1-embed/fetch-editor.mjs
- *   pnpm --filter @greenfield/web exec playwright test -c e2e/figcraft-spike/playwright.config.ts
+ *   pnpm --filter @greenfield/web e2e:editor                    # all three engines
+ *   pnpm --filter @greenfield/web e2e:editor --project chromium
  *
  * Reuses the app suite's setup/teardown (Clerk users and orgs for this run, deleted afterwards).
- * The spike is dev-only, so the web server is `next dev` with GREENFIELD_FIGCRAFT_SPIKE=1 on 3101.
+ * The web server is `next dev` on 3101 (its `predev` fetches the editor if it's missing). Set
+ * DATABASE_URL to a migrated local database; it wins over apps/web/.env.local.
  */
 loadEnv();
 const PORT = Number(process.env.E2E_PORT ?? 3101);
 const viewport = { width: 1440, height: 900 };
-const spec = /figcraft-spike\/.*\.spec\.ts$/;
+const spec = /editor\/.*\.spec\.ts$/;
 
 export default defineConfig({
   testDir: '..',
-  outputDir: '../../test-results/e2e-figcraft-spike',
+  outputDir: '../../test-results/e2e-editor',
   fullyParallel: false,
   workers: 1,
   retries: 0,
@@ -49,12 +50,11 @@ export default defineConfig({
     },
   ],
   webServer: {
-    command: `pnpm exec next dev --port ${PORT}`,
+    command: `pnpm dev --port ${PORT}`,
     cwd: '../..',
-    env: { GREENFIELD_FIGCRAFT_SPIKE: '1' },
     url: `http://localhost:${PORT}/editor/index.html`,
     reuseExistingServer: true,
-    timeout: 120_000,
+    timeout: 180_000,
     stdout: 'ignore',
     stderr: 'pipe',
   },

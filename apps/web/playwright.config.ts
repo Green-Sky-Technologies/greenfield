@@ -3,16 +3,14 @@ import { defineConfig, devices } from '@playwright/test';
 const PORT = Number(process.env.E2E_PORT ?? 3100);
 
 /**
- * App-level e2e against `next start` (signed-out flows and, once configured, real Clerk sign-in).
- * The canvas and export suites run self-contained harnesses with their own configs, and the
- * signed-in app suite (real Clerk users, roles and workspaces) has its own too:
- *   pnpm e2e:canvas   (e2e/canvas/playwright.config.ts)
- *   pnpm e2e:export   (e2e/export/playwright.config.ts)
+ * Signed-out e2e against `next start`. The signed-in suites (real Clerk users, roles and
+ * workspaces) have their own configs:
  *   pnpm e2e:app      (e2e/app/playwright.config.ts)
+ *   pnpm e2e:editor   (e2e/editor/playwright.config.ts: the embedded editor, three engines)
  */
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: ['canvas/**', 'export/**', 'app/**'],
+  testIgnore: ['app/**', 'editor/**'],
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,

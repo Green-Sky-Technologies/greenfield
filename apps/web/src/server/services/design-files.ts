@@ -1,7 +1,7 @@
 /**
- * Story 0.1 spike (throwaway): one FigCraft document per project, stored as bytes in Vercel Blob
- * (or a local directory when no BLOB_READ_WRITE_TOKEN is set). Dev-only, behind
- * GREENFIELD_FIGCRAFT_SPIKE=1; see spikes/0.1-embed/FINDINGS.md.
+ * The project's design file: one `.figcraft` document per project, stored as bytes in Vercel
+ * Blob (or a local directory when no BLOB_READ_WRITE_TOKEN is set). Promoted from the Story 0.1
+ * spike in Story 1.2; Epic 3 replaces it with the `files` and `file_versions` tables.
  *
  * Framework-free like every service: `(db, actor, storage, input)`. Bytes are never logged.
  */
@@ -12,15 +12,13 @@ import path from 'node:path';
 import { getProject } from './projects';
 import { ValidationError, type Actor } from './types';
 
-/** The spike's routes and page exist only with the flag, and never in production builds. */
-export function figcraftSpikeEnabled(): boolean {
-  return process.env.GREENFIELD_FIGCRAFT_SPIKE === '1' && process.env.NODE_ENV !== 'production';
-}
-
-/** Largest document the spike accepts. (A Vercel Function body tops out at 4.5 MB: see FINDINGS.) */
+/**
+ * Largest document accepted. A Vercel Function request body tops out at 4.5 MB, so bigger saves
+ * fail at the platform until Epic 3 uploads straight to Blob (spikes/0.1-embed/FINDINGS.md).
+ */
 export const MAX_DESIGN_FILE_BYTES = 64 * 1024 * 1024;
 
-/** The small storage surface the spike needs; Vercel Blob and a local directory implement it. */
+/** The small storage surface design files need; Vercel Blob and a local directory implement it. */
 export interface DesignFileStorage {
   readonly kind: 'vercel-blob' | 'local-fs';
   get(key: string): Promise<Uint8Array | null>;
@@ -86,7 +84,7 @@ export function defaultDesignFileStorage(): DesignFileStorage {
 }
 
 const keyFor = (workspaceId: string, projectId: string) =>
-  `figcraft-spike/${workspaceId}/${projectId}/document.figcraft`;
+  `design-files/${workspaceId}/${projectId}/document.figcraft`;
 
 /** The name the host gives the document when it opens it in the editor. */
 function documentName(projectName: string): string {
@@ -125,4 +123,20 @@ export async function saveDesignFile(
   if (input.bytes.byteLength > MAX_DESIGN_FILE_BYTES) throw new ValidationError('File too large');
   await storage.put(keyFor(actor.workspace.id, project.id), input.bytes);
   return { size: input.bytes.byteLength };
+}
+
+/** Copy one project's document to another (duplicating a project). No-op when there is none. */
+export async function copyDesignFile(
+  db: Db,
+  actor: Actor,
+  storage: DesignFileStorage,
+  input: { fromProjectId: string; toProjectId: string },
+): Promise<void> {
+  assertCan(actor.role, 'project:create');
+  const [from, to] = await Promise.all([
+    getProject(db, actor, input.fromProjectId),
+    getProject(db, actor, input.toProjectId),
+  ]);
+  const bytes = await storage.get(keyFor(actor.workspace.id, from.id));
+  if (bytes) await storage.put(keyFor(actor.workspace.id, to.id), bytes);
 }
