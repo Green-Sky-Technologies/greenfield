@@ -5,3 +5,5 @@
 /node_modules/
 # The root .gitignore ignores out/; the before/after screenshots here are evidence, keep them.
 !/out/
+/craft-fonts/
+/build-fonts.log
