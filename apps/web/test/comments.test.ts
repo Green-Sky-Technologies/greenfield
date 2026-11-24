@@ -8,7 +8,13 @@ import path from 'node:path';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
 import { listComments, mirrorFileComments } from '@/server/services/comments';
-import { localFsStorage, saveDesignFile } from '@/server/services/design-files';
+import {
+  commitDesignFile,
+  localFsStorage,
+  newDesignFileKey,
+  saveDesignFile,
+} from '@/server/services/design-files';
+import { acquireLock } from '@/server/services/locks';
 import { createProject, setProjectArchived } from '@/server/services/projects';
 import { NotFoundError, ValidationError } from '@/server/services/types';
 import { upsertMember, upsertUser } from '@/server/services/workspaces';
@@ -24,6 +30,7 @@ afterAll(async () => {
 });
 beforeEach(() => reset(db));
 
+const S1 = 'session-1';
 const T0 = 1_795_000_000; // Unix seconds, as the editor stores them
 
 async function setup() {
@@ -33,8 +40,9 @@ async function setup() {
   await upsertUser(db, { id: editor.userId, name: 'Ada Lovelace' });
   await upsertMember(db, editor.workspace.id, editor.userId, 'editor');
   const project = await createProject(db, editor, { name: 'Landing' });
+  await acquireLock(db, editor, project.id, { sessionId: S1 });
   const save = (threads: StoredThread[], actor = editor, projectId = project.id) =>
-    saveDesignFile(db, actor, storage, { projectId, bytes: figcraftFile(threads) });
+    saveDesignFile(db, actor, storage, { projectId, bytes: figcraftFile(threads), sessionId: S1 });
   return { editor, viewer, outsider, project, save };
 }
 
@@ -168,7 +176,9 @@ describe('comment mirror', () => {
         new URL('../../../packages/bridge/test/fixtures/comments.figcraft', import.meta.url),
       ),
     );
-    expect(await saveDesignFile(db, editor, storage, { projectId: project.id, bytes })).toEqual({
+    expect(
+      await saveDesignFile(db, editor, storage, { projectId: project.id, bytes, sessionId: S1 }),
+    ).toEqual({
       size: bytes.byteLength,
       comments: 2,
     });
@@ -182,6 +192,16 @@ describe('comment mirror', () => {
       }),
       expect.objectContaining({ threadId: 2, nodeId: null, author: 'Claude', body: 'x' }),
     ]);
+  });
+
+  it('mirrors a document uploaded to Blob when it is committed', async () => {
+    const { editor, project } = await setup();
+    const key = newDesignFileKey(editor.workspace.id, project.id);
+    await storage.put(key, figcraftFile([heading]));
+    expect(
+      await commitDesignFile(db, editor, storage, { projectId: project.id, key, sessionId: S1 }),
+    ).toMatchObject({ comments: 1 });
+    expect((await listComments(db, editor, project.id)).map((t) => t.threadId)).toEqual([1]);
   });
 
   it('tolerates duplicate and out-of-range ids', async () => {
@@ -202,6 +222,7 @@ describe('comment mirror', () => {
     const r = await saveDesignFile(db, editor, storage, {
       projectId: project.id,
       bytes: new Uint8Array([1, 2, 3]),
+      sessionId: S1,
     });
     expect(r).toEqual({ size: 3, comments: null });
     expect(await listComments(db, editor, project.id)).toHaveLength(1);
@@ -217,6 +238,7 @@ describe('comment mirror', () => {
     ).rejects.toBeInstanceOf(NotFoundError);
     // The outsider's own project with the same thread id doesn't touch ours.
     const theirs = await createProject(db, outsider, { name: 'Theirs' });
+    await acquireLock(db, outsider, theirs.id, { sessionId: S1 });
     await save([{ id: 1, author: 'Mallory', text: 'mine', created: T0 }], outsider, theirs.id);
     expect(await listComments(db, editor, project.id)).toEqual([
       expect.objectContaining({ threadId: 1, author: 'Ada Lovelace' }),

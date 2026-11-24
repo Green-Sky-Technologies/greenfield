@@ -200,8 +200,8 @@ describe('design files (Story 3.1)', () => {
 
     const first = newDesignFileKey(editor.workspace.id, p.id);
     await storage.put(first, bytes(1, 1));
-    expect(await commit(first)).toEqual({ size: 2 });
-    expect(await commit(first)).toEqual({ size: 2 }); // a retried commit is harmless
+    expect(await commit(first)).toEqual({ size: 2, comments: null });
+    expect(await commit(first)).toEqual({ size: 2, comments: null }); // a retried commit is harmless
     expect(await load(editor, p.id)).toEqual([1, 1]);
 
     const late = newDesignFileKey(editor.workspace.id, p.id);

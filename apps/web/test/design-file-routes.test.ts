@@ -101,7 +101,7 @@ describe('design file routes (Story 3.1)', () => {
       );
     expect((await commit({ key })).status).toBe(400);
     const ok = await commit({ key, sessionId: S1 });
-    expect(await ok.json()).toEqual({ size: 2, storage: 'local-fs' });
+    expect(await ok.json()).toEqual({ size: 2, storage: 'local-fs', comments: null });
     // Another editor's upload is refused and removed; the document stays.
     const theirs = newDesignFileKey(editor.workspace.id, p.id);
     await localFsStorage(dir).put(theirs, new Uint8Array([9]));

@@ -194,3 +194,25 @@ async function membersByName(
     [...byName].flatMap(([name, ids]) => (ids.length === 1 ? [[name, ids[0]!] as const] : [])),
   );
 }
+
+/** Workspace members a comment may mention, and the people shown in the top bar. */
+export async function listMentionableMembers(
+  db: Db,
+  actor: Actor,
+): Promise<
+  { userId: string; name: string | null; email: string | null; imageUrl: string | null }[]
+> {
+  assertCan(actor.role, 'project:read');
+  return db
+    .select({
+      userId: members.userId,
+      name: users.name,
+      email: users.email,
+      imageUrl: users.imageUrl,
+    })
+    .from(members)
+    .leftJoin(users, eq(users.id, members.userId))
+    .where(eq(members.workspaceId, actor.workspace.id))
+    .orderBy(asc(users.name), asc(members.userId))
+    .limit(500);
+}
