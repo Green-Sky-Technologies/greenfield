@@ -4,8 +4,9 @@
  * - A thread is anchored to a node (`{ type: 'node', frameId, nodeId, offset? }`) or to a canvas
  *   position (`{ type: 'canvas', x, y }`). Node anchors reference the stable node id, so threads
  *   follow the node when it moves or is restyled.
- * - `fallback` is the last known canvas position. When the node is deleted, the thread is
- *   reported as `orphaned` and the UI shows it at the fallback position: it stays visible.
+ * - `fallback` is the last known canvas position, measured by the client.
+ * - Node anchors are not checked against the document, which lives in the editor rather than
+ *   Postgres (Story 1.2 removed the HTML model's checks; Epic 6 moves comments into the file).
  * - @mentions are validated against workspace members and create in-app notifications.
  * - Reading needs project:read; writing needs design:comment (viewers can't comment);
  *   agent_request threads also need agent:run.
@@ -29,14 +30,13 @@ import {
   type CommentThreadRow,
   type Db,
 } from '@greenfield/db';
-import { id as nodeIdSchema, type DesignDoc } from '@greenfield/doc-model';
 import { z } from 'zod';
-import { frameOfNode } from '@/features/collab/anchor';
 import { recordActivity } from './activity';
-import { getDoc } from './design-docs';
 import { getProject } from './projects';
 import { NotFoundError, ValidationError, type Actor } from './types';
 
+/** Editor node id (opaque to the server: the document lives in the editor). */
+const nodeIdSchema = z.string().min(1).max(64);
 const point = z.object({ x: z.number().finite(), y: z.number().finite() }).strict();
 
 export const commentAnchor = z.discriminatedUnion('type', [
@@ -87,13 +87,6 @@ export interface ThreadView {
   status: CommentThreadRow['status'];
   anchor: CommentAnchor;
   fallback: CanvasPoint | null;
-  /** Node anchor whose node no longer exists in the current doc. */
-  orphaned: boolean;
-  /**
-   * For node anchors: the frame the node is in now (it may have moved to another frame since
-   * the thread was created); null when orphaned or for canvas anchors.
-   */
-  currentFrameId: string | null;
   agentConversationId: string | null;
   createdBy: string;
   createdAt: Date;
@@ -113,13 +106,6 @@ function parse<T>(schema: z.ZodType<T>, input: unknown): T {
     throw new ValidationError(r.error.issues[0]?.message ?? 'Invalid input', fieldErrors);
   }
   return r.data;
-}
-
-/** True if `nodeId` exists and belongs to `frameId`'s tree. */
-export { frameOfNode };
-
-export function nodeInFrame(doc: DesignDoc, frameId: string, nodeId: string): boolean {
-  return frameOfNode(doc, nodeId) === frameId;
 }
 
 /** Workspace members a comment may mention (for autocomplete and validation). */
@@ -209,7 +195,7 @@ async function getMutableThreadRow(
   return row;
 }
 
-async function hydrate(db: Db, threads: CommentThreadRow[], doc: DesignDoc): Promise<ThreadView[]> {
+async function hydrate(db: Db, threads: CommentThreadRow[]): Promise<ThreadView[]> {
   if (!threads.length) return [];
   const rows = await db
     .select({
@@ -252,8 +238,6 @@ async function hydrate(db: Db, threads: CommentThreadRow[], doc: DesignDoc): Pro
   return threads.map((t) => {
     const anchor = commentAnchor.parse(t.anchor);
     const fb = point.safeParse(t.fallback);
-    // A node anchor stays live wherever the node is now (moves across frames included).
-    const currentFrameId = anchor.type === 'node' ? frameOfNode(doc, anchor.nodeId) : null;
     return {
       id: t.id,
       projectId: t.projectId,
@@ -261,8 +245,6 @@ async function hydrate(db: Db, threads: CommentThreadRow[], doc: DesignDoc): Pro
       status: t.status,
       anchor,
       fallback: fb.success ? fb.data : null,
-      orphaned: anchor.type === 'node' && currentFrameId === null,
-      currentFrameId,
       agentConversationId: t.agentConversationId,
       createdBy: t.createdBy,
       createdAt: t.createdAt,
@@ -280,7 +262,7 @@ export async function listThreads(
   opts: { status?: 'open' | 'resolved' } = {},
 ): Promise<ThreadView[]> {
   assertCan(actor.role, 'project:read');
-  const { doc } = await getDoc(db, actor, projectId); // also scopes the project to the workspace
+  await getProject(db, actor, projectId); // scopes the project to the workspace
   const threads = await db
     .select()
     .from(commentThreads)
@@ -293,13 +275,12 @@ export async function listThreads(
     )
     .orderBy(desc(commentThreads.createdAt))
     .limit(500);
-  return hydrate(db, threads, doc);
+  return hydrate(db, threads);
 }
 
 export async function getThread(db: Db, actor: Actor, threadId: string): Promise<ThreadView> {
   const row = await getThreadRow(db, actor, threadId);
-  const { doc } = await getDoc(db, actor, row.projectId);
-  return (await hydrate(db, [row], doc))[0]!;
+  return (await hydrate(db, [row]))[0]!;
 }
 
 export async function createThread(db: Db, actor: Actor, input: unknown): Promise<ThreadView> {
@@ -308,21 +289,8 @@ export async function createThread(db: Db, actor: Actor, input: unknown): Promis
   if (data.kind === 'agent_request') assertCan(actor.role, 'agent:run');
   const project = await getProject(db, actor, data.projectId);
   if (project.archivedAt) throw new ValidationError(ARCHIVED_MESSAGE);
-  const { doc } = await getDoc(db, actor, project.id);
-
-  let fallback: CanvasPoint;
-  if (data.anchor.type === 'node') {
-    const { nodeId } = data.anchor;
-    const frameId = frameOfNode(doc, nodeId);
-    if (!frameId)
-      throw new ValidationError('That element no longer exists', { anchor: ['Unknown node'] });
-    // Store the node's actual frame (the client's may be stale).
-    data.anchor = { ...data.anchor, frameId };
-    const frame = doc.frames.find((f) => f.id === frameId)!;
-    fallback = data.fallback ?? { x: frame.canvas.x, y: frame.canvas.y };
-  } else {
-    fallback = { x: data.anchor.x, y: data.anchor.y };
-  }
+  const fallback: CanvasPoint | null =
+    data.anchor.type === 'node' ? (data.fallback ?? null) : { x: data.anchor.x, y: data.anchor.y };
   const mentions = await validMentions(db, actor, data.mentions);
 
   const { thread, comment } = await db.transaction(async (tx) => {
@@ -363,7 +331,7 @@ export async function createThread(db: Db, actor: Actor, input: unknown): Promis
     targetId: thread.id,
     data: { excerpt: data.body.slice(0, 140) },
   });
-  return (await hydrate(db, [thread], doc))[0]!;
+  return (await hydrate(db, [thread]))[0]!;
 }
 
 export async function replyToThread(

@@ -71,10 +71,6 @@ export const agentMessages = pgTable(
     /** Attachments: [{ type: 'asset', assetId } | { type: 'url', url } | { type: 'figma', fileKey, nodeId }] */
     attachments: jsonb('attachments').notNull().default([]),
     jobId: uuid('job_id'),
-    /** Auto snapshot taken before this message's edits (Story 5.12). */
-    snapshotVersionId: uuid('snapshot_version_id'),
-    /** Doc transactions this message produced. */
-    txnIds: text('txn_ids').array().notNull().default([]),
     error: text('error'),
     createdBy: text('created_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
@@ -111,7 +107,6 @@ export const jobs = pgTable(
       .notNull()
       .references(() => workspaces.id, { onDelete: 'cascade' }),
     projectId: uuid('project_id').references(() => projects.id, { onDelete: 'cascade' }),
-    designSystemId: uuid('design_system_id'),
     conversationId: uuid('conversation_id'),
     kind: jobKindEnum('kind').notNull(),
     /** Model override for jobs started without a chat message (null = workspace tier default). */

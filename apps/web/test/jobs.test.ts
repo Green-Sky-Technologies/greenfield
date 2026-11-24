@@ -2,15 +2,16 @@ import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
 import { generateMasterKey, parseKeyring } from '@greenfield/crypto';
 import { parseSse } from '@greenfield/agent';
-import { agentConversations, agentMessages, docOps, eq, jobEvents, jobs } from '@greenfield/db';
-import { MemoryJobRunner, recordingSandboxApi } from '@greenfield/sandbox-runner';
+import { agentConversations, agentMessages, eq, jobEvents, jobs } from '@greenfield/db';
+import {
+  MemoryJobRunner,
+  recordingSandboxApi,
+  VercelSandboxRunner,
+} from '@greenfield/sandbox-runner';
 import { saveCredential } from '@/server/services/credentials';
-import { getDoc } from '@/server/services/design-docs';
 import { createProject } from '@/server/services/projects';
 import { upsertMember } from '@/server/services/workspaces';
 import { JobTokenError, verifyJobToken, issueJobToken } from '@/server/services/agent/job-tokens';
-import { handleJobMcp } from '@/server/services/agent/job-mcp';
-import { jobRunner } from '@/server/services/agent/runner';
 import {
   cancelJob,
   createJob,
@@ -200,7 +201,18 @@ describe('sandbox credential isolation (Story 5.2 AC)', () => {
     try {
       const api = recordingSandboxApi();
       const job = await createJob(db, editor, generate(project.id, messageId));
-      await startJob(db, job.id, { runner: jobRunner(db, { api }) });
+      // The app's own job spec returns with Story 4.5; the sandbox env and token are the runner's.
+      const runner = new VercelSandboxRunner({
+        appUrl: 'http://localhost:3000',
+        api,
+        prepare: async (j) => ({
+          jobToken: (await issueJobToken(db, j.jobId, 600)).token,
+          model: 'claude-opus-5-5',
+          smallModel: 'claude-haiku-5-5',
+          spec: { prompt: 'Design a pricing page', systemPrompt: 's', tools: [], maxTurns: 1 },
+        }),
+      });
+      await startJob(db, job.id, { runner });
       const [rec] = [...api.sandboxes.values()];
       const everything = JSON.stringify(rec);
       expect(everything).not.toContain(realKey);
@@ -218,90 +230,5 @@ describe('sandbox credential isolation (Story 5.2 AC)', () => {
     } finally {
       delete process.env.ANTHROPIC_API_KEY;
     }
-  });
-});
-
-describe('job MCP tool server', () => {
-  const rpc = (token: string, jobId: string, body: unknown) =>
-    handleJobMcp(
-      db,
-      new Request(`http://localhost/api/jobs/${jobId}/mcp`, {
-        method: 'POST',
-        headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
-        body: JSON.stringify(body),
-      }),
-      jobId,
-    );
-
-  it('speaks MCP and runs tools as agent transactions on the job message', async () => {
-    const { editor, project, messageId } = await setup();
-    const { job, token } = await startedJob(editor, project.id, messageId);
-    const init = await (
-      await rpc(token, job.id, {
-        jsonrpc: '2.0',
-        id: 1,
-        method: 'initialize',
-        params: { protocolVersion: '2025-06-18' },
-      })
-    ).json();
-    expect(init.result).toMatchObject({
-      protocolVersion: '2025-06-18',
-      capabilities: { tools: {} },
-    });
-    expect(
-      (await rpc(token, job.id, { jsonrpc: '2.0', method: 'notifications/initialized' })).status,
-    ).toBe(202);
-    const list = await (
-      await rpc(token, job.id, { jsonrpc: '2.0', id: 2, method: 'tools/list' })
-    ).json();
-    expect(list.result.tools.map((t: { name: string }) => t.name)).toContain('insert_frame');
-
-    const call = await (
-      await rpc(token, job.id, {
-        jsonrpc: '2.0',
-        id: 3,
-        method: 'tools/call',
-        params: {
-          name: 'insert_frame',
-          arguments: {
-            frame: {
-              id: 'f_pricing0001',
-              name: 'Pricing',
-              rootNodeId: 'n_pricingroot',
-              width: 1280,
-              height: 'auto',
-            },
-            nodes: [
-              {
-                id: 'n_pricingroot',
-                type: 'box',
-                tag: 'main',
-                parentId: null,
-                children: [],
-                positioning: 'flow',
-                style: {},
-                props: {},
-              },
-            ],
-          },
-        },
-      })
-    ).json();
-    expect(call.result.isError).toBe(false);
-    const { doc } = await getDoc(db, editor, project.id);
-    expect(doc.frames.map((f) => f.id)).toContain('f_pricing0001');
-    const [log] = await db.select().from(docOps).where(eq(docOps.projectId, project.id));
-    expect(log).toMatchObject({ source: 'agent', agentMessageId: messageId });
-    const events = await listJobEvents(db, editor, job.id);
-    expect(events.find((e) => e.type === 'frame')?.data).toMatchObject({
-      frameId: 'f_pricing0001',
-    });
-
-    const bad = await rpc('cjt_nope', job.id, { jsonrpc: '2.0', id: 4, method: 'tools/list' });
-    expect(bad.status).toBe(401);
-    const unknown = await (
-      await rpc(token, job.id, { jsonrpc: '2.0', id: 5, method: 'resources/list' })
-    ).json();
-    expect(unknown.error.code).toBe(-32601);
   });
 });

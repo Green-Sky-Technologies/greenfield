@@ -7,7 +7,6 @@ import { MemoryJobRunner } from '@greenfield/sandbox-runner';
 import { createProject } from '@/server/services/projects';
 import { upsertMember } from '@/server/services/workspaces';
 import { issueJobToken } from '@/server/services/agent/job-tokens';
-import { handleJobMcp } from '@/server/services/agent/job-mcp';
 import { handleMessagesProxy } from '@/server/services/llm-proxy';
 import {
   cancelJob,
@@ -128,41 +127,6 @@ describe('heartbeats and retries (review #2)', () => {
     const reaped = await reapJobs(db, { runner });
     expect(reaped.retried).toEqual([]);
     expect((await row(job.id)).status).toBe('running');
-  });
-
-  it('MCP tool calls refresh the heartbeat', async () => {
-    const { job, token } = await staleRunning();
-    await handleJobMcp(
-      db,
-      new Request('http://x/mcp', {
-        method: 'POST',
-        headers: { authorization: `Bearer ${token}` },
-        body: JSON.stringify({
-          jsonrpc: '2.0',
-          id: 1,
-          method: 'tools/call',
-          params: { name: 'get_outline', arguments: {} },
-        }),
-      }),
-      job.id,
-    );
-    expect(Date.now() - (await row(job.id)).heartbeatAt!.getTime()).toBeLessThan(10_000);
-  });
-
-  it('does not re-run a lost job that already committed edits', async () => {
-    const { job, runner, messageId } = await staleRunning();
-    await db
-      .update(agentMessages)
-      .set({ txnIds: ['agent-txn-1'] })
-      .where(eq(agentMessages.id, messageId));
-    runner.alive.set('mem-sbx-1', false);
-    const res = await reapJobs(db, { runner });
-    expect(res.retried).toEqual([]);
-    expect(res.orphaned).toEqual([job.id]);
-    const r = await row(job.id);
-    expect(r.status).toBe('failed');
-    expect(r.error).toMatch(/not retried/);
-    expect(runner.started).toHaveLength(1);
   });
 });
 

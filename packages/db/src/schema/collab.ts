@@ -138,8 +138,6 @@ export const shareLinks = pgTable(
     visibility: shareVisibilityEnum('visibility').notNull().default('workspace'),
     /** Optional subset of frames; null = all frames. */
     frameIds: text('frame_ids').array(),
-    /** Pin to a named version; null = live document. */
-    docVersionId: uuid('doc_version_id'),
     expiresAt: timestamp('expires_at', { withTimezone: true }),
     revokedAt: timestamp('revoked_at', { withTimezone: true }),
     viewCount: integer('view_count').notNull().default(0),

@@ -22,26 +22,18 @@ export const PERMISSIONS = [
   'project:create',
   'project:update',
   'project:archive',
-  'design:edit', // canvas edits, sliders, version restore
+  'design:edit', // saving the design file
   'design:comment',
   // agent (spends the workspace key)
   'agent:run',
   // exports
-  'export:deterministic', // HTML/ZIP, handoff bundle (no LLM)
-  'export:llm', // React+Tailwind codegen, Figma push via agent
+  'export:deterministic', // built-in exports, no model use (Epic 7)
+  'export:llm', // code generation jobs (Epic 7)
   'share:manage', // create/revoke share links
-  // design systems
-  'design_system:read',
-  'design_system:edit',
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
-const VIEWER: readonly Permission[] = [
-  'workspace:read',
-  'project:read',
-  'design_system:read',
-  'export:deterministic',
-];
+const VIEWER: readonly Permission[] = ['workspace:read', 'project:read', 'export:deterministic'];
 
 const EDITOR: readonly Permission[] = [
   ...VIEWER,
@@ -53,7 +45,6 @@ const EDITOR: readonly Permission[] = [
   'agent:run',
   'export:llm',
   'share:manage',
-  'design_system:edit',
 ];
 
 const ADMIN: readonly Permission[] = [

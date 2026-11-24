@@ -1,23 +1,16 @@
 /**
- * Archived projects are read-only (the server refuses doc commits and comments until the project
- * is restored), so the editor must open them read-only instead of accepting edits it can't save.
+ * Archived projects are read-only: the project page says so and the server refuses saves until
+ * the project is restored from the projects list.
  */
-import {
-  createProject,
-  expectEditing,
-  insertSample,
-  node,
-  SAMPLE,
-  stableBox,
-  uniqueName,
-} from './support/app';
+import { createProject, expectEditorReady, pageFetch, uniqueName } from './support/app';
 import { expect, test } from './support/fixtures';
 
 test('an archived project opens read-only until it is restored', async ({ as, run }) => {
   const page = await as('editor');
   const name = uniqueName('Archived');
   const projectId = await createProject(page, run.org.slug, name);
-  await insertSample(page);
+  const file = `/api/projects/${projectId}/file`;
+  expect((await pageFetch(page, file, { method: 'PUT', bytes: [1, 2, 3] })).status).toBe(200);
 
   await page.goto(`/w/${run.org.slug}`);
   const card = page.getByRole('listitem').filter({ hasText: name });
@@ -28,33 +21,22 @@ test('an archived project opens read-only until it is restored', async ({ as, ru
   await page.goto(`/w/${run.org.slug}?archived=1`);
   await page.getByRole('link', { name: `Open ${name}` }).click();
   await page.waitForURL(new RegExp(`/p/${projectId}$`));
-  const lock = page.getByTestId('edit-lock');
-  await expect(lock.getByText('Archived')).toBeVisible();
-  await expect(node(page, SAMPLE.headline)).toHaveText(SAMPLE.headlineText);
-  await expect(page.getByRole('button', { name: '+ Frame' })).toHaveCount(0);
+  await expectEditorReady(page);
+  await expect(page.getByText('Archived (read-only)')).toBeVisible();
+  // Reading still works; saving is refused.
+  expect((await pageFetch(page, file)).status).toBe(200);
+  const refused = await pageFetch(page, file, { method: 'PUT', bytes: [9] });
+  expect(refused.status).toBe(400);
+  expect(refused.body).toContain('archived');
 
-  // No Edit mode, no inline editing, no comment composer, no agent.
-  await expect(page.getByRole('radio', { name: 'Edit' })).toHaveCount(0);
-  const b = await stableBox(node(page, SAMPLE.headline));
-  await page.mouse.dblclick(b.x + 20, b.y + 10);
-  await expect(page.locator(`[data-cd-id="${SAMPLE.headline}"][contenteditable]`)).toHaveCount(0);
-  await page.getByRole('button', { name: /^Comments/ }).click();
-  await expect(page.getByPlaceholder('Add a comment… use @ to mention')).toHaveCount(0);
-  await expect(page.getByText(/This project is archived/).first()).toBeVisible();
-  await expect(page.getByText(/A change was rejected/)).toHaveCount(0);
-
-  // Exports still work for archived projects.
-  await page.getByRole('button', { name: 'Export' }).click();
-  await expect(page.getByRole('menuitem', { name: /HTML page/ })).toBeEnabled();
-  await page.keyboard.press('Escape');
-
-  // Restore: the editor is editable again.
+  // Restore: saving works again.
   await page.goto(`/w/${run.org.slug}?archived=1`);
   const archivedCard = page.getByRole('listitem').filter({ hasText: name });
   await archivedCard.getByRole('button', { name: 'Project actions' }).click();
   await archivedCard.getByRole('menuitem', { name: 'Restore' }).click();
   await expect(archivedCard).toHaveCount(0);
   await page.goto(`/w/${run.org.slug}/p/${projectId}`);
-  await expectEditing(page);
-  await expect(page.getByTestId('edit-lock').getByText('Archived')).toHaveCount(0);
+  await expectEditorReady(page);
+  await expect(page.getByText('Archived (read-only)')).toHaveCount(0);
+  expect((await pageFetch(page, file, { method: 'PUT', bytes: [4] })).status).toBe(200);
 });

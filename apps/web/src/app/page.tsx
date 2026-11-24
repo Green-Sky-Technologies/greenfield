@@ -26,8 +26,8 @@ export default async function Home() {
           Describe it. Watch it build. Ship the code.
         </h1>
         <p className="mt-6 max-w-xl text-lg text-muted">
-          An AI agent designs on a live HTML canvas, built on your design system. Refine by chat,
-          comments, or direct editing, then export to React + Tailwind or Figma.
+          An AI agent designs with you in a real vector editor. Refine by chat, comments, or direct
+          editing, then export what you made.
         </p>
         <div className="mt-10 flex gap-3">
           <Link href="/sign-up" className="btn-primary px-5 py-2.5 text-base">

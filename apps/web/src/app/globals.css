@@ -2,8 +2,8 @@
 
 /*
  * App chrome tokens: Solarized Light (https://ethanschoonover.com/solarized/).
- * These style the app itself; a user's design-system tokens live in their DesignDocs and render
- * inside frames independently of this theme.
+ * These style the app itself; a user's design tokens live in their design files and render
+ * inside the editor independently of this theme.
  */
 :root {
   color-scheme: light;

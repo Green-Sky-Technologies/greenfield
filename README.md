@@ -1,17 +1,18 @@
 # Greenfield
 
-An AI design canvas. Describe a screen, and an agent builds it as live HTML frames on an
-infinite canvas. Refine it in chat, comment on elements, or edit it directly with a
-Figma-style edit panel. Then share it, or export HTML, a handoff bundle or React + Tailwind.
+An open design tool with an agent. Each project is a design file in a real vector editor
+(a fork of [FigCraft](https://github.com/storytold/figcraft), compiled to WebAssembly and
+embedded in the app), and Claude designs with you in it.
 
+- **Editor:** FigCraft's canvas, tools, layers and inspector, served from the app's own origin.
+  Files are `.figcraft` documents stored in Vercel Blob.
 - **Agent:** Claude, through Vercel AI Gateway (no API keys to manage) or your own Anthropic,
-  Bedrock, Vertex or Foundry credentials. Quick edits stream from the Messages API. Long
-  generations run as background jobs (Claude Agent SDK in a Vercel Sandbox).
-- **Canvas:** live HTML frames with View, Edit and Comment modes, breakpoints, design-system
-  tokens, sliders, versions and a soft edit lock for teams.
+  Bedrock, Vertex or Foundry credentials. The agent is being rebuilt for the new editor
+  (SPEC Epic 4) and is switched off until then; model access, usage and the spend cap work.
 - **Teams:** workspaces with Admin, Editor and Viewer roles (Clerk Organizations).
 
-The product spec is in [`SPEC.md`](SPEC.md).
+The product spec is in [`SPEC.md`](SPEC.md). Greenfield was CrunchDesign, which drew designs as
+live HTML frames; that model was removed in Story 1.2.
 
 ## Deploy to Vercel
 
@@ -22,15 +23,15 @@ Everything runs on Vercel. The button walks you through it:
 1. **Clone** the repository into your GitHub account.
 2. **Set Root Directory to `apps/web`** on the Configure step (this is a monorepo).
 3. **Add the integrations it asks for:** Clerk (sign-in and workspaces), then Neon (Postgres)
-   and a public Blob store (chat images and Figma assets). Each has a free plan and sets its own
-   environment variables.
+   and a Blob store (design files). Each has a free plan and sets its own environment
+   variables.
 4. **Fill in two secrets.** Generate each with `openssl rand -base64 32`:
-   - `CREDENTIALS_MASTER_KEYS` encrypts stored secrets (model credentials, Figma tokens). Keep
-     it safe: losing it means re-entering those secrets.
+   - `CREDENTIALS_MASTER_KEYS` encrypts stored secrets (model credentials). Keep it safe:
+     losing it means re-entering those secrets.
    - `CRON_SECRET` authenticates Vercel Cron.
 5. **Deploy.** The build ([`scripts/vercel-build.mjs`](scripts/vercel-build.mjs)) applies
-   database migrations and configures Clerk (organizations, slugs and the Editor and Viewer
-   roles), so there's nothing else to set up.
+   database migrations, configures Clerk (organizations, slugs and the Editor and Viewer
+   roles) and downloads the pinned editor release, so there's nothing else to set up.
 
 Then open the deployment, sign up, and create a workspace.
 
@@ -73,7 +74,7 @@ Neon, Clerk and Blob integrations from the project's **Storage** tab, and set th
 | `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, `CLERK_SECRET_KEY` | yes         | Set by the Clerk integration.                                                                                                                      |
 | `CREDENTIALS_MASTER_KEYS`                               | yes         | `openssl rand -base64 32`. To rotate, use `newid:<key>,<old key>` and set `CREDENTIALS_ACTIVE_KEY_ID=newid`.                                       |
 | `CRON_SECRET`                                           | recommended | `openssl rand -base64 32`. Without it, the cron endpoint refuses every call.                                                                       |
-| `BLOB_READ_WRITE_TOKEN`                                 | recommended | Set by the Blob store. Without it, chat image uploads and Figma image import are off.                                                              |
+| `BLOB_READ_WRITE_TOKEN`                                 | recommended | Set by the Blob store. Without it, design files are saved under `apps/web/.data/blob` on the server's disk (local development only).               |
 | `GREENFIELD_AI_GATEWAY`                                 | no          | `on` or `off`. The default is on when running on Vercel or when `AI_GATEWAY_API_KEY` is set. With `off`, every workspace needs its own credential. |
 | `AI_GATEWAY_API_KEY`                                    | no          | Use a gateway API key instead of the deployment's OIDC token (for example, when hosting outside Vercel).                                           |
 | `CLERK_WEBHOOK_SIGNING_SECRET`                          | no          | Webhook at `/api/webhooks/clerk` for `user.*`, `organization.*` and `organizationMembership.*`. Without it, members sync on each request.          |
@@ -104,6 +105,10 @@ Then fill in `apps/web/.env.local`:
 pnpm dev                           # http://localhost:3000
 ```
 
+The first `dev` or `build` downloads the pinned FigCraft web release (about 10 MB, checked
+against its sha256) into `apps/web/public/editor/`, which is gitignored. It needs `unzip` on
+your `PATH`. Without a Blob token, design files are saved under `apps/web/.data/blob/`.
+
 ### Upgrading from CrunchDesign
 
 The project was renamed from CrunchDesign to Greenfield.
@@ -133,8 +138,9 @@ The project was renamed from CrunchDesign to Greenfield.
 | `pnpm db:migrate`                            | Apply migrations to `DATABASE_URL`                                           |
 | `pnpm setup:clerk`                           | Configure the Clerk instance in `CLERK_SECRET_KEY` (idempotent)              |
 | `pnpm keygen [id]`                           | Print a named credential master key (`id:base64`) for rotation               |
-| `pnpm --filter @greenfield/web e2e:canvas`   | Canvas end-to-end tests (Playwright, no sign-in)                             |
+| `pnpm --filter @greenfield/web fetch-editor` | Download the pinned editor release (`--force` to re-download)                |
 | `pnpm --filter @greenfield/web e2e:app`      | Signed-in end-to-end suite with real Clerk users, roles and workspaces       |
+| `pnpm --filter @greenfield/web e2e:editor`   | The embedded editor (open, edit, save, reopen) in Chromium, WebKit, Firefox  |
 
 Integration tests use `TEST_DATABASE_URL` (default
 `postgres://greenfield:greenfield@localhost:5433/greenfield_test`), which is created and migrated
@@ -143,23 +149,23 @@ automatically.
 `e2e:app` builds the app, starts it on port 3200 and signs in real Clerk users. It needs Clerk
 **development** keys, `CREDENTIALS_MASTER_KEYS` and a migrated database of its own (for example,
 `greenfield_e2e`). Each run creates and then deletes its own users and organizations. If a run dies
-first, the next run cleans up, or run `pnpm exec tsx apps/web/e2e/app/cleanup.ts`.
+first, the next run cleans up, or run `pnpm exec tsx apps/web/e2e/app/cleanup.ts`. `e2e:editor`
+uses the same setup with `next dev` on port 3101.
 
 ## Repository layout
 
 ```
-apps/web               Next.js 16 app: UI, server actions, route handlers
-apps/figma-plugin      Figma plugin (push designs, sync tokens)
-packages/agent         Agent tools, prompts, interactive turns, follow-up questions
-packages/canvas        Canvas geometry, layout, insert and drag logic
-packages/doc-model     DesignDoc schema, styles, tokens, design systems, ops
-packages/renderer      Live (Shadow DOM) and static HTML renderers
+apps/web               Next.js 16 app: UI, server actions, route handlers, the embedded editor
+apps/web/scripts       fetch-editor (the pinned FigCraft web release)
+packages/agent         Agent loop, prompt prefix, models, usage, follow-up questions, SSE
+packages/contracts     Agent tool and job contracts (tools are redefined in Story 1.4)
+packages/sandbox-runner  Background jobs in Vercel Sandbox
 packages/db            Drizzle schema, migrations, Postgres client
 packages/providers     Model routes: AI Gateway, Anthropic, Bedrock, Vertex, Foundry
 packages/crypto        Envelope encryption for secrets at rest
 packages/authz         Roles and permissions
-packages/handoff, figma-convert, ds-lint, sandbox-runner, contracts
 scripts/               vercel-build, setup-clerk, keygen
+spikes/                Epic 0 proofs of concept (history; not in the workspace)
 ```
 
 Workspace packages are consumed as TypeScript source and compiled by Next.js; there's no
@@ -168,13 +174,12 @@ services, secrets).
 
 ## Roles
 
-|                                                     | Admin | Editor | Viewer |
-| --------------------------------------------------- | :---: | :----: | :----: |
-| View projects and designs                           |   ✓   |   ✓    |   ✓    |
-| Deterministic export (HTML/ZIP, handoff bundle)     |   ✓   |   ✓    |   ✓    |
-| Create, edit and archive projects; comment; sliders |   ✓   |   ✓    |        |
-| Run the agent, LLM exports (codegen, Figma push)    |   ✓   |   ✓    |        |
-| Manage members and model access                     |   ✓   |        |        |
+|                                                  | Admin | Editor | Viewer |
+| ------------------------------------------------ | :---: | :----: | :----: |
+| View projects and designs                        |   ✓   |   ✓    |   ✓    |
+| Create, edit and archive projects; save; comment |   ✓   |   ✓    |        |
+| Run the agent (from Epic 4)                      |   ✓   |   ✓    |        |
+| Manage members and model access                  |   ✓   |        |        |
 
 ## Contributing
 

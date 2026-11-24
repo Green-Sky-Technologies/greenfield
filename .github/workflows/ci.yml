@@ -39,29 +39,6 @@ jobs:
       - run: pnpm test
       - run: pnpm build
 
-  browser:
-    # Canvas (Stories 3.9/3.10) and export parity (7.1) suites run against self-contained
-    # harnesses, so they need no Clerk secrets and run on every push.
-    needs: check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: pnpm/action-setup@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @greenfield/web exec playwright install --with-deps chromium firefox webkit
-      - run: pnpm --filter @greenfield/web e2e:canvas
-      - run: pnpm --filter @greenfield/web e2e:export
-      - if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-report
-          path: apps/web/playwright-report
-          retention-days: 7
-
   bridge:
     # Story 1.3: packages/bridge against the pinned editor release, served by a tiny static host
     # (no app server, no secrets). check:commands fails when the editor's command list no longer
@@ -77,7 +54,7 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Fetch the pinned editor (sha256-checked)
-        run: node spikes/0.1-embed/fetch-editor.mjs
+        run: node apps/web/scripts/fetch-editor.mjs
       - run: pnpm --filter @greenfield/bridge exec playwright install --with-deps chromium firefox webkit
       - name: Generated command types match the pinned editor
         run: pnpm --filter @greenfield/bridge check:commands
@@ -95,7 +72,8 @@ jobs:
   e2e:
     needs: check
     runs-on: ubuntu-latest
-    # Signed-out smoke tests plus the app suite (e2e/app): real Clerk sign-in, roles, workspaces.
+    # Signed-out smoke tests, the app suite (e2e/app: real Clerk sign-in, roles, workspaces) and
+    # the embedded editor in Chromium, WebKit and Firefox (e2e/editor).
     # Needs a Clerk *development* instance (pk_test_/sk_test_); skipped until the secrets are
     # configured. The suite creates its own users and orgs per run and deletes them afterwards.
     if: ${{ vars.E2E_ENABLED == 'true' }}
@@ -124,6 +102,7 @@ jobs:
       - run: pnpm --filter @greenfield/web e2e:app
         env:
           E2E_SKIP_BUILD: '1'
+      - run: pnpm --filter @greenfield/web e2e:editor
       # The teardown project normally deletes the run's Clerk users and orgs; if the run was
       # cancelled or crashed first, delete what it recorded.
       - if: cancelled() || failure()
@@ -135,4 +114,5 @@ jobs:
           path: |
             apps/web/playwright-report
             apps/web/test-results/e2e-app
+            apps/web/test-results/e2e-editor
           retention-days: 7

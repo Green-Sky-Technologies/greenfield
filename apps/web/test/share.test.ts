@@ -1,9 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
 import { eq, projects, shareLinks } from '@greenfield/db';
-import { newId, replaceDocOps, sampleLandingDoc, type DocOp } from '@greenfield/doc-model';
-import { renderShareError, renderSharePage, shareHeaders } from '@/app/s/[token]/share-html';
-import { commitTransaction, getDoc } from '@/server/services/design-docs';
+import { renderShareError, shareHeaders } from '@/app/s/[token]/share-html';
 import { createProject } from '@/server/services/projects';
 import {
   clientIp,
@@ -16,21 +14,12 @@ import {
   revokeShareLink,
   updateShareLink,
 } from '@/server/services/share-links';
-import { NotFoundError, ValidationError, type Actor } from '@/server/services/types';
-import { createNamedVersion } from '@/server/services/versions';
+import { NotFoundError, ValidationError } from '@/server/services/types';
 import { makeActor, reset, testDb } from './helpers';
 
 const { db, close } = testDb();
 afterAll(close);
 beforeEach(() => reset(db));
-
-async function commit(actor: Actor, projectId: string, ops: DocOp[]) {
-  const { version } = await getDoc(db, actor, projectId);
-  return commitTransaction(db, actor, projectId, {
-    baseVersion: version,
-    txn: { id: `t_${newId('s').slice(2)}`, source: 'canvas', ops },
-  });
-}
 
 async function setup() {
   const editor = await makeActor(db, 'editor');
@@ -39,8 +28,6 @@ async function setup() {
     name: 'Secret Project Name',
     description: 'Confidential roadmap',
   });
-  const { doc } = await getDoc(db, editor, project.id);
-  await commit(editor, project.id, replaceDocOps(doc, sampleLandingDoc()));
   return { editor, viewer, project };
 }
 
@@ -68,32 +55,27 @@ describe('share links', () => {
     const outsider = await makeActor(db, 'admin');
     await expectNotFound(resolveShareToken(db, token, outsider));
     const shared = await resolveShareToken(db, token, viewer);
-    expect(shared.frameIds).toEqual(sampleLandingDoc().frames.map((f) => f.id));
+    expect(shared).toEqual({ projectId: project.id, frameIds: null, visibility: 'workspace' });
   });
 
-  it('public links need no auth and expose only the rendered design', async () => {
+  it('public links need no auth and resolve to the target only', async () => {
     const { editor, project } = await setup();
     const { token } = await createShareLink(db, editor, {
       projectId: project.id,
       visibility: 'public',
     });
     const shared = await resolveShareToken(db, token, null);
-    expect(Object.keys(shared).sort()).toEqual(['designSystem', 'doc', 'frameIds', 'visibility']);
-    const html = renderSharePage(shared.doc, shared.designSystem, shared.frameIds);
-    expect(html).toContain('noindex');
-    expect(html).not.toContain('<script');
-    expect(html).not.toContain('data-cd-id');
+    expect(Object.keys(shared).sort()).toEqual(['frameIds', 'projectId', 'visibility']);
+    const json = JSON.stringify(shared);
     for (const secret of [
       project.name,
       'Confidential roadmap',
-      project.id,
       editor.workspace.id,
       editor.workspace.name,
       editor.workspace.slug,
       editor.userId,
     ])
-      expect(html).not.toContain(secret);
-    expect(html).toContain('Ship designs your engineers can build.');
+      expect(json).not.toContain(secret);
   });
 
   it('counts views', async () => {
@@ -138,7 +120,7 @@ describe('share links', () => {
     await expectNotFound(resolveShareToken(db, archived.token, null));
   });
 
-  it('supports expiry, visibility changes and frame / version pinning', async () => {
+  it('supports expiry, visibility changes and frame pinning', async () => {
     const { editor, project } = await setup();
     await expect(
       createShareLink(db, editor, {
@@ -147,18 +129,12 @@ describe('share links', () => {
       }),
     ).rejects.toBeInstanceOf(ValidationError);
     await expect(
-      createShareLink(db, editor, { projectId: project.id, frameIds: ['f_nope000001'] }),
+      createShareLink(db, editor, { projectId: project.id, frameIds: [''] }),
     ).rejects.toBeInstanceOf(ValidationError);
 
-    const frameId = sampleLandingDoc().frames[0]!.id;
-    const v = await createNamedVersion(db, editor, project.id, { name: 'v1' });
-    await commit(editor, project.id, [
-      { op: 'setProps', id: 'n_herotitle1', patch: { text: 'Live headline' } },
-    ]);
     const { token, link } = await createShareLink(db, editor, {
       projectId: project.id,
-      frameIds: [frameId],
-      docVersionId: v.id,
+      frameIds: ['0:1', '0:1'],
       expiresAt: new Date(Date.now() + 86_400_000).toISOString(),
     });
     expect(link.expiresAt).not.toBeNull();
@@ -169,9 +145,7 @@ describe('share links', () => {
     expect(updated.visibility).toBe('public');
     expect(updated.expiresAt).toBeNull();
     const shared = await resolveShareToken(db, token, null);
-    expect(shared.frameIds).toEqual([frameId]);
-    const html = renderSharePage(shared.doc, shared.designSystem, shared.frameIds);
-    expect(html).not.toContain('Live headline'); // pinned to the named version
+    expect(shared.frameIds).toEqual(['0:1']);
 
     await revokeShareLink(db, editor, link.id);
     await expect(
@@ -192,12 +166,6 @@ describe('share links', () => {
     await expectNotFound(listShareLinks(db, outsider, project.id));
     await expectNotFound(revokeShareLink(db, outsider, link.id));
     await expectNotFound(updateShareLink(db, outsider, link.id, { visibility: 'public' }));
-    // Another workspace's version id can't be pinned.
-    const otherProject = await createProject(db, outsider, { name: 'O' });
-    const otherVersion = await createNamedVersion(db, outsider, otherProject.id, { name: 'x' });
-    await expectNotFound(
-      createShareLink(db, editor, { projectId: project.id, docVersionId: otherVersion.id }),
-    );
   });
 });
 

@@ -42,6 +42,6 @@ next-env.d.ts
 !.env.example
 .clerk/
 
-# Story 0.1 spike: the FigCraft web release (spikes/0.1-embed/fetch-editor.mjs) and local file storage
+# The FigCraft web release (scripts/fetch-editor.mjs) and local design-file storage
 public/editor/
 /.data/

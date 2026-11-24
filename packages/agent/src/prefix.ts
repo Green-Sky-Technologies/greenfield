@@ -1,23 +1,24 @@
 /**
- * The cacheable prompt prefix (SPEC §2.2, Story 5.11): tools, then the system prompt, then the
- * active design system. All three are byte-stable for a given runtime and design system:
- * static text, tools sorted by name, design system serialized with sorted keys. Nothing
- * per-request (time, ids, user names, the document) goes here; that lives in the user turn.
+ * The cacheable prompt prefix (SPEC §2, ADR 0002): tools, then the system prompt. Both are
+ * byte-stable for a given runtime: static text, tools sorted by name, schemas with sorted keys.
+ * Nothing per-request (time, ids, user names, the document) goes here; that lives in the user
+ * turn.
+ *
+ * The HTML model's prompt and design-system block were removed in Story 1.2; Epic 4 writes the
+ * FigCraft prompt (command batches through the bridge).
  */
 import type Anthropic from '@anthropic-ai/sdk';
 import type { AgentRuntime } from '@greenfield/contracts';
-import type { DesignSystemSpec } from '@greenfield/doc-model';
 import { z } from 'zod';
 import { contractToolDefs, jsonSchemaFor, type JsonToolDef } from './tool-defs';
-import { stableStringify } from './stable';
 import { ASK_QUESTIONS_DESCRIPTION, ASK_QUESTIONS_TOOL, askQuestionsInput } from './questions';
 
 export type CacheTtl = '5m' | '1h';
 
 /**
- * TTL for the tools + system + design-system prefix (ADR 0002): 1h by default, so members who
- * pause 5–60 minutes between prompts still hit the cache. AGENT_PREFIX_CACHE_TTL=5m switches it
- * for measurement.
+ * TTL for the tools + system prefix (ADR 0002): 1h by default, so members who pause 5–60
+ * minutes between prompts still hit the cache. AGENT_PREFIX_CACHE_TTL=5m switches it for
+ * measurement.
  */
 export function prefixCacheTtl(env: Record<string, string | undefined> = process.env): CacheTtl {
   return env.AGENT_PREFIX_CACHE_TTL === '5m' ? '5m' : '1h';
@@ -49,57 +50,20 @@ const askQuestionsDef: JsonToolDef = {
   input_schema: jsonSchemaFor(askQuestionsInput),
 };
 
-const SYSTEM_COMMON = `You are Greenfield's design agent. You edit a structured design document (DesignDoc), not HTML.
+const SYSTEM_COMMON = `You are Greenfield's design agent. You work in a vector design editor.
 
-The document has frames (artboards), each with a root node. Nodes are box, text, image, svg or instance (a design-system component). Each node has responsive styles per breakpoint: base (mobile-first), md and lg. Style values are either literals or design-system token references like {"token":"color.primary"}.
-
-How to work:
-- Prefer tokens over literal values. Use the design system's components and guidelines.
-- Change only what the request needs. Edit existing nodes with small setStyle, setProps, setNodeMeta and moveNode ops through patch_nodes. Never rebuild a subtree to change one property.
-- Node ids are stable. Reuse ids from the context; new nodes need new ids in the form n_ followed by 6 to 32 letters or digits, and new frames f_ followed by the same.
-- The latest <document> block in the conversation is the current state. Earlier blocks may be stale.
-- When the user asks for something adjustable (density, roundness, scale), offer a slider with create_slider. Moving a slider never calls you.
-- After editing, run_lint on the nodes you changed and fix real issues.
-- Keep replies short: say what you changed in one or two sentences.`;
+Keep replies short: say what you changed in one or two sentences.`;
 
 const SYSTEM_INTERACTIVE = `${SYSTEM_COMMON}
 
-You are on the quick-edit path: small, targeted changes to existing frames. If the request needs new pages or frames, redesigning whole frames, or several alternatives, don't attempt it here: call ${SUGGEST_JOB_TOOL} and briefly tell the user why.
-
-Follow-up questions (${ASK_QUESTIONS_TOOL}):
-- Before any new design (a new page, screen or frame, a redesign, or alternatives: anything that starts a generation job or creates frames from a prompt), ALWAYS ask first with ${ASK_QUESTIONS_TOOL}, unless the user has already answered your questions for this request. Ask what would change the design: purpose and audience, key content and sections, layout, visual style and tone.
-- For edits to existing frames, ask only when the request is genuinely ambiguous or large. Small tweaks proceed without asking.
-- Write one short sentence before calling it; the form shows the questions, so don't repeat them in text. The call ends your turn.
-- When the answers come back, act on them: for a new design, call ${SUGGEST_JOB_TOOL} right away with a detailed brief that folds the answers into the prompt (it starts automatically). If the user skipped, decide yourself and proceed.`;
+You are on the quick-edit path. If the request needs new pages or frames, redesigning whole frames, or several alternatives, call ${SUGGEST_JOB_TOOL} and briefly tell the user why. Ask follow-up questions with ${ASK_QUESTIONS_TOOL} only when the request is genuinely ambiguous; the call ends your turn.`;
 
 const SYSTEM_JOB = `${SYSTEM_COMMON}
 
-You are running as a background generation job. Build frames incrementally with insert_frame (one frame per call, root node first, nodes in pre-order), then refine with patch_nodes. Alternatives are separate sibling frames. Finish with a short summary listing the frames you created.`;
+You are running as a background job. Finish with a short summary of what you changed.`;
 
 export function systemPromptFor(runtime: AgentRuntime): string {
   return runtime === 'interactive' ? SYSTEM_INTERACTIVE : SYSTEM_JOB;
-}
-
-/** Deterministic design-system block. Large component node trees are summarized by id list. */
-export function serializeDesignSystem(ds: DesignSystemSpec): string {
-  const components = Object.fromEntries(
-    Object.entries(ds.components).map(([id, c]) => [
-      id,
-      {
-        name: c.name,
-        description: c.description,
-        props: c.props,
-        variants: c.variants,
-      },
-    ]),
-  );
-  return `<design_system>\n${stableStringify({
-    breakpoints: ds.breakpoints,
-    components,
-    guidelines: ds.guidelines,
-    themes: ds.themes,
-    tokens: ds.tokens,
-  })}\n</design_system>`;
 }
 
 /** Tools for a runtime, sorted by name (cache-stable). */
@@ -124,21 +88,16 @@ export interface Prefix {
 }
 
 /**
- * Build the prefix. The cache breakpoint sits on the design-system block, which renders after
- * tools and the system prompt, so one entry covers all three.
+ * Build the prefix. The cache breakpoint sits on the system prompt, which renders after the
+ * tools, so one entry covers both.
  */
-export function buildPrefix(
-  runtime: AgentRuntime,
-  ds: DesignSystemSpec,
-  ttl: CacheTtl = '1h',
-): Prefix {
+export function buildPrefix(runtime: AgentRuntime, ttl: CacheTtl = '1h'): Prefix {
   return {
     tools: toolsForPrefix(runtime),
     system: [
-      { type: 'text', text: systemPromptFor(runtime) },
       {
         type: 'text',
-        text: serializeDesignSystem(ds),
+        text: systemPromptFor(runtime),
         cache_control: ttl === '1h' ? { type: 'ephemeral', ttl: '1h' } : { type: 'ephemeral' },
       },
     ],

@@ -1,19 +1,6 @@
 import { assertCan } from '@greenfield/authz';
-import {
-  and,
-  designSystems,
-  desc,
-  eq,
-  isNotNull,
-  isNull,
-  projects,
-  type Db,
-  type Project,
-} from '@greenfield/db';
+import { and, desc, eq, isNotNull, isNull, projects, type Db, type Project } from '@greenfield/db';
 import { z } from 'zod';
-// Circular with project-design-system.ts (it imports getProject); safe because both sides only
-// call each other's functions at request time, never during module initialization.
-import { latestPublishedVersionId } from './project-design-system';
 import { NotFoundError, ValidationError, type Actor } from './types';
 
 const nameSchema = z.string().trim().min(1, 'Name is required').max(120, 'Name is too long');
@@ -59,22 +46,6 @@ export async function getProject(db: Db, actor: Actor, projectId: string): Promi
   return p;
 }
 
-async function defaultDesignSystemId(db: Db, workspaceId: string): Promise<string> {
-  const [ds] = await db
-    .select({ id: designSystems.id })
-    .from(designSystems)
-    .where(and(eq(designSystems.workspaceId, workspaceId), eq(designSystems.isDefault, true)))
-    .limit(1);
-  if (ds) return ds.id;
-  const [created] = await db
-    .insert(designSystems)
-    .values({ workspaceId, name: 'Default', isDefault: true })
-    .onConflictDoNothing()
-    .returning({ id: designSystems.id });
-  if (created) return created.id;
-  return defaultDesignSystemId(db, workspaceId);
-}
-
 export async function createProject(
   db: Db,
   actor: Actor,
@@ -83,19 +54,10 @@ export async function createProject(
   assertCan(actor.role, 'project:create');
   const name = parse(nameSchema, input.name, 'name');
   const description = parse(descriptionSchema, input.description || undefined, 'description');
-  const designSystemId = await defaultDesignSystemId(db, actor.workspace.id);
-  // Pin the latest published version so later draft edits never change this project (Story 4.2).
-  const designSystemVersionId = await latestPublishedVersionId(
-    db,
-    actor.workspace.id,
-    designSystemId,
-  );
   const [p] = await db
     .insert(projects)
     .values({
       workspaceId: actor.workspace.id,
-      designSystemId,
-      designSystemVersionId,
       name,
       description: description ?? null,
       createdBy: actor.userId,
@@ -121,7 +83,7 @@ export async function renameProject(
   return p!;
 }
 
-/** Duplicates project metadata. Epic 2 extends this to copy the DesignDoc. */
+/** Duplicates project metadata. The caller copies the design file (services/design-files). */
 export async function duplicateProject(db: Db, actor: Actor, projectId: string): Promise<Project> {
   assertCan(actor.role, 'project:create');
   const src = await getProject(db, actor, projectId);
@@ -129,8 +91,6 @@ export async function duplicateProject(db: Db, actor: Actor, projectId: string):
     .insert(projects)
     .values({
       workspaceId: src.workspaceId,
-      designSystemId: src.designSystemId,
-      designSystemVersionId: src.designSystemVersionId,
       name: `${src.name} (copy)`.slice(0, 120),
       description: src.description,
       thumbnailUrl: src.thumbnailUrl,

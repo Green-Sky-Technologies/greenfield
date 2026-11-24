@@ -12,7 +12,7 @@ export async function GET(_req: Request, ctx: RouteContext<'/api/jobs/[jobId]'>)
     const job = await getJob(getDb(), actor, (await ctx.params).jobId);
     // Someone is watching a job: keep the reaper going even without a per-minute cron.
     if (job.status !== 'succeeded' && job.status !== 'failed' && job.status !== 'cancelled')
-      after(() => maybeReap(() => reapJobs(getDb(), { runner: jobRunner(getDb()) })));
+      after(() => maybeReap(() => reapJobs(getDb(), { runner: jobRunner() })));
     return NextResponse.json(job);
   } catch (e) {
     return apiError(e);

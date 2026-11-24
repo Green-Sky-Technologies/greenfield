@@ -1,6 +1,7 @@
 # ADR 0001: Canvas engine (tldraw vs custom surface) and frame container (Shadow DOM vs iframe)
 
-- **Status:** Accepted
+- **Status:** Superseded by [ADR 0003](0003-figcraft-embed.md). Story 1.2 removed the HTML canvas
+  and its packages; the editor is an embedded FigCraft fork.
 - **Date:** 2026-11-03
 - **Story:** 3.0 (spike), informs 3.1–3.10
 
