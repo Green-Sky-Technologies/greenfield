@@ -67,7 +67,7 @@ export interface StoredAssistantContent {
   touched?: string[];
   jobSuggestion?: JobSuggestion | null;
   stopReason?: string | null;
-  /** The turn ended on ask_questions; the tool_result is pending until `answers` is set. */
+  /** The turn ended on ask_followup; the tool_result is pending until `answers` is set. */
   questions?: PendingQuestions | null;
   answers?: QuestionAnswers | null;
   /** The job this reply started on its own (a new design after answered questions). */

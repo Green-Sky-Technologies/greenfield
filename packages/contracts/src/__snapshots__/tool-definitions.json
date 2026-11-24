@@ -1,0 +1,354 @@
+[
+  {
+    "name": "ask_followup",
+    "description": "Ask the user a few multiple-choice follow-up questions, shown as a card in the chat. Calling it ends your turn; the user's answers (or \"You decide\") come back as this tool's result and you then continue. Call it first, before suggest_generation_job, when the user asks for a new design, page or screen. For edits to existing layers, call it only when the request is genuinely ambiguous or large; never for small tweaks. Ask 1-5 questions (purpose, audience, content, layout, visual style, sections), each with 2-6 concrete options. Use kind \"multi\" when several options can apply, and allowOther when the options might not cover it. Call it at most once per turn, alone, and do not ask again about things already answered.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "intro": {
+          "description": "One short sentence above the form",
+          "maxLength": 600,
+          "type": "string"
+        },
+        "questions": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "allowOther": {
+                "description": "Offer a free-text \"Other\" answer",
+                "type": "boolean"
+              },
+              "id": {
+                "description": "Short stable id, e.g. \"layout\"",
+                "pattern": "^[A-Za-z0-9_-]{1,40}$",
+                "type": "string"
+              },
+              "kind": {
+                "description": "single: pick one; multi: pick any",
+                "enum": [
+                  "single",
+                  "multi"
+                ],
+                "type": "string"
+              },
+              "options": {
+                "items": {
+                  "additionalProperties": false,
+                  "properties": {
+                    "description": {
+                      "maxLength": 200,
+                      "type": "string"
+                    },
+                    "id": {
+                      "description": "Short stable id, e.g. \"layout\"",
+                      "pattern": "^[A-Za-z0-9_-]{1,40}$",
+                      "type": "string"
+                    },
+                    "label": {
+                      "maxLength": 80,
+                      "minLength": 1,
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "label"
+                  ],
+                  "type": "object"
+                },
+                "maxItems": 6,
+                "minItems": 2,
+                "type": "array"
+              },
+              "prompt": {
+                "maxLength": 300,
+                "minLength": 1,
+                "type": "string"
+              }
+            },
+            "required": [
+              "id",
+              "prompt",
+              "kind",
+              "options",
+              "allowOther"
+            ],
+            "type": "object"
+          },
+          "maxItems": 5,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "required": [
+        "questions"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "comment_thread",
+    "description": "Read a comment thread on the canvas (the messages, the layer it is pinned to, and its state), and optionally reply in it. Use it when the request came from a comment (\"Ask Claude\") to read the discussion, and to reply there with a one-line note of what you changed when that helps the people in the thread. Make design changes with run_batch, not here.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "reply": {
+          "description": "Post this reply in the thread (signed as the agent)",
+          "maxLength": 2000,
+          "minLength": 1,
+          "type": "string"
+        },
+        "threadId": {
+          "anyOf": [
+            {
+              "maxLength": 100,
+              "minLength": 1,
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            }
+          ],
+          "description": "The comment thread id"
+        }
+      },
+      "required": [
+        "threadId"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_node",
+    "description": "Read one layer as JSON, with its children to `depth`. Use `fields` (or `outline: true`) to keep the result small. Read a layer before editing it unless the context already has it; read a sibling section to reuse its values when you build something new.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "default": 1,
+          "description": "Children depth",
+          "maximum": 8,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "fields": {
+          "description": "Only these layer keys (e.g. name, type, x, y, width, height, fills, strokes, cornerRadius, layout, characters, fontFamily, fontStyle, fontSize). Omit for every key.",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 40,
+          "minItems": 1,
+          "type": "array"
+        },
+        "id": {
+          "description": "Layer id",
+          "minimum": 0,
+          "type": "integer"
+        },
+        "outline": {
+          "description": "Only id, name, type, characters and visibility (not with fields)",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_outline",
+    "description": "A compact outline of the current page (or of the layers under `root`): ids, names, types and text, nested to `depth`. Use it to find layers by name before reading them with get_node.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "default": 6,
+          "maximum": 16,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "root": {
+          "description": "Outline below this layer instead of the whole page",
+          "minimum": 0,
+          "type": "integer"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "get_selection",
+    "description": "Read the layers the user has selected, with their properties and children to `depth`. An empty list means nothing is selected.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "depth": {
+          "default": 2,
+          "description": "Children depth below each selected layer",
+          "maximum": 8,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "fields": {
+          "description": "Only these layer keys (e.g. name, type, x, y, width, height, fills, strokes, cornerRadius, layout, characters, fontFamily, fontStyle, fontSize). Omit for every key.",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 40,
+          "minItems": 1,
+          "type": "array"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "list_commands",
+    "description": "Search the editor commands you can use in run_batch, beyond the ones documented in your instructions. Returns each command id, label, whether it is undoable, and its parameter doc (e.g. `{ids?, index}`).",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "limit": {
+          "default": 40,
+          "maximum": 100,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "query": {
+          "description": "Words to match in command ids and labels, e.g. \"align\" or \"text.style\"",
+          "maxLength": 80,
+          "type": "string"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "render",
+    "description": "Render layers to a PNG and look at it (document pixels only, no editor UI). After a visible change, render the frame you changed once, check it against the request, and fix what looks wrong with another run_batch.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "ids": {
+          "description": "Layers to render (default: the selection, else the page)",
+          "items": {
+            "description": "Layer id",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxItems": 20,
+          "minItems": 1,
+          "type": "array"
+        },
+        "scale": {
+          "default": 1,
+          "description": "Keep the long side under ~1600 px",
+          "exclusiveMinimum": 0,
+          "maximum": 2,
+          "type": "number"
+        }
+      },
+      "type": "object"
+    }
+  },
+  {
+    "name": "run_batch",
+    "description": "Change the document: run editor commands in order as ONE undo step, labelled `label`. Put all the changes for a step of the request in one call. The first failing command rolls the whole batch back and nothing changes. A step can name itself with `as`; later steps use its result with {\"$ref\": name} (its `id`) or {\"$ref\": name, \"field\": \"ids/0\"}, or by position with {\"$step\": n}. Set properties with node.set rather than deleting and rebuilding layers. Returns each step's result and the layers that were added, removed or changed.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "commands": {
+          "items": {
+            "additionalProperties": false,
+            "properties": {
+              "as": {
+                "description": "Name this step so later steps can reference its result",
+                "pattern": "^[A-Za-z_][A-Za-z0-9_-]{0,39}$",
+                "type": "string"
+              },
+              "command": {
+                "description": "Command id, e.g. \"node.set\"",
+                "maxLength": 80,
+                "minLength": 1,
+                "type": "string"
+              },
+              "params": {
+                "additionalProperties": {},
+                "description": "The command's parameters. Any value may be {\"$ref\": name} or {\"$step\": n}",
+                "type": "object"
+              }
+            },
+            "required": [
+              "command"
+            ],
+            "type": "object"
+          },
+          "maxItems": 200,
+          "minItems": 1,
+          "type": "array"
+        },
+        "label": {
+          "description": "The undo step's label, e.g. \"Tighten hero spacing\"",
+          "maxLength": 80,
+          "minLength": 1,
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "commands"
+      ],
+      "type": "object"
+    }
+  },
+  {
+    "name": "suggest_generation_job",
+    "description": "Offer the user a background generation job instead of editing now. Use it when the request needs new pages or screens, a redesign of whole frames, or several alternatives. The user decides whether to start it; make no edits for this request yourself.",
+    "input_schema": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "description": "How many alternatives",
+          "maximum": 5,
+          "minimum": 2,
+          "type": "integer"
+        },
+        "frameIds": {
+          "description": "Layer ids of the frames to redesign or vary",
+          "items": {
+            "type": "string"
+          },
+          "maxItems": 20,
+          "type": "array"
+        },
+        "kind": {
+          "description": "generate: new pages or screens; redesign: rework whole frames; alternatives: N variants",
+          "enum": [
+            "generate",
+            "redesign",
+            "alternatives"
+          ],
+          "type": "string"
+        },
+        "prompt": {
+          "description": "A detailed brief for the job",
+          "maxLength": 4000,
+          "minLength": 1,
+          "type": "string"
+        },
+        "reason": {
+          "description": "One sentence for the user: why this is a job",
+          "maxLength": 400,
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "prompt",
+        "reason"
+      ],
+      "type": "object"
+    }
+  }
+]

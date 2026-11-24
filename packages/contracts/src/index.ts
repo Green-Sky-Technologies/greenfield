@@ -1,2 +1,7 @@
 export * from './agent-tools';
+export * from './batch';
+export * from './executor';
+export * from './followup';
 export * from './job-runner';
+export * from './stable';
+export * from './tool-schemas';

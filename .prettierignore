@@ -9,3 +9,5 @@ test-results
 apps/web/public/editor
 spikes
 .claude
+# Byte-exact test snapshots (the agent tool definitions are compared byte for byte)
+__snapshots__

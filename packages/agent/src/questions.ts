@@ -1,85 +1,38 @@
 /**
- * Follow-up questions before designing: the interactive agent's `ask_questions` tool.
+ * Follow-up questions before designing: the interactive agent's `ask_followup` tool (Story 4.4).
  *
  * The model calls it with a small form (1–5 multiple-choice questions, optional "Other" text).
  * Calling it ends the turn; the tool_result stays pending until the user answers, then the
- * answers go back as that tool_result and the agent continues.
+ * answers go back as that tool_result and the agent continues. The input and answer schemas
+ * are part of the tool contract (`@greenfield/contracts`); this module validates and formats
+ * answers.
  *
  * Client-safe (zod only): the browser imports this through `@greenfield/agent/questions`.
  */
+import {
+  ASK_FOLLOWUP_DESCRIPTION,
+  ASK_FOLLOWUP_TOOL,
+  askFollowupInput,
+  question,
+  questionAnswer,
+  questionOption,
+  type Question,
+  type QuestionAnswer,
+  type QuestionSet,
+} from '@greenfield/contracts';
 import { z } from 'zod';
 
-export const ASK_QUESTIONS_TOOL = 'ask_questions';
-
-const id = z
-  .string()
-  .regex(/^[A-Za-z0-9_-]{1,40}$/, 'ids are 1-40 letters, digits, "_" or "-"')
-  .describe('Short stable id, e.g. "layout"');
-
-export const questionOption = z
-  .object({
-    id,
-    label: z.string().trim().min(1).max(80),
-    description: z.string().trim().max(200).optional(),
-  })
-  .strict();
-
-export const question = z
-  .object({
-    id,
-    prompt: z.string().trim().min(1).max(300),
-    kind: z.enum(['single', 'multi']).describe('single: pick one; multi: pick any'),
-    options: z.array(questionOption).min(2).max(6),
-    allowOther: z.boolean().describe('Offer a free-text "Other" answer'),
-  })
-  .strict();
-
-export const askQuestionsInput = z
-  .object({
-    intro: z.string().trim().max(600).optional().describe('One short sentence above the form'),
-    questions: z.array(question).min(1).max(5),
-  })
-  .strict()
-  .superRefine((v, ctx) => {
-    const qids = new Set<string>();
-    v.questions.forEach((q, i) => {
-      if (qids.has(q.id))
-        ctx.addIssue({ code: 'custom', path: ['questions', i, 'id'], message: 'duplicate id' });
-      qids.add(q.id);
-      const oids = new Set<string>();
-      q.options.forEach((o, j) => {
-        if (oids.has(o.id))
-          ctx.addIssue({
-            code: 'custom',
-            path: ['questions', i, 'options', j, 'id'],
-            message: 'duplicate option id',
-          });
-        oids.add(o.id);
-      });
-    });
-  });
-
-export type QuestionSet = z.infer<typeof askQuestionsInput>;
-export type Question = z.infer<typeof question>;
-
-export const ASK_QUESTIONS_DESCRIPTION =
-  'Ask the user a few multiple-choice follow-up questions before designing, shown as a form in the chat. ' +
-  "Calling it ends your turn; the user's answers come back as this tool's result and you then continue. " +
-  'ALWAYS call it first, before suggest_generation_job or insert_frame, when the user asks for a new design, page, screen or frame. ' +
-  'For edits to existing frames, call it only when the request is genuinely ambiguous or large; never for small tweaks. ' +
-  'Ask 1-5 questions (purpose, audience, content, layout, visual style, sections), each with 2-6 concrete options. ' +
-  'Use kind "multi" when several options can apply, and allowOther when the options might not cover it. ' +
-  'Call it at most once per turn, alone, and do not ask again about things already answered.';
-
-/** One answered question. `optionIds` are option ids; `other` is the free-text "Other". */
-export const questionAnswer = z
-  .object({
-    questionId: id,
-    optionIds: z.array(id).max(6),
-    other: z.string().trim().max(1000).optional(),
-  })
-  .strict();
-export type QuestionAnswer = z.infer<typeof questionAnswer>;
+export {
+  ASK_FOLLOWUP_DESCRIPTION,
+  ASK_FOLLOWUP_TOOL,
+  askFollowupInput,
+  question,
+  questionAnswer,
+  questionOption,
+  type Question,
+  type QuestionAnswer,
+  type QuestionSet,
+};
 
 /** The request body for answering a question set. `skip`: "just decide". */
 export const answerQuestionsInput = z

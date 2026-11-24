@@ -1,11 +1,17 @@
 /**
  * Tool execution seam for the agent loop.
  *
- * The HTML model's DesignDoc tools were removed in Story 1.2. Epic 4 implements the FigCraft
- * tools (Story 1.4 contract) on top of this interface: interactive turns run them in the
- * browser through `packages/bridge`, jobs run them against headless `figcraft-cli`.
+ * The HTML model's DesignDoc tools were removed in Story 1.2. The FigCraft tools are the
+ * Story 1.4 contract; `executeTool(name, input, editor)` in `@greenfield/contracts` runs them
+ * against a bridge `Editor`. Epic 4 implements this interface on top of it: interactive turns
+ * run the calls in the browser through `packages/bridge`, jobs against headless `figcraft-cli`.
  */
-import { AGENT_TOOLS, type AgentRuntime } from '@greenfield/contracts';
+import {
+  AGENT_TOOLS,
+  isAgentTool,
+  type AgentRuntime,
+  type AgentToolDef,
+} from '@greenfield/contracts';
 import type { z } from 'zod';
 import { stableStringify } from './stable';
 
@@ -46,10 +52,14 @@ export async function executeTool(
   name: string,
   rawInput: unknown,
 ): Promise<ToolResult> {
-  const def = AGENT_TOOLS[name];
-  if (!def) return toolFail(`Unknown tool: ${name}`);
+  if (!isAgentTool(name)) return toolFail(`Unknown tool: ${name}`);
+  const def: AgentToolDef = AGENT_TOOLS[name];
   if (!def.runtimes.includes(host.runtime))
-    return toolFail(`${name} is only available in background jobs. Offer to start one instead.`);
+    return toolFail(
+      host.runtime === 'job'
+        ? `${name} is not available in a background job.`
+        : `${name} is only available in background jobs. Offer to start one instead.`,
+    );
   const parsed = (def.input as z.ZodType).safeParse(rawInput);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
