@@ -16,7 +16,7 @@ live HTML frames; that model was removed in Story 1.2.
 
 ## Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield&project-name=greenfield&repository-name=greenfield&env=CREDENTIALS_MASTER_KEYS%2CCRON_SECRET&envDescription=Two%20random%20secrets.%20Generate%20each%20with%3A%20openssl%20rand%20-base64%2032&envLink=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield%23deploy-to-vercel&integration-ids=oac_7uYNbc9CdDAZmNqbt3LEkO3a&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22public%22%7D%5D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield&project-name=greenfield&repository-name=greenfield&env=CREDENTIALS_MASTER_KEYS%2CCRON_SECRET&envDescription=Two%20random%20secrets.%20Generate%20each%20with%3A%20openssl%20rand%20-base64%2032&envLink=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield%23deploy-to-vercel&integration-ids=oac_7uYNbc9CdDAZmNqbt3LEkO3a&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D)
 
 Everything runs on Vercel. The button walks you through it:
 

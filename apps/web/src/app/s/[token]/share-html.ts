@@ -12,9 +12,9 @@ export function shareHeaders(extra: Record<string, string> = {}): HeadersInit {
     'referrer-policy': 'no-referrer',
     'x-content-type-options': 'nosniff',
     'x-frame-options': 'DENY',
-    // No scripts at all; styles are inline; images may be remote (design assets).
+    // No scripts, images or fonts: the page is a notice with an inline style.
     'content-security-policy':
-      "default-src 'none'; style-src 'unsafe-inline'; img-src https: data:; font-src https: data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
     ...extra,
   };
 }

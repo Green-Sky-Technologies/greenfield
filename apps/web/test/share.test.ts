@@ -225,6 +225,7 @@ describe('share viewer helpers', () => {
     expect(h.get('cache-control')).toContain('no-store');
     expect(h.get('content-security-policy')).toContain("default-src 'none'");
     expect(h.get('content-security-policy')).not.toContain('script-src');
+    expect(h.get('content-security-policy')).not.toMatch(/img-src|font-src/);
     expect(renderShareError({ status: 404, signInHref: '/sign-in?x="y"' })).toContain(
       '/sign-in?x=&quot;y&quot;',
     );
