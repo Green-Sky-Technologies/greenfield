@@ -1,12 +1,9 @@
 /**
- * Epic 1 schema: users, workspaces, members, credentials, projects, design systems.
+ * Epic 1 schema: users, workspaces, members, credentials, projects.
  * Later epics add tables in their own files (see SPEC §5) and re-export them here.
  */
-import { sql } from 'drizzle-orm';
 import {
-  boolean,
   index,
-  integer,
   jsonb,
   pgEnum,
   pgTable,
@@ -111,56 +108,6 @@ export const workspaceAwsExternalIds = pgTable('workspace_aws_external_ids', {
   ...timestamps,
 });
 
-/**
- * A design system (Epic 4). `draft` holds the editable DesignSystemSpec (@greenfield/doc-model);
- * publishing snapshots it into design_system_versions. `draft` is null until first edited
- * (the default system starts from the built-in starter spec).
- */
-export const designSystems = pgTable(
-  'design_systems',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    workspaceId: uuid('workspace_id')
-      .notNull()
-      .references(() => workspaces.id, { onDelete: 'cascade' }),
-    name: text('name').notNull(),
-    description: text('description'),
-    isDefault: boolean('is_default').notNull().default(false),
-    draft: jsonb('draft'),
-    /** Latest published version number, or null if never published. */
-    latestVersion: integer('latest_version'),
-    updatedBy: text('updated_by'),
-    archivedAt: timestamp('archived_at', { withTimezone: true }),
-    ...timestamps,
-  },
-  (t) => [
-    index('design_systems_workspace_idx').on(t.workspaceId),
-    uniqueIndex('design_systems_one_default_idx')
-      .on(t.workspaceId)
-      .where(sql`${t.isDefault} = true`),
-  ],
-);
-
-/** Immutable published snapshots of a design system (Story 4.2). */
-export const designSystemVersions = pgTable(
-  'design_system_versions',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    designSystemId: uuid('design_system_id')
-      .notNull()
-      .references(() => designSystems.id, { onDelete: 'cascade' }),
-    workspaceId: uuid('workspace_id')
-      .notNull()
-      .references(() => workspaces.id, { onDelete: 'cascade' }),
-    version: integer('version').notNull(),
-    spec: jsonb('spec').notNull(),
-    notes: text('notes'),
-    publishedBy: text('published_by').notNull(),
-    publishedAt: timestamp('published_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [uniqueIndex('design_system_versions_ds_version_idx').on(t.designSystemId, t.version)],
-);
-
 export const projects = pgTable(
   'projects',
   {
@@ -168,14 +115,6 @@ export const projects = pgTable(
     workspaceId: uuid('workspace_id')
       .notNull()
       .references(() => workspaces.id, { onDelete: 'cascade' }),
-    designSystemId: uuid('design_system_id')
-      .notNull()
-      .references(() => designSystems.id, { onDelete: 'restrict' }),
-    /** Pinned published version (Story 4.2). Null = the system's draft/starter until first publish. */
-    designSystemVersionId: uuid('design_system_version_id').references(
-      () => designSystemVersions.id,
-      { onDelete: 'set null' },
-    ),
     name: text('name').notNull(),
     description: text('description'),
     thumbnailUrl: text('thumbnail_url'),
@@ -190,8 +129,6 @@ export type Workspace = typeof workspaces.$inferSelect;
 export type Member = typeof members.$inferSelect;
 export type ProviderCredentialRow = typeof providerCredentials.$inferSelect;
 export type Project = typeof projects.$inferSelect;
-export type DesignSystem = typeof designSystems.$inferSelect;
-export type DesignSystemVersionRow = typeof designSystemVersions.$inferSelect;
 
 /** Re-exported for other schema modules that store a provider. */
 export const modelProviderEnumRef = providerEnum;
