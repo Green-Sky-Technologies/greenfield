@@ -13,14 +13,21 @@ container. Two things need a decision before Epic 2:
 2. Upstream pins a `storytold/winit` fork that we also could not fetch. It is native-only, so
    this build drops it.
 
-Details below.
+Details below. **Update 2026-11-24 (Stories 2.9 and 2.10):** both are resolved. The build now
+uses pinned craft-fonts and the winit fork, pins every tool, and gates at 25 MiB; see
+[Story 2.9](#story-29-build-inputs-and-size-budget) and [Story 2.10](#story-210-upstreamable-patches).
+Sections after those describe the spike as it was.
 
 ## Files
 
 | Path | What |
 |---|---|
-| `build.sh` | Clones/resets the pinned tag (verifies the SHA), drops the winit patch, applies `patches/*.patch`, `cargo fetch`, `trunk build --release --offline --locked`, size gate (24 MiB), prints raw/gzip/brotli/sha256, copies the site to `dist/` |
+| `versions.env` | Every pin: build image digest, FigCraft and craft-fonts commits, trunk, wasm-bindgen, binaryen (.deb URL and sha256 per arch), the 25 MiB budget |
+| `toolchain.sh` | Installs the pinned toolchain inside the build image (CI and `verify/docker-build.sh`) |
+| `build.sh` | Checks tool versions against the pins, checks out FigCraft and craft-fonts at their pinned commits, applies `patches/*.patch`, `cargo fetch`, `trunk build --release --offline --locked` with `CRAFT_FONTS_DIR`, size gate (25 MiB, every build), copies the site plus licence texts to `dist/` and writes `dist/SHA256SUMS` |
 | `patches/0001-theme.patch` | The theme change (below) |
+| `patches/0002-inspect-revision.patch`, `patches/0003-missing-font-warning.patch` | Story 2.10 (below) |
+| `verify/test-patches.sh` | Runs the patches' tests natively in the build image |
 | `verify/serve.sh` | Static server on `127.0.0.1:3102`: `/editor/` = a dist, `/host.html` = iframe host |
 | `verify/host.html` | Minimal same-origin host page with an iframe on `editor/index.html?host=parent&control&author=spike` |
 | `verify/shoot.mjs` | Playwright (Chromium, headless, `?webgl`) runs `file.new`, `node.create {type:'frame'}`, `select.set`, `view.zoomSelection`, then takes screenshots direct and embedded, plus `ui.render` |
@@ -29,6 +36,10 @@ Details below.
 | `../../.github/workflows/figcraft-web.yml` | CI job (not pushed, not run on GitHub) |
 
 ## Commands
+
+Since Story 2.9 the supported route is the pinned container (`build.sh` refuses other tool
+versions): `verify/docker-build.sh <name>` builds, `verify/test-patches.sh` runs the patch tests.
+The spike's original local commands:
 
 ```sh
 # Local toolchain, isolated from the system (nothing in ~/.rustup or ~/.cargo)
@@ -57,6 +68,63 @@ because it is current stable and matches Homebrew's version. Upstream CI and rel
 through the reusable workflows in `storytold/craft-common-actions`. I did not read those: the repo
 is not on the allow-list.
 
+## Story 2.9: build inputs and size budget
+
+Date: 2026-11-24. Branch `story-2.9-build-budget`.
+
+- **Fonts:** `build.sh` checks out `storytold/craft-fonts` at `37827adc41fd165f9a9234ac40f94dbad353aa69`
+  (upstream's CI ref for v0.18.1) and builds with `CRAFT_FONTS_DIR` and `CRAFT_FONTS_REQUIRED=1`,
+  as upstream's release builds do. `dist/` ships FigCraft's `LICENSE-MIT`, `LICENSE-APACHE`,
+  `NOTICE` and `ATTRIBUTION.md`, plus every craft-fonts family's licence as `OFL-<family>.txt`
+  (29 files; upstream's `copy_font_licences`).
+- **winit:** upstream's `[patch.crates-io]` `storytold/winit` pin is kept (the drop and
+  `KEEP_WINIT_FORK` are gone). `cargo fetch` fetches it; it is still not in the wasm graph.
+- **Tools:** `versions.env` pins the image by digest (`rust:1.100-trixie@sha256:223cc32d…`), trunk
+  0.22.2, wasm-bindgen 0.2.129 and binaryen 131 as Debian's `binaryen_131-2` .deb from
+  snapshot.debian.org (sha256-checked per arch; it depends only on trixie's libc/libstdc++).
+  `build.sh` refuses any other wasm-bindgen or wasm-opt version, so local Homebrew wasm-opt 133
+  no longer builds: use `verify/docker-build.sh`.
+- **Size gate:** 26,214,400 B (25 MiB raw, D26), in `build.sh`, on every build. The CI job's
+  separate size step is gone: the build itself fails.
+- **Fonts fit:** no `FIGCRAFT_WEB_FONTS` limit was needed (results below).
+
+**Results** (`verify/docker-build.sh`, arm64 Docker Desktop, 14 CPUs, `CARGO_BUILD_JOBS=8`):
+
+| Build | Raw wasm | gzip -9 | brotli -11 | wasm sha256 | `SHA256SUMS` sha256 (all 39 files) | Time |
+|---|---|---|---|---|---|---|
+| Clean run a, patches 0001–0003 | **25,477,866 B (24.30 MiB)** | 10,408,053 B | 7,365,932 B | `40d5d690…c92461eb8` | `83c20fb3…cb6d7d186` | 652 s (toolchain 300 s, trunk 265 s) |
+| Clean run b, same | 25,477,866 B | 10,408,053 B | 7,365,932 B | `40d5d6902b2f2a367989a815c5134016b8ccb72fe79b592818759c6c92461eb8` | `83c20fb37db69deaa29d81995451efa2ffb14984d452fa9bf38a272cb6d7d186` | 676 s |
+| Clean run, theme patch only | 25,477,900 B | 10,406,431 B | 7,368,787 B | `46994174…526a92d0` | | 930 s |
+
+| GitHub CI (amd64), PR #12, two runs (push and pull_request) | 25,484,827 B (24.30 MiB) | 10,409,222 B | 7,366,744 B | `085fd954635979a36fdb14458bd22741302fed89b202f67f29c1161127b21e26` | `94dd8072…1b93afb8` | ~7–9 min job |
+
+Runs a and b are byte-identical (`diff -r` of the two `dist/` trees is empty), and so are the
+two CI runs. **arm64 and amd64 differ** by 6,961 B: the image digest is a multi-arch index, so
+each host runs its own rustc/LLVM/wasm-opt binaries. Reproducibility holds per architecture; to
+reproduce CI's bytes locally, run the container with `--platform linux/amd64` (not done here:
+emulated, much slower). Headroom under the
+gate is 736,534 B (0.70 MiB). The 24.39 MiB release-equivalent build recorded below used Homebrew
+wasm-opt 133 on the Mac; the pinned binaryen 131 gives 24.30 MiB for the same inputs, which is
+why tools are now pinned. An earlier attempt was OOM-killed compiling trunk with 14 parallel
+jobs alongside other containers in 8 GB; `docker-build.sh` now passes `CARGO_BUILD_JOBS`
+(default 8), which doesn't change output (the profile fixes codegen units).
+
+## Story 2.10: upstreamable patches
+
+Tests run natively in the build image (`verify/test-patches.sh`, all green):
+
+| Patch | Change | Test |
+|---|---|---|
+| `0002-inspect-revision.patch` | `document.inspect` returns `revision` (bumped on every edit, undo, redo) and `history.undoDepth` | `inspect_revision_tests::revision_and_undo_depth_track_edits_undo_and_redo` (engine) |
+| `0003-missing-font-warning.patch` | A command whose edit newly gives a text layer (style or styled range) a family no font provides gets `warnings: ["font family \"X\" isn't available: …"]` in its result. Only changed nodes are checked (`changed_ids`), only families new to that node warn, and nothing warns until installed fonts are indexed | `fonts::tests::an_edit_that_names_an_unavailable_family_warns_once_in_its_result` (engine; the existing `fonts::tests` suite still passes) |
+
+**Screenshot repaint: skipped.** I wrote a patch that called `request_repaint_of` for settling
+captures and a test for it. The test passed with the fix removed: `send_viewport_cmd_to`
+(used for `RequestPaintWhileHidden`) already requests a repaint of that viewport, so a visible tab
+is not starved. The stall SPEC risk 3 describes is the hidden tab itself: the browser runs no
+animation frames, which an app-side repaint can't fix. Finding the real cause needs a browser
+repro in the eframe web runner; the patch was dropped.
+
 ## Pinned revisions (Cargo.lock at v0.18.1)
 
 | Source | Rev | Crates |
@@ -65,7 +133,7 @@ is not on the allow-list.
 | storytold/craft-libs | `fd5e2feff6ea25bed371a99cc732b3968d621505` | craft-web-api, craft-web-host (the `window.figcraft` and `?host=parent` plumbing) |
 | storytold/craft-libs | `6e03f65bf45181db77ba6229716e6624db9eb25b` | craft-update |
 | storytold/egui (fork) | `6d518fc799681571963842f95b55a6b68431b15a` | 14 via `[patch.crates-io]` (egui 0.37: egui, eframe, epaint, egui-wgpu…) |
-| storytold/winit (fork) | `a517b3846ee8457d84ee4975110bfda6797c44dc` | winit 0.30.13: **not fetched, see Deviations** |
+| storytold/winit (fork) | `a517b3846ee8457d84ee4975110bfda6797c44dc` | winit 0.30.13: dropped by the spike, kept since Story 2.9 |
 
 Three craft-libs revisions in one lockfile is a drift signal in itself.
 
@@ -181,7 +249,7 @@ Instead, `verify/docker-build.sh` runs the same steps in the same image with not
   `cargo fetch --locked --target wasm32-unknown-unknown` runs first, so a cold build still gets its
   crates.
 
-## Deviations from "pinned revisions"
+## Deviations from "pinned revisions" (resolved by Story 2.9)
 
 1. **`storytold/winit` is dropped.** Upstream's `[patch.crates-io]` pins a winit fork, and that repo
    is not on the spike's org allow-list. `build.sh` deletes the patch line and runs
