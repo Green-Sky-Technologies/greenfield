@@ -1,531 +1,458 @@
-# Project: CrunchDesign — AI Design Canvas
+# Project: Greenfield — open design tool with an agent
 
-> **Handoff brief for Claude Code.** A web app that pairs a conversational agent
-> with a WYSIWYG design canvas of live HTML frames. Teams describe a design, the
-> agent builds it on the canvas, and they refine it through chat, inline comments,
-> direct manipulation, and agent-generated sliders. Designs are built against a
-> persistent design system and exported to code (React + Tailwind) and to Figma.
+> **Handoff brief for Claude Code.** Greenfield (formerly CrunchDesign) is a web design tool:
+> a real vector editor with an agent built in. The editor is a fork of
+> [FigCraft](https://github.com/storytold/figcraft) (Rust, compiled to WebAssembly) embedded in
+> our Next.js app. The app adds workspaces, the agent, comments that can be sent to the agent,
+> storage, versions and sharing.
 >
-> Written as epics + user stories with acceptance criteria (AC). Work top to
-> bottom; each epic is independently demoable. Decisions made during refinement are
-> logged in §9.
+> Written as epics and user stories with acceptance criteria (AC). The plan is built for
+> **parallel work**: after a short serial foundation, epics 2 to 9 are lanes that one person or
+> one Claude Code session can each take at the same time. Decisions are logged in §9.
 
 ---
 
 ## 0. Context & Purpose
 
-**Core loop:** describe → agent generates → refine (chat · inline comment ·
-direct edit · slider) → export (code / Figma / HTML / share link).
+**Core loop:** draw it yourself (canvas, tools, inspector) **or ask** (agent pane, or a comment
+sent to the agent) → review what the agent changed → share or export.
 
-**Why web:** fastest iteration, single rendering engine target (the browser).
-No desktop shell, no PWA concerns in v1.
+**Two principles for the product:**
+1. **Direct control is the default.** The canvas works like a professional design tool, with no
+   modes to switch between. The agent is a pane and a comment action, not the whole app.
+2. **You can always tell your edits from the agent's.** Green marks you (selection, focus,
+   primary actions); ember marks the agent (what it is editing, values it changed, its turn).
 
-**Non-goal:** cloning any product's visual identity or branding. We replicate the
-*interaction model and feature set*, not the trade dress.
+**Brand:** "Greenfield — Design in the open." A Green Sky product, in the same family as the
+greensky.tech site: square corners, hairlines instead of cards, a 32-unit pixel mark. Brand
+sheet and editor mockups: the "Greenfield brand and editor" design canvas.
 
-**Out of scope for v1** (see §8 for the deferred list): real-time multiplayer,
-two-way live Figma sync, non-Claude model providers, billing, mobile app,
-PDF/PPTX/Canva/Google Slides export, GitHub PR export, document (DOCX/PDF/XLSX)
-inputs, design-system import from a code repo.
+**Non-goal:** cloning any product's visual identity. FigCraft's own name and logos are
+trademarks of the ArtCraft Team and must not appear in Greenfield (see Epic 8).
+
+**Out of scope for v1** (see §8): real-time multiplayer, accounts across Greenfield servers,
+billing, mobile, a React rebuild of the inspector (§9 D20), two-way Figma sync.
 
 ---
 
-## 1. Target Stack (decided)
+## 1. Target Stack
 
 | Layer | Choice | Notes |
 |---|---|---|
-| Frontend | **Next.js (React + TS)** on **Vercel** | Evergreen Chromium, Firefox, Safari. |
-| Canvas | **tldraw SDK** hosting custom "frame" shapes — spike vs. custom (Story 3.0) | tldraw provides pan/zoom/arrange; frame contents are our own DOM renderer. |
-| Design document | **Structured JSON doc tree** (`DesignDoc`) | The single source of truth. HTML is *rendered from* it, never parsed back. |
-| App auth | **Clerk** (Organizations = Workspaces) | Email, Google, GitHub. Roles: Admin / Editor / Viewer. |
-| Database | **Neon Postgres** (Vercel Marketplace) + **Drizzle ORM** | Neon branch per preview deploy. |
-| Assets | **Vercel Blob** | Uploads, screenshots, thumbnails, export ZIPs. |
-| Interactive agent | **Anthropic TS SDK (Messages API + tool use)** in Vercel Functions | Quick edits: chat tweaks, inline comments. Streams over **SSE**. |
-| Long-running agent | **Claude Agent SDK** in **Vercel Sandbox** | Full generation, redesign, DS import, web capture, code export, Figma export. |
-| Model access | **Vercel AI Gateway by default, optional BYOK; Claude only** | Deployment-wide AI Gateway; workspaces can add their own Anthropic API, Amazon Bedrock, Google Vertex AI, Azure AI Foundry or AI Gateway key. |
-| Figma | **CrunchDesign Figma plugin** + Figma REST API (read) | The plugin is the only way to write nodes into Figma. |
-| Setup | **Vercel only** | Deploy Button provisions Neon, Clerk and Blob; the build migrates the database and configures Clerk (`scripts/vercel-build.mjs`). No IaC tool to learn. |
-| Monorepo | **pnpm + Turborepo** | `apps/web`, `apps/figma-plugin`, `packages/doc-model`, `packages/renderer`, `packages/agent-tools`, `packages/sandbox-runner`. |
+| App shell | **Next.js (React + TS)** on **Vercel** | Top bar, agent pane, comments, workspaces, settings. |
+| Editor | **FigCraft fork** (`figcraft-web`, Rust → WebAssembly, egui on WebGPU/WebGL2) | Embedded in a same-origin `<iframe>` in host mode (`?host=parent&control`). Owns the canvas, tools, layers and inspector in v1. |
+| Bridge | **`packages/bridge`** | Typed client for `window.figcraft` (commands, `document.inspect`, `node.get`, `ui.render`) and the host messages (`figcraft:ready/open/save/dirty`). The only way app code talks to the editor. |
+| Document | **`.figcraft` archive** | Source of truth. Stored in Vercel Blob; Postgres holds metadata, versions and permissions. |
+| App auth | **Clerk** (Organizations = Workspaces) | Admin / Editor / Viewer. Unchanged. |
+| Database | **Neon Postgres** + **Drizzle** | Unchanged; HTML-model tables removed (Story 1.2). |
+| Interactive agent | **Messages API + tool use** in Vercel Functions, **tools executed in the browser** | The document lives in the user's iframe, so tool calls stream to the client, run through the bridge, and results post back (Story 4.2). |
+| Long-running agent | **Claude Agent SDK** in **Vercel Sandbox** with headless **`figcraft-cli`** | Works on a copy of the file; the result comes back as a new version (Story 4.5). |
+| Model access | **Vercel AI Gateway by default, optional workspace BYOK; Claude only** | Unchanged (§3). |
+| Collaboration | **Soft edit lock** + comments | FigCraft's live sessions are a preview upstream; adopt later (§8). |
+| Monorepo | **pnpm + Turborepo** (TS), **Cargo** (fork) | The fork lives in its own repository, built in CI into a static bundle the app serves. |
 
 ### Architecture shape
 ```
-Browser (Next.js: chat · canvas (tldraw + frame renderer) · inspector)
-   │  REST/Server Actions (CRUD)      SSE (agent + job streams)
+Browser
+ ├── Next.js shell: top bar · agent pane · comment actions · settings
+ │      │  bridge (postMessage + window.figcraft, same origin)
+ │      ▼
+ └── <iframe /editor/?host=parent&control>  Greenfield editor (FigCraft fork, WASM)
+            canvas · tools · layers · inspector · comment pins
+   │ REST / Server Actions          SSE (agent turns, tool calls, job events)
    ▼
 Vercel Functions (Node/TS)
    ├── Clerk auth, workspace/role checks
-   ├── Projects · DesignDocs · Design Systems · Comments  → Neon Postgres
-   ├── Assets                                             → Vercel Blob
-   ├── Interactive agent (Messages API + tools)  ──┐
-   ├── LLM proxy (key injection, metering, caps) ◄─┼── all model calls go through here
-   └── Job API (create / status / events)          │
-          │                                        │
-          ▼                                        │
-   Vercel Sandbox (one per job)                    │
-      └── Claude Agent SDK ── ANTHROPIC_BASE_URL ──┘ (short-lived job token, never the real key)
-          └── agent tools → call back to Job API to apply DesignDoc patches
-                                                   ▼
-   Vercel AI Gateway (deployment default) · Anthropic API · Bedrock · Vertex · Foundry (workspace BYOK)
-Figma (CrunchDesign plugin) ── REST, plugin token ──► Vercel Functions
+   ├── Projects · files · versions · share links           → Neon Postgres
+   ├── .figcraft files, images, exports                    → Vercel Blob
+   ├── Interactive agent (Messages API; tools run in the browser)
+   ├── LLM proxy (key injection, metering)  ◄── all model calls
+   └── Job API ──► Vercel Sandbox: Agent SDK + figcraft-cli (headless) on a file copy
 ```
 
 ### Known risks (read before starting)
-1. **DOM-on-canvas performance.** Many live HTML frames inside a zoomable canvas
-   can get heavy. → Story 3.0 spike, Story 3.10 perf budget.
-2. **Canvas ↔ code round-trip.** DesignDoc is the source of truth; code and Figma
-   are *outputs*. Never parse code back in. Figma *import* is a one-shot lossy
-   conversion, not a sync. → Epics 2, 7, 8.
-3. **Credential exposure in sandboxes.** Agent jobs run tools that touch untrusted
-   content (web capture, screenshots). Real provider keys never enter the sandbox;
-   all model traffic goes through the LLM proxy. → Story 5.2.
-4. **Auth/ToS.** Claude subscription login is not permitted for third-party apps;
-   BYOK via permitted routes only. → §3.
-5. **Unit economics.** Output tokens dominate cost. → §2.
-6. **Prompt-cache TTL.** A 5-minute default TTL means pausing users get cache
-   misses. → Story 5.11.
-7. **Browser compatibility.** Chromium, Firefox, Safari. → Story 3.9.
-8. **Vercel Hobby plan is non-commercial.** Fine for development. Production needs Pro.
+1. **Agent quality with drawing commands.** The agent issues editor commands instead of writing
+   HTML. Unproven. → Story 0.3, the go/no-go gate.
+2. **Fork maintenance.** FigCraft moves fast (alpha). Keep our patches small and upstream what
+   we can. → Epic 2.
+3. **Agent edits during the user's session.** Tool calls run in the user's browser, so a closed
+   tab ends an interactive turn. Long work goes to jobs. → Stories 4.2, 4.5.
+4. **No change events in the browser build.** Today the host only gets a dirty flag. → Stories
+   0.4, 2.3.
+5. **Bundle size.** The WebAssembly file is about 18 MiB raw (4.5 MiB Brotli); upstream fails a
+   build over 24 MiB. → Stories 0.2, 8.2.
+6. **Licences.** FigCraft is MIT or Apache-2.0; Greenfield is AGPL-3.0. Confirm the combination
+   with someone qualified. → Story 8.4.
+7. Carried over: credential exposure in sandboxes (Story 4.6), prompt-cache TTL, Vercel Hobby
+   being non-commercial.
 
 ---
 
 ## 2. Cost Architecture
 
-**These are design constraints, not optimizations.** Users pay model costs through
-their own keys, so wasting their tokens is a product defect.
+**These are design constraints.** Users pay model costs through their own keys or the
+deployment's gateway, so wasting tokens is a product defect.
 
-1. **Canvas interactions never call the LLM.** Drag, resize, inspector edits,
-   token changes, and slider moves mutate the DesignDoc locally. Zero tokens.
-2. **Stable cacheable prefix.** System prompt + tool definitions + active design
-   system are serialized deterministically (stable key order, no timestamps) and
-   marked for prompt caching.
-3. **Surgical edits.** The agent patches changed nodes through `patch_nodes` and
-   similar tools; it never re-emits the whole document for a local change. Context
-   sent to the model is the *relevant subtree* plus a compact outline of the rest.
-4. **Full generation is rare and user-initiated.** Only explicit "generate",
-   "redesign", or "show N alternatives" requests start a generation job.
-5. **Code and Figma export happen on demand,** never on every edit.
-6. **Tiered model defaults, user-overridable** (Story 5.9): Opus-class for
-   generation/redesign/codegen, Sonnet-class for interactive edits, Haiku-class
-   for cheap utility calls (titles, summaries, lint explanations).
+1. **Canvas work never calls the model.** Drawing, editing and inspector changes happen in the
+   editor. Zero tokens.
+2. **Stable cacheable prefix.** System prompt, tool definitions and the command catalogue are
+   serialized deterministically and marked for prompt caching.
+3. **Surgical edits.** The agent reads the selection's subtree (`node.get`) plus a compact
+   outline of the page, and changes it with one `batch` of commands, which is one undo step. It
+   never re-reads or re-creates the whole document for a local change.
+4. **Full generation is rare and user-initiated** ("design a pricing page", "three
+   alternatives"), and runs as a job.
+5. **Export happens on demand.**
+6. **Tiered model defaults**, user-overridable (Story 4.9).
 
-**Honest caveat:** caching saves a modest share per turn, because output dominates.
-The real lever is *not regenerating* (principles 1, 3, 4). Measure everything
-(Story 5.10): tokens in/out, cache read/write, and estimated cost per call, job,
-member, and workspace.
-
-> Check current model pricing in Anthropic's docs when building the cost estimator;
-> do not hard-code prices from this spec.
+Measure everything (Story 4.10). Check current model pricing in Anthropic's docs; do not
+hard-code prices from this spec.
 
 ---
 
 ## 3. Auth & Credentials Model
 
-**App auth:** Clerk. A Clerk Organization = a CrunchDesign **Workspace**.
-Roles: **Admin** (members, credentials), **Editor** (edit designs, comment, run
-the agent), **Viewer** (strictly view-only: no edits, comments, sliders, or agent;
-can run **deterministic exports**: HTML/ZIP, handoff bundle, open share links).
-LLM-backed exports (React + Tailwind codegen, Figma push) require Editor, since
-they spend the workspace key.
+Unchanged from CrunchDesign; already built. Summary:
 
-**Model access:** the **deployment's Vercel AI Gateway** by default, with optional
-**workspace-level BYOK** (no personal keys in v1).
-- Deployment gateway: on when running on Vercel (`VERCEL`) or when `AI_GATEWAY_API_KEY`
-  is set; `CRUNCH_AI_GATEWAY=on|off` overrides. Auth is `AI_GATEWAY_API_KEY`, else the
-  Vercel OIDC token (fetched per request). Usage bills to the hosting Vercel team.
-- Precedence: a workspace credential that passed its test → the deployment gateway →
-  any other saved credential → no model access. Calls are metered with provider
-  `gateway`; model ids map to `anthropic/claude-…` (`providerModelId`).
-- Supported BYOK routes: Anthropic API key · Amazon Bedrock · Google Vertex AI · Azure
-  AI Foundry · Vercel AI Gateway key (bills the workspace's own Vercel team).
-- Bedrock: prefer **cross-account IAM role assumption** (role ARN + external ID
-  that we generate) over static access keys. Static keys are allowed as a fallback.
-- Vertex: service-account JSON or Workload Identity Federation.
-- Stored with **envelope encryption** (per-record data key, AES-256-GCM, master key
-  in a secret manager/env). Never logged, never returned to the client (only
-  the last 4 characters plus provider and status), never placed in a sandbox.
-- **No spend caps during beta.** Usage is still metered per member and workspace
-  (Story 5.10) so caps can be added later without schema changes.
-
-**Policy:** Anthropic does not allow third-party products to offer claude.ai login
-or subscription rate limits, including agents built on the Claude Agent SDK.
-OAuth tokens from Free/Pro/Max accounts are never accepted.
-
-**Billing for CrunchDesign itself:** none in v1 (**free beta**). Instrument usage
-so pricing can be decided later.
+- **Clerk** Organizations = Greenfield **Workspaces**. Roles: **Admin** (members, credentials),
+  **Editor** (edit, comment, run the agent), **Viewer** (view only; can open share links and
+  run exports that use no model).
+- **Model access:** the deployment's Vercel AI Gateway by default (`GREENFIELD_AI_GATEWAY=on|off`
+  overrides), with optional workspace BYOK: Anthropic API, Amazon Bedrock (role assumption
+  preferred), Google Vertex AI, Azure AI Foundry, or an AI Gateway key. Precedence: a tested
+  workspace credential → the deployment gateway → any other saved credential → none.
+- Credentials use **envelope encryption** (AES-256-GCM, AAD = workspace id); never logged,
+  never sent to the browser, never placed in a sandbox (the LLM proxy injects them).
+- **No spend caps during beta;** usage is metered per member and workspace.
+- **Policy:** claude.ai login and Free/Pro/Max OAuth tokens are never accepted.
+- **Billing:** none in v1 (free beta).
 
 ---
 
 ## 4. Interaction Model
 
-**Layout:** a left pane and the canvas (full width; no right-hand inspector). A slim top
-bar carries the project, edit-lock status, a **View / Edit / Comment** mode switch, comments,
-versions, activity, share, notifications and export. The editor is full-screen (no workspace
-header).
+See the Editor page of the design canvas.
 
-**Modes** (so you never edit by accident):
-- **View** (default): the canvas is a preview. Pan and zoom only; clicks never select. The left
-  pane is the agent chat.
-- **Edit** (E): select, drag, resize, edit text and insert elements. The left pane turns into the
-  edit panel: Discard / Save for the edit session; Simple · Pro · Code · Tweaks tabs; a layer
-  tree with semantic names (Row, Column, Grid, Heading…); a Figma-style tool row (select, text,
-  frame, rectangle, ellipse, line, image, undo/redo); and grouped property sections (Text,
-  Sizing with Hug / Fixed / Fill, Layout, Fill, Stroke, Radius, Effects), with a marker on
-  values set at the current breakpoint. Viewers and archived projects can't enter it.
-- **Comment** (C): click an element to open a composer with two actions. **Comment** posts a
-  human comment thread; the comments pane (a running log of human threads) slides over the left
-  pane. **Send to agent** posts the text into the open agent chat with the element as the turn's
-  context, through the normal chat path.
+**Layout:** a slim top bar (file, tools, "Comment or ask", people, zoom, Share), the agent pane
+on the left, the editor in the middle and right. In v1 the editor's own layers and inspector
+panels stay, themed for Greenfield (§9 D20).
 
-**Follow-up questions:** before generating a new design or page, and for ambiguous or large
-chat requests, the agent asks follow-up questions in a form card (multiple choice and free
-text, or "just decide"). The answers feed into the design. Small tweaks run without asking.
+**No modes.** Select and edit at any time, like a professional design tool. Viewers and
+archived projects open the editor read-only.
 
-**Refinement:** chat; comments sent to the agent; direct edits in Edit mode (flow-first
-drag, absolute positioning as an opt-in); and sliders (agent-generated controls bound to props
-or tokens, applied live at zero token cost; the Tweaks tab).
+**Asking the agent:**
+- **Agent pane:** a message is sent with the current selection attached (shown as a chip). The
+  reply lists what changed, layer by layer, with "Show on canvas" and "Undo all".
+- **Comment or ask (C):** click an element and write. **Comment** leaves a thread for people;
+  **Ask Claude** sends the text to the agent pane with that element attached.
+- **Follow-up questions:** before a new design, or for ambiguous or large requests, the agent
+  asks in a card (multiple choice, free text, or "You decide"). Small tweaks run without asking.
 
-**Concurrency:** async teams with a **soft lock**. One Editor holds the edit lock
-per project; others view and comment and can request control. The agent acts only
-on behalf of the lock holder.
+**Attribution:** while the agent works, the layers it touches are outlined in ember with a
+"Claude · editing" tag. Inspector values the agent changed show an ember marker and "changed by
+Claude · Revert".
+
+**Concurrency:** async teams with a **soft lock**. One Editor holds the edit lock per file;
+others view and comment and can request control. The agent acts only for the lock holder.
 
 ---
 
 ## 5. Data Model (sketch)
 
-> **Implemented in Epic 2.** The authoritative definitions are now code: `packages/doc-model`
-> (DesignDoc, style allowlist, tokens, design-system spec, ops), `packages/db/src/schema/*`
-> (tables) and `packages/contracts` (cross-stream interfaces). Where this sketch and the code
-> differ, the code wins. Notable differences: the design system is linked from the project
-> row, not the doc; docs carry `tokenOverrides`; and there are 15 op types (see `ops/types.ts`).
-
 ```ts
-// packages/doc-model
-type NodeId = string;              // stable nanoid; also used as the Figma plugin-data key
-type Breakpoint = 'base' | 'md' | 'lg';   // base = mobile-first; maps to Tailwind prefixes
-
-interface DesignDoc {
-  id: string; projectId: string; version: number;
-  designSystemId: string; designSystemVersion: number;
-  frames: Frame[];                 // artboards on the canvas
-  nodes: Record<NodeId, Node>;     // normalized node store
-  sliders: Slider[];
-}
-
-interface Frame { id: string; name: string; rootNodeId: NodeId;
-  canvas: { x: number; y: number }; width: number; previewBreakpoints: Breakpoint[]; }
-
-interface Node {
-  id: NodeId;
-  type: 'box' | 'text' | 'image' | 'svg' | 'instance';   // instance = DS component
-  name?: string;
-  parentId: NodeId | null; children: NodeId[];
-  positioning: 'flow' | 'absolute';
-  style: Partial<Record<Breakpoint, StyleProps>>;          // base + overrides
-  props?: Record<string, unknown>;                         // text content, src, alt, component props
-  componentRef?: { componentId: string; variant?: string };
-}
-
-// A StyleProps value is either a literal or a token reference, e.g.
-//   { color: { token: 'color.primary' } } | { color: '#1a1a1a' }
-// The allowed StyleProps keys are an explicit allowlist that covers what Tailwind can express
-// (layout, flex/grid, spacing, sizing, typography, color, border, radius, shadow, opacity, transform).
-
-interface Slider { id: string; label: string; min: number; max: number; step: number;
-  value: number; bindings: Array<{ target: { nodeId: NodeId; prop: string; breakpoint: Breakpoint }
-                                   | { token: string };
-                                   map: 'linear' | { stops: [number, string | number][] } }>;
-  pinned: boolean; }
+// Postgres (packages/db)
+projects       { id, workspaceId, name, archivedAt, … }                    // kept
+files          { id, projectId, name, blobKey, size, sha256, updatedBy, updatedAt }
+file_versions  { id, fileId, blobKey, kind: 'auto' | 'agent' | 'named', name?, createdBy, createdAt }
+edit_locks     { fileId, holderId, expiresAt }                             // kept
+share_links    { id, fileId, public, expiresAt, revokedAt }                // kept
+comment_index  { fileId, threadId, nodeId?, authorId, resolved, updatedAt } // mirror for notifications
+agent_conversations, agent_messages, jobs, job_events, llm_calls            // kept
+workspaces, members, provider_credentials                                    // kept
 ```
 
-**Patch ops** (`packages/doc-model/ops`): `insertNode`, `removeNode`, `moveNode`,
-`setStyle`, `setProps`, `setToken`, `insertFrame`, `upsertSlider`, and so on.
-Every mutation (human, agent, or slider) is an op. Ops are validated by a Zod schema,
-applied by a pure reducer, inverted for undo, and batched into transactions. **The
-agent's tools emit the same ops.**
-
-**Postgres tables (initial):** `workspaces` (mirrors Clerk org), `members`,
-`provider_credentials`, `spend_caps`, `projects`, `design_docs` (current snapshot
-+ version), `doc_ops` (append-only log), `doc_versions` (auto and named
-snapshots), `design_systems`, `design_system_versions`, `comments`,
-`comment_threads`, `share_links`, `assets`, `agent_conversations`,
-`agent_messages`, `jobs`, `job_events`, `llm_calls` (usage metering),
-`edit_locks`, `figma_links`.
+- **The `.figcraft` file is the document.** Comments live in the file (FigCraft's `comment.*`
+  commands, anchored to node ids); `comment_index` mirrors them for notifications and search.
+- **Removed** with the HTML model (Story 1.2): `design_docs`, `doc_ops`, `doc_versions`,
+  `design_systems`, `design_system_versions`, and the slider tables. Design systems become
+  FigCraft variables, styles and component libraries.
+- **Agent tools** are command batches: `{ commands: [{ command, params }], label }`, run with the
+  editor's `batch` (one undo step, `$step` references to earlier results).
 
 ---
 
 ## 6. Epics & Stories
 
-### Epic 1 — Foundation & Workspaces
-*Demo: sign up, create a workspace, invite a teammate, add a Claude credential,
-create an empty project.*
+### Lanes and order
 
-- **1.1 Monorepo scaffold.** pnpm + Turborepo, TS strict, ESLint/Prettier, Vitest,
-  Playwright. AC: `pnpm dev` runs the web app; CI runs lint, typecheck and tests on PRs.
-- **1.2 One-click setup (revised: OpenTofu dropped for open source).** A Vercel Deploy
-  Button provisions Neon, Clerk and Blob; the build applies migrations and configures Clerk.
-  AC: a fresh Deploy Button run yields a working app with no steps beyond two generated
-  secrets; with the Neon integration, every preview deploy gets its own Neon branch.
-- **1.3 Clerk auth + workspaces.** Clerk Organizations mapped to workspaces;
-  a webhook syncs orgs and members into Postgres. AC: Admin/Editor/Viewer enforced
-  server-side on every route; a user without a workspace is guided to create or join one.
-- **1.4 Provider credentials.** An Admin adds, tests, rotates and removes one
-  credential per workspace (Anthropic / Bedrock role / Vertex / Foundry / AI Gateway). AC:
-  envelope-encrypted at rest; a test-connection call succeeds or shows a provider
-  error; the secret is never returned to the client or written to logs (covered by tests).
-- **1.5 Spend caps — deferred (beta).** Keep a no-op `checkBudget()` hook in the
-  LLM proxy so caps can be enabled later.
-- **1.6 Projects CRUD.** Create, rename, duplicate, archive and list, with thumbnails.
-  AC: Viewers can't create or edit; every project is linked to a design system (default
-  system created per workspace).
+```
+Phase 0  POC          0.1 ─┐
+                      0.2 ─┼─► gate ─► Phase 1 (serial) ─► Phase 2 lanes, in parallel
+                      0.3 ─┤          1.1 → 1.2 → 1.3 + 1.4      2 Fork (Rust)
+                      0.4 ─┘                                     3 Files & versions
+Lane 9 (brand) runs from day one                                 4 Agent
+                                                                 5 Editor shell
+                                                                 6 Comments & Ask Claude
+                                                                 7 Export
+                                                                 8 Ops & security
+```
 
-### Epic 2 — Document Model & Renderer
-*Demo: a hand-written DesignDoc JSON renders as live frames that match a
-reference HTML page at all breakpoints.*
+**Why the lanes can run in parallel:** every TypeScript lane builds against FigCraft's
+**unmodified upstream release** (0.18.1 at the time of writing) through `packages/bridge`. The
+fork (Epic 2) only adds polish and events; nothing functional waits on it. Where a story needs
+the fork, it says so and names the fallback.
 
-- **2.1 DesignDoc schema + ops.** Zod schemas, pure reducer, inverse ops,
-  transactions. AC: property-based tests show `apply(op); apply(inverse(op))` is
-  the identity; unknown style keys are rejected.
-- **2.2 Token resolution.** A design system compiles to CSS custom properties;
-  token references render as `var(--…)`. AC: changing one token re-renders every
-  frame using it without remounting the whole tree.
-- **2.3 Frame renderer.** Renders a frame's subtree to DOM inside a style-isolated
-  container (Shadow DOM, or an iframe if the 3.0 spike says so). AC: style isolation
-  from the app chrome; incremental re-render (a changed node re-renders only its subtree).
-- **2.4 Breakpoint overrides.** Mobile-first base styles plus `md`/`lg` overrides. AC:
-  a frame previews at each breakpoint width; the inspector shows which breakpoint
-  a value is set on and which it inherits from.
-- **2.5 Persistence.** Ops are debounced to the server, appended to `doc_ops`,
-  snapshot compacted. AC: reload restores the exact state; a version conflict
-  (stale lock) is rejected, not silently merged.
+| Lane | Starts after | Needs from other lanes |
+|---|---|---|
+| 2 Fork | 0.2 | none |
+| 3 Files & versions | 1.3 | none |
+| 4 Agent | 0.3, 1.3, 1.4 | none (attribution outlines arrive with 2.4) |
+| 5 Editor shell | 1.3 | 2.4 for ember outlines; until then, agent edits show only in chat |
+| 6 Comments & Ask Claude | 1.3 | 2.5 for the "Ask Claude" button in the editor's composer, or the 6.2 overlay fallback |
+| 7 Export | 1.3 | none |
+| 8 Ops & security | 0.1 | none |
+| 9 Brand & launch | now | none |
 
-### Epic 3 — Canvas & Direct Editing (WYSIWYG)
-*Demo: select any element, drag to reorder, resize, edit text and every CSS
-property in the inspector, undo and redo, no LLM calls.*
+### Carried over from CrunchDesign (built, kept)
 
-- **3.0 Spike: tldraw vs. custom canvas** (time-box: 3 days). Build a canvas with
-  20 live frames of ~300 nodes each in both (a) tldraw custom shapes and (b) a
-  custom CSS-transform pan/zoom surface. Measure FPS during pan/zoom, selection
-  latency, and memory in Chromium, Firefox and Safari. Also compare Shadow DOM and
-  iframe frame containers. AC: written decision record in `docs/adr/0001-canvas.md`.
-- **3.1 Frames on canvas.** Add, move, resize (width), rename and duplicate frames;
-  pan and zoom; minimap. AC: 60fps pan/zoom at the 3.0 benchmark size on a mid-range laptop.
-- **3.2 Selection overlay.** Click to select a node inside a frame, Shift for
-  multi-select, Esc/Enter to move up or down the tree, hover outlines, a layers panel
-  mirroring the tree. AC: the overlay stays correct across zoom levels and breakpoints.
-- **3.3 Inspector.** Grouped fields: layout (flex/grid, gap, align), spacing,
-  size, typography, fill, border, radius, shadow, opacity, transform, positioning.
-  Every field accepts a literal or a token (picker). AC: every allowlisted
-  StyleProp is editable; edits apply in under 16ms and are a single undo step per gesture.
-- **3.4 Flow-first drag & drop.** Dragging reorders within a flex/grid parent or
-  reparents into another container, with drop indicators. Holding a modifier or
-  toggling "absolute" enables free x/y placement. AC: the result is valid flow CSS;
-  absolute nodes keep their position relative to the nearest positioned ancestor.
-- **3.5 Resize handles & smart guides.** Resizing sets width/height (fixed, fill
-  or hug, like auto-layout); spacing guides and snapping. AC: hug/fill map to the
-  Tailwind sizing equivalents on export.
-- **3.6 Inline text editing.** Double-click to edit text in place. AC: IME and
-  emoji safe; Esc cancels; formatting is limited to the node's text style.
-- **3.7 Undo/redo.** Session history over ops, including agent transactions
-  (one agent turn = one undo step). AC: Cmd/Ctrl+Z works across human and agent edits.
-- **3.8 Edit lock & presence.** A soft lock per project with heartbeat and timeout;
-  avatars show who's viewing; "request control" notifies the holder; Admins can
-  take over. AC: a non-holder's canvas is read-only with comments enabled; a lock
-  expires 2 minutes after the holder's tab dies.
-- **3.9 Browser compatibility.** Playwright suite on Chromium, Firefox and WebKit
-  covering select, drag, resize, inspector and text editing. AC: green on all three in CI.
-- **3.10 Performance budget.** AC: under 100ms to first interactive frame after
-  project load for a 10-frame project; no long tasks over 50ms during drag.
-
-### Epic 4 — Design Systems
-*Demo: create a system manually, import one from a URL, publish it, and see a
-project pick it up.*
-
-- **4.1 Design-system editor.** Tokens (color, typography, spacing, radius,
-  shadow, breakpoints) and components (named DesignDoc subtrees with props and
-  variants). AC: a live preview page renders every token and component.
-- **4.2 Draft / Published versions.** Projects pin a published version; an upgrade
-  prompt appears when a newer one is published. AC: editing a draft never changes
-  existing projects.
-- **4.3 Multiple systems per workspace.** AC: a project can switch systems, with a
-  preview of what will change.
-- **4.4 Import from URL / screenshots** (Agent SDK job). Capture the page (headless
-  browser in the sandbox) or analyze uploaded screenshots, then propose tokens and
-  candidate components for review. AC: nothing is saved until the user accepts the
-  proposal; the proposal shows its sources.
-- **4.5 Import from Figma variables.** Via Epic 8 token sync. AC: token names and
-  modes map deterministically (light/dark modes become theme variants).
-- **4.6 Design-system lint + agent self-check.** A deterministic linter flags
-  literal values that should be tokens, off-scale spacing, and contrast failures
-  (WCAG AA). The agent runs the linter after each edit and self-corrects up to N
-  times. AC: lint runs locally on every edit (zero tokens); the agent loop uses the
-  same lint output.
-
-### Epic 5 — Agent
-*Demo: "Design a pricing page" produces a multi-frame design via a background
-job; "make this button larger" via an inline comment patches one node.*
-
-- **5.1 Job runner on Vercel Sandbox.** `packages/sandbox-runner` behind a
-  `JobRunner` interface (to allow a future Fargate implementation). Lifecycle:
-  queued → provisioning → running → succeeded / failed / cancelled. Progress events
-  go to `job_events`; the client streams them over SSE with resume (`Last-Event-ID`).
-  AC: the user can close the tab and come back to see progress or results; cancel
-  stops the sandbox; timeouts and retries are configurable; orphaned sandboxes are
-  reaped.
-- **5.2 LLM proxy.** All model calls (interactive and sandbox) go through
-  `/api/llm`. Sandboxes get `ANTHROPIC_BASE_URL` plus a short-lived, job-scoped
-  token. The proxy resolves the workspace credential, routes to the right provider
-  (Anthropic / Bedrock / Vertex / Foundry), calls the (no-op in beta) budget hook, and records usage in
-  `llm_calls`. AC: a test proves the real key never appears in the sandbox env or
-  filesystem; a revoked job token is rejected immediately.
-- **5.3 Agent tools** (`packages/agent-tools`). Shared by both runtimes:
-  `get_outline`, `get_subtree`, `patch_nodes` (ops), `insert_frame`,
-  `create_slider`, `get_design_system`, `run_lint`, `screenshot_frame`,
-  `capture_url` (sandbox only), `get_figma_frame`. AC: every tool validates inputs
-  with Zod; patches are applied server-side as a transaction attributed to the agent.
-- **5.4 Interactive agent path.** Messages API + tool use in a Vercel Function,
-  streaming SSE to the chat panel. Used for chat tweaks and inline-comment asks.
-  AC: a one-node change emits a patch touching only that node (verified by an eval);
-  if the request is too big for the interactive path, the agent offers to start a
-  generation job instead.
-- **5.5 Generation jobs.** Agent SDK in the sandbox for "generate", "redesign" and
-  "N alternatives". The agent writes frames incrementally, and they appear on the
-  canvas as they're built. AC: alternatives land as sibling frames; the
-  job summary lists what was created.
-- **5.6 Chat panel.** Conversation per project, streaming, tool-activity
-  indicators, cancel, retry, and job cards with progress. AC: messages persist; the
-  attachments are images, a URL to capture, or a Figma frame link.
-- **5.7 Send a comment to the agent.** In Comment mode, "Send to agent" posts the comment into
-  the open chat with the element as selection context (same Messages API path as chat). The
-  older pinned "ask agent" thread flow (`/api/agent/edit`, subtree-scoped patches) is retired
-  from the UI; existing agent-request threads still display.
-- **5.8 Sliders.** The agent proposes sliders bound to props or tokens (e.g.
-  "density" controls padding and gap). They render in a slider tray; dragging applies
-  ops locally (zero tokens); sliders can be pinned, renamed and deleted. AC: slider
-  changes are undoable as one step per drag.
-- **5.9 Model picker.** Defaults by task (Opus-class: generation, codegen;
-  Sonnet-class: interactive; Haiku-class: utilities), overridable per prompt; Admins
-  set workspace defaults and an allowed-model list. AC: the picker shows the
-  estimated relative cost.
-- **5.10 Usage instrumentation.** Per call: model, tokens in/out, cache read/write,
-  latency, estimated cost, task type. Dashboards per workspace and member. AC: the
-  cache hit rate is visible; costs reconcile with provider usage within ±5%.
-- **5.11 Cache TTL strategy.** Deterministic prefix serialization; use the 1-hour
-  cache TTL for the DS + tools prefix when the session is active (measure write cost
-  against miss rate); optionally re-warm on editor focus after idle. AC: a decision
-  backed by measured hit-rate data, documented in an ADR.
-- **5.12 Auto snapshots.** A snapshot is taken before every agent transaction;
-  "Revert agent change" appears on each agent message. AC: one-click restore, which is itself undoable.
-- **5.13 Agent eval suite.** Golden prompts → assertions (lint-clean, patch scope,
-  token usage within budget). AC: runs in CI on demand and tracks regressions per
-  model.
-
-### Epic 6 — Collaboration, Versions & Sharing
-*Demo: a teammate leaves comments, the owner names a version, and shares a public
-view-only link.*
-
-- **6.1 Comment threads.** Pinned to node or canvas position; replies, resolve,
-  @mentions (in-app notifications; email digests later). AC: comments survive node
-  moves; if a node is deleted, its comments become orphaned but stay visible.
-- **6.2 Named versions.** Save, restore and compare (side-by-side visual diff of
-  frames). AC: restoring creates a new version and never destroys history.
-- **6.3 Share links.** Workspace-only by default; an Editor can make a link public
-  (view-only), with optional expiry and revoke. AC: public view needs no auth,
-  leaks no workspace data beyond the design, and is rate-limited.
-- **6.4 Activity feed.** Who changed what (human vs. agent), per project.
-
-### Epic 7 — Export & Code Handoff
-*Demo: download a ZIP of standalone HTML; run code export and get a
-React + Tailwind project that matches the canvas.*
-
-- **7.1 Standalone HTML/CSS + ZIP.** Deterministic export from the DesignDoc (no
-  LLM). AC: opens offline and is visually identical to the canvas at each breakpoint
-  (Playwright screenshot diff under a threshold).
-- **7.2 Handoff bundle.** Versioned JSON: DesignDoc subset, resolved tokens,
-  component inventory, per-frame screenshots, design intent notes (from the chat
-  history, summarized), and responsive rules. AC: a documented schema; a code agent
-  can consume it in one instruction ("implement `handoff.json`").
-- **7.3 React + Tailwind codegen** (Agent SDK job). A deterministic pre-pass maps
-  styles → Tailwind classes and tokens → `tailwind.config` theme; the agent then
-  extracts components, names things well, and adds props and states. AC: output builds
-  (`pnpm build`) in the sandbox before delivery; a screenshot diff against the canvas
-  stays under a threshold; delivered as a ZIP.
-
-### Epic 8 — Figma Integration
-*Demo: push a design to Figma with the plugin, edit in CrunchDesign, push again (updates in
-place); import a Figma frame; sync tokens with Figma variables.*
-
-- **8.1 Figma plugin scaffold** (`apps/figma-plugin`). The user pastes a plugin token
-  generated in CrunchDesign (scoped to a workspace, revocable). AC: the plugin lists
-  the user's projects and frames.
-- **8.2 Push to Figma.** Builds frames with auto-layout (flow → auto-layout;
-  absolute → absolute), text styles, fills, strokes, effects; tokens → Figma
-  variables; DS components → Figma components. Each Figma node stores the
-  CrunchDesign `NodeId` in plugin data. AC: pushing again updates matched nodes in
-  place and only creates or removes the difference; a mapping report lists anything
-  that couldn't be represented.
-- **8.3 Import from Figma.** Paste a file or frame URL (Figma REST API, with a
-  user-provided Figma token or OAuth), or send it from the plugin. Auto-layout → flow, styles
-  → StyleProps, matching variables → tokens, complex vectors → SVG nodes. AC:
-  one-shot conversion with a fidelity report; imported frames can also be used
-  as prompt reference (5.6).
-- **8.4 Token sync with Figma variables.** Through the plugin (works on all Figma
-  plans): pull variables into a DS draft, or push DS tokens to variables. A diff
-  view before applying, in either direction. AC: conflicts are shown, never auto-resolved.
-
-### Epic 9 — Operations & Security
-- **9.1 Environments.** Preview (per PR) and production on Vercel; previews get Neon branches.
-- **9.2 Observability.** Structured logs (with secret redaction), error tracking,
-  job and LLM dashboards, alerts on job failure rate and proxy errors.
-- **9.3 Security review.** Authorization tests for every route (IDOR), CSP for
-  rendered frames (no script execution in user designs; sanitize URLs and SVG),
-  SSRF protection for URL capture, rate limits, plugin-token scoping.
-- **9.4 Data lifecycle.** Workspace deletion purges DB rows, Blob assets and
-  credentials; snapshot retention policy.
+Workspaces and Clerk roles (old 1.3), provider credentials and encryption (old 1.4), the spend
+cap hook (old 1.5), projects (old 1.6, minus design-system linking), the job runner (old 5.1),
+the LLM proxy (old 5.2), the model picker (old 5.9), usage metering (old 5.10), the cache TTL
+strategy (old 5.11, ADR 0002), the one-click Vercel setup (old 1.2), and the signed-in e2e suite.
+These are not re-specified; stories below say where they change.
 
 ---
 
-## 7. Suggested Build Order
-1. Epic 1 (1.1–1.3) → Epic 2 → **Story 3.0 spike** → rest of Epic 3. A fully usable
-   manual editor with no AI is the first milestone.
-2. Epic 4 (4.1–4.3, 4.6 lint).
-3. Epic 5: 5.2 proxy → 5.3 tools → 5.4 interactive → 5.1 job runner → 5.5 generation.
-4. Epic 6, Epic 7, Epic 8, then 4.4/4.5 imports.
-5. Epic 9 runs throughout; 9.3 is required before any public beta.
+### Epic 0 — Proof of concept (go / no-go)
+*Demo: inside the Next.js app, the agent builds a screen in the embedded editor from a prompt;
+the file saves to Blob and reopens.* The four spikes run in parallel. Spike code is throwaway;
+findings go in `docs/adr/0003-figcraft-embed.md`.
+
+- **0.1 Embed in Next.js.** Serve the upstream `figcraft-web` release from the app's own origin
+  (`/editor/`), load it in an `<iframe>` with `?host=parent&control&author=<name>`, and wire
+  `figcraft:open`, `figcraft:save` and `figcraft:dirty` to Blob. AC: open a file from Blob, edit,
+  Save sends the bytes to the host and they land in Blob; reopening shows the same document;
+  dirty state reaches the host; works in Chrome, Safari and Firefox.
+- **0.2 Fork build in CI.** Build `figcraft-web` from source with the pinned `craft-libs` and
+  egui fork revisions, trunk and wasm-opt, and publish the static bundle as a CI artifact. Make
+  one visible theme change to prove the rebrand route. AC: reproducible build from a clean
+  runner; WebAssembly under 24 MiB raw; the changed theme shows in the embedded editor.
+- **0.3 Can Claude draw?** Run `figcraft-cli mcp` headless and give Claude the prompts from
+  `evals/golden/interactive.json`, using `batch` for edits and `ui.render` to check its work.
+  Compare the results with the current HTML-frame agent on the same prompts. AC: a written
+  comparison with renders side by side, token use per prompt, and a recommendation. **This is
+  the gate:** if command-driven results are clearly worse and no prompt or tool change fixes
+  it, stop and fall back to keeping the HTML-frame editor (§9 D19).
+- **0.4 Real-browser checks.** (a) `figcraft.screenshot()` timed out in headless Chromium with a
+  document open: reproduce in real browsers and find a reliable way to get pixels (`ui.render`
+  of frames worked). (b) Detect what a person changed without events: poll `document.inspect`
+  with `fields` and diff. (c) Load a large example file and record load time, memory and frame
+  times. AC: findings with numbers; a recommendation for change detection until Story 2.3 lands.
+
+### Epic 1 — Foundation (serial; keep it small)
+*Demo: the renamed app runs with the editor embedded and no HTML-model code left.*
+
+- **1.1 Rename to Greenfield.** `@crunch/*` → `@greenfield/*`, `CRUNCH_*` → `GREENFIELD_*`,
+  database and test database names, the Deploy Button URL and repository, the Figma plugin name,
+  docs, `CLAUDE.md` and `AGENTS.md`. One PR, merged while no other branches are open (it touches
+  about 1,400 files). AC: `pnpm lint && pnpm typecheck && pnpm test` pass; `grep -ri crunch`
+  finds only the changelog and migration history; old env names are read as fallbacks for one
+  release with a warning.
+- **1.2 Remove the HTML model.** Delete `packages/doc-model`, `renderer`, `canvas`, `ds-lint`,
+  `figma-convert` and `handoff`, the sliders, the editor components that used them, and their
+  tables (one migration). Keep `authz`, `providers`, `crypto`, `db`, `contracts`, `agent` (tools
+  rewritten in Epic 4) and `sandbox-runner`. AC: the app builds; the projects list still works;
+  opening a project shows the embedded editor from 0.1.
+- **1.3 `packages/bridge`.** A typed client over `window.figcraft` and the host messages:
+  `execute`, `batch`, `inspect`, `getNode`, `render`, `open`, `onSave`, `onDirty`, `onReady`.
+  Command parameter types are generated from `figcraft.commands()` for the pinned editor
+  version. Includes an in-memory mock for unit tests and a Playwright helper that drives the
+  real editor. AC: every other lane imports only this package to reach the editor; a CI check
+  fails when the pinned editor's command list changes without regenerating types.
+- **1.4 Agent tool contract** (`packages/contracts`). Tool definitions for the agent:
+  `get_selection`, `get_outline`, `get_node`, `run_batch`, `render`, `list_commands`,
+  `ask_followup`, plus `comment_thread` for Ask Claude. Zod-validated; identical for the
+  interactive path and jobs. AC: schema tests; a fake executor runs the golden prompts' tool
+  calls against the mock bridge.
+
+### Epic 2 — Fork (Rust lane)
+*Demo: the editor looks like Greenfield, shows no ArtCraft marks, and reports changes and
+selection to the host.* Lives in its own repository (`green-sky-technologies/greenfield-editor`).
+Keep each patch small and isolated; offer upstream anything generic (2.3, 2.5).
+
+- **2.1 Greenfield theme.** Dark and light palettes from the brand sheet, IBM Plex Sans and
+  Mono in the chrome, square corners, hairline separators, field green for selection and focus.
+  AC: matches the brand sheet's tokens; text contrast at least 4.5:1 in both themes; the host
+  sets the theme with `view.themeDark` / `view.themeLight` and it persists.
+- **2.2 Remove ArtCraft marks.** Replace the FigCraft name, logo and app icon with Greenfield's;
+  keep the MIT/Apache licence texts, `NOTICE` and `ATTRIBUTION.md`. AC: a CI check fails on the
+  FigCraft or ArtCraft name or logo in user-visible strings and assets (code identifiers may
+  stay).
+- **2.3 Host events.** Post `document changed` (with changed node ids and whether a person or the
+  control channel made the change) and `selection changed` to the host in host mode. AC: the
+  host learns about every edit within one frame; agent edits are labelled as such; no events
+  when the page is not hosted.
+- **2.4 Agent highlight.** A command to outline node ids in ember with a label ("Claude ·
+  editing"), cleared on demand. AC: drawn above the selection, never exported or rendered in
+  `ui.render`; survives zoom and pan.
+- **2.5 "Ask Claude" in the comment composer.** A second action next to Post that sends
+  `{text, anchor nodeId}` to the host instead of creating a thread. AC: only shown in host mode
+  when the host enables it; keyboard reachable.
+- **2.6 Embed chrome flags.** Host-controlled visibility of the home screen, file tabs and
+  menus that Greenfield replaces (the app's top bar owns file and sharing actions). AC: a
+  hosted editor opens straight to the document with no FigCraft home screen.
+- **2.7 Upstream sync.** A documented rebase routine and a monthly cadence; the bridge's
+  generated command types are regenerated on every sync. AC: one sync done end to end.
+
+### Epic 3 — Files, versions and sharing (TS lane)
+*Demo: edits autosave; a named version restores; a public link opens the design read-only.*
+
+- **3.1 Files in Blob.** Each project holds one or more `.figcraft` files; open sends
+  `figcraft:open`, save writes Blob and the `files` row. AC: open → edit → reload restores the
+  exact document; a save from a stale lock is refused, not merged.
+- **3.2 Autosave.** Save a short time after the editor reports dirty, and on tab close where
+  the browser allows. AC: no edit older than the autosave interval is lost on a crash
+  (FigCraft's own recovery copy covers the rest).
+- **3.3 Versions.** Automatic versions on a timer, an `agent` version before every agent turn
+  (old D14), and named versions. Restore makes a new version. AC: one-click "Undo the AI" from any
+  agent turn; restoring never destroys history.
+- **3.4 Soft edit lock.** Carry over the lock and "request control" (old D3) to files. AC: a
+  second Editor opens read-only with the holder's name and a request button.
+- **3.5 Share links and read-only viewing.** Viewers and public links open the editor
+  read-only. AC: a Viewer cannot change the document through the UI or the bridge (enforced
+  server-side on save as well); public links need no sign-in and are rate-limited.
+- **3.6 Thumbnails.** Render the first frame with `ui.render` on save for the projects list.
+
+### Epic 4 — Agent (TS lane)
+*Demo: "tighten the hero" changes three layers as one undo step, with the changes listed in
+chat; "design a pricing page" runs as a job and appears as a new page.*
+
+- **4.1 Context.** For each turn: the selection's subtree (`node.get` with `fields`), a compact
+  outline of the page, the file's variables and styles. AC: context for a one-element request
+  stays within a set token budget (eval-checked).
+- **4.2 Interactive path with browser-run tools.** The server runs the Messages API loop; tool
+  calls stream to the client over SSE, run through the bridge, and the client posts results
+  back. Mutations go through one `run_batch` per step (one undo step each). AC: a closed tab
+  cancels the turn cleanly; a tool call is never run twice (idempotency key); a one-element
+  change touches only that element (eval).
+- **4.3 Self-check.** After mutating, the agent renders the affected frame (`ui.render`) and
+  checks it against the request. AC: capped at N retries; renders are not stored beyond the turn
+  unless the user keeps them.
+- **4.4 Follow-up questions.** Carry over the question cards (multiple choice, free text, "You
+  decide") to the new tool contract.
+- **4.5 Jobs with headless `figcraft-cli`.** "Generate", "redesign" and "N alternatives" run in
+  Vercel Sandbox on a copy of the file; the result is saved as an `agent` version and opened as a
+  new page or tab for review. AC: progress streams to the chat; the user can close the tab and
+  come back; cancel stops the sandbox.
+- **4.6 Sandbox safety.** Keep the LLM proxy rule: no real keys in the sandbox; `figcraft-cli`
+  runs with `--automation-read-root` / `--automation-write-root` confined to the job's folder.
+  AC: tests prove both.
+- **4.7 Change summary.** Every agent turn lists changed layers and properties (from 2.3 events,
+  or by diffing `document.inspect` before and after until 2.3 lands), with "Show on canvas" and
+  "Undo all". AC: the list matches the actual changes.
+- **4.8 Eval suite.** Port `evals/golden` to command-driven tools: scope of change, render
+  checks, token use. AC: runs in CI on demand and tracks regressions per model.
+- **4.9 Model picker / 4.10 Usage.** Carried over; task types updated (interactive, job,
+  export).
+
+### Epic 5 — Editor shell (React lane)
+*Demo: the Editor mockup, working.* Built against the upstream release from day one.
+
+- **5.1 Top bar.** File name and project, "Comment or ask", people, zoom, Share; the editor's
+  own home screen and tabs hidden (2.6) or covered until then.
+- **5.2 Agent pane.** Chat with streaming, the selection chip, the change list (4.7), follow-up
+  cards, cancel and retry, job cards.
+- **5.3 Themes.** Light and dark app chrome from the brand sheet, kept in step with the
+  editor's theme through the bridge. AC: switching one switches both.
+- **5.4 Focus and shortcuts.** Keyboard focus moves cleanly between the React panes and the
+  editor iframe; C opens "Comment or ask"; Esc returns to the canvas. AC: no shortcut fires in
+  both places; screen-reader labels on every control.
+- **5.5 Attribution.** Ember outlines while the agent works (needs 2.4) and the "changed by
+  Claude · Revert" marker in the change list.
+
+### Epic 6 — Comments and Ask Claude (TS lane)
+*Demo: a teammate comments on a heading; the owner turns a comment into an agent request.*
+
+- **6.1 Comments in the file.** Use the editor's comment threads (`comment.add` with a node
+  anchor and author, replies, resolve). Mirror them into `comment_index` on save for
+  notifications and @mentions. AC: comments follow their element when it moves.
+- **6.2 Ask Claude.** From the editor composer's action (2.5), or, until it lands, from an
+  overlay composer the shell positions at the element. Sends the text and element to the agent
+  pane; `comment.prompt` turns existing threads into context. AC: one action from writing a note
+  to an agent turn scoped to that element.
+- **6.3 Notifications.** In-app notifications for mentions and replies; email later.
+
+### Epic 7 — Export (TS lane)
+*Demo: export PNG, SVG and PDF; copy React code for a selected frame.*
+
+- **7.1 Built-in exports.** PNG, JPG, WebP, SVG and PDF through the editor's export commands,
+  available to Viewers (no model use).
+- **7.2 Evaluate Dev Mode code.** Compare FigCraft's generated code (CSS, React, and others) and
+  Code Connect with the old React + Tailwind export. AC: a written decision.
+- **7.3 React + Tailwind job** (only if 7.2 says so). An Agent SDK job reads node JSON and writes
+  a project that builds in the sandbox. Editor role required.
+- **7.4 Figma.** `.fig` import comes from the editor (best effort). Retire `apps/figma-plugin`
+  unless 7.2 or users show a need for pushing to Figma.
+
+### Epic 8 — Operations and security (any lane)
+- **8.1 Serving the editor.** Same-origin `/editor/` static route, content security policy
+  that allows the editor's WebAssembly and nothing else extra, and a version pin shared with the
+  bridge.
+- **8.2 Caching.** Brotli, immutable hashed assets, a size budget check in CI.
+- **8.3 Tests through the iframe.** Extend the Playwright suites to drive the real editor via
+  the bridge helper (1.3). AC: open, edit, save, reopen, and an agent turn with a stubbed model.
+- **8.4 Licences.** Ship FigCraft's licence texts, `NOTICE` and attribution; legal review of
+  MIT/Apache code in an AGPL-3.0 product.
+- **8.5 Carried over.** Environments, observability, authorization tests per route, data
+  lifecycle (old 9.1–9.4); remove the CSP rules for rendered HTML frames.
+
+### Epic 9 — Brand and launch (design lane; starts now)
+- **9.1 Brand assets.** Greenfield mark (dark and light, 16 to 256 px), favicon, wordmark
+  lockup, into the app and the fork.
+- **9.2 Marketing page.** A Greenfield page in the Green Sky family.
+- **9.3 Docs.** README, self-hosting guide, and "how the agent works".
+
+---
+
+## 7. Build Order
+
+1. **Phase 0:** stories 0.1–0.4 in parallel, plus Epic 9. Decide at the gate (0.3).
+2. **Phase 1:** 1.1 → 1.2 → 1.3 and 1.4 together. Short and serial so the lanes start from one
+   tree.
+3. **Phase 2:** Epics 2–8 in parallel, one owner each. Integration points: 2.3 → 4.7 and 5.5;
+   2.4 → 5.5; 2.5 → 6.2.
+4. **Beta:** 8.3 and the authorization tests green; legal review (8.4) done.
 
 ---
 
 ## 8. Deferred (post-v1)
-Real-time multiplayer · two-way live Figma sync · OpenAI and other non-Claude
-providers · personal keys · CrunchDesign billing and plans · PDF/PNG/PPTX/Canva/Google
-Slides export · GitHub PR export into existing repos · DS import from a code repo ·
-DOCX/PDF/XLSX inputs · branching versions · PWA and mobile surfaces · moving the job
-runner to AWS Fargate (only if scale demands it).
+Real-time multiplayer (FigCraft live sessions or `figcraft-server`) · a React inspector
+replacing the editor's own panels · plugins in the browser build (not supported upstream yet) ·
+billing · personal keys · mobile · two-way Figma sync · desktop app.
 
 ---
 
 ## 9. Decision Log
+
+New decisions:
+
 | # | Decision | Rationale |
 |---|---|---|
-| D1 | Live HTML frames from a JSON doc tree, not a vector scene graph | Matches the LLM's strongest output format and code handoff; WYSIWYG still possible (Framer/Webflow model). |
-| D2 | Flow-first drag + absolute opt-in | Keeps exports responsive, real CSS. |
-| D3 | Async teams, soft lock + presence | No merge conflicts; the agent acts for one editor. |
-| D4 | Vercel-only; no IaC tool (OpenTofu dropped when open-sourcing) | Single platform, one-click deploy for self-hosters. |
-| D5 | Split agent runtime: Messages API (interactive) + Agent SDK in Vercel Sandbox (long jobs) | Fast and cheap small edits; Agent SDK for long multi-step jobs. Sandbox costs ~cents per job. |
-| D6 | SSE instead of WebSockets | Vercel Functions don't hold WebSockets; SSE with resume suffices. |
-| D7 | Clerk, Orgs = Workspaces | Fast to ship; roles built in. |
-| D8 | Deployment AI Gateway by default, optional workspace BYOK; Claude routes only | Zero setup for self-hosters; workspaces can still bill their own account. One model family to tune. |
-| D9 | LLM proxy; real keys never enter sandboxes | Prompt-injection safety, metering, caps. |
-| D10 | Free beta, no billing in v1 | Gather real usage data first. |
-| D11 | Export v1: share link, HTML/ZIP, handoff bundle, React + Tailwind | Highest value, lowest cost. |
-| D12 | Figma v1: plugin push (update in place), import, variable sync; no live two-way sync | REST API can't write nodes; two-way merge is too risky for v1. |
-| D13 | User-picked model with task-based defaults | Users control cost/quality. |
-| D14 | Auto snapshots before agent edits + named versions | One-click "undo the AI". |
-| D15 | Breakpoint overrides in one tree | Maps to Tailwind responsive prefixes. |
-| D16 | Sliders bound to props/tokens, persistent | Zero-token tuning. |
-| D17 | Viewers are view-only + deterministic export | Viewers never mutate designs or spend the workspace key. |
-| D18 | No spend caps in beta; metering only | Keep beta friction-free; caps added later via the budget hook. |
+| D19 | Embed a FigCraft fork as the editor (option C), subject to the 0.3 gate; fall back to the HTML-frame editor if the agent can't draw well | A real vector editor with an existing command API and host mode; the spike embedded, drove, saved and reopened it. |
+| D20 | v1 keeps the editor's own layers and inspector, themed in the fork; the shell owns the top bar, agent pane and comments | Rebuilding the inspector in React covers components, variables and prototyping; too large for v1. |
+| D21 | All app code talks to the editor through `packages/bridge`, pinned to one editor version | Lets every TS lane build against the upstream release while the fork catches up. |
+| D22 | Interactive agent tools run in the browser; jobs run headless `figcraft-cli` on a file copy | The document lives in the user's iframe; jobs must survive a closed tab. |
+| D23 | Comments live in the `.figcraft` file, mirrored to Postgres | Uses the editor's anchoring and pins; Postgres only for notifications and search. |
+| D24 | Green for the user, ember for the agent, everywhere | You can always tell your edits from the agent's. |
+
+Superseded from CrunchDesign: **D1** (live HTML frames) by D19; **D2** (flow-first drag) and
+**D15** (breakpoint overrides) by the editor's auto layout and constraints; **D11** (export v1)
+by Epic 7; **D12** (Figma plugin push) by 7.4; **D16** (sliders) dropped. Still in force: D3,
+D4, D5, D6, D7, D8, D9, D10, D13, D14, D17, D18.
 
 ## 10. Open Questions
-1. Figma plugin distribution: publish to the Figma Community, or private/dev install for beta?
-2. Retention period for `doc_ops` and auto snapshots?
-3. Domain, product name check, and analytics tool choice.
+1. Does the 0.3 comparison hold up across more than the golden prompts?
+2. Upstream relationship: contribute host events and the composer action to FigCraft, or keep
+   them in the fork?
+3. Do we need `.figcraft` diffs for version compare, or are rendered side-by-sides enough?
+4. Domain: greenfield.greensky.tech?
