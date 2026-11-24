@@ -1,5 +1,10 @@
 # Agent evals (Story 5.13)
 
+> **Story 1.2 removed the harness.** It ran the HTML model's DesignDoc tools and linter, which
+> are gone. The golden prompts in `golden/` stay: Story 1.4 replays their tool calls against the
+> bridge mock, and Epic 4 brings back a harness for the FigCraft tools. The rest of this page
+> describes the old harness, which ran at commit `ef05c3b`.
+
 Golden prompts for the interactive agent. Each case runs the real interactive loop (cached
 prefix, per-turn document context, tool handlers, scope enforcement) against a fixture document
 in memory, then asserts:
