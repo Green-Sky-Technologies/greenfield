@@ -1,0 +1,13 @@
+{
+  "links": [
+    {
+      "component": "Chip",
+      "importPath": "@/components/chip",
+      "language": "react",
+      "name": "Chip",
+      "template": "<Chip selected={selected} />"
+    }
+  ],
+  "version": 1
+}
+
