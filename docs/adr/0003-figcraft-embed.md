@@ -1,7 +1,7 @@
 # ADR 0003: Embed a FigCraft fork as the editor (Epic 0 results)
 
-- **Status:** Proposed. The 0.3 gate passed; the recommendation is **go**, under the conditions
-  below.
+- **Status:** Accepted (2026-11-24): **go**, under the conditions below. Phase 1 followed
+  (PRs #1–#4), and the SPEC changes below are applied (SPEC §9 D25–D27).
 - **Stories:** 0.1, 0.2, 0.3, 0.4 (SPEC §9 D19)
 - **Date:** 2026-11-24
 - **Raw findings:**
@@ -149,6 +149,7 @@ upstream release with fonts is 24.3 MiB. Upstream's own gate is actually 25 MiB.
 
 Once craft-fonts and the winit fork were approved (2026-11-24), we ran a release-equivalent build:
 craft-fonts at upstream's CI ref `37827adc`, `KEEP_WINIT_FORK=1`, plus our theme patch.
+
 - Raw wasm: **25,579,895 B (24.39 MiB)**, 76 KB more than upstream's release. It fails the 24 MiB
   AC and is about 0.6 MiB under upstream's 25 MiB gate.
 - Gzip 10,376,170 B; Brotli 7,366,446 B.
@@ -215,7 +216,7 @@ so the rebrand must replace them.
   - The CI workflow has never run on GitHub.
   - Approve or reject `storytold/craft-fonts` and `storytold/winit` as build inputs.
 
-## Proposed SPEC.md changes (not applied)
+## SPEC.md changes (applied after Phase 1)
 
 1. **Risk 5 / Story 0.2 / Story 8.2.**
    - Replace "about 18 MiB raw (4.5 MiB Brotli)" with the measured sizes: 22.7 MiB without
