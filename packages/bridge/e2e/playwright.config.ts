@@ -24,7 +24,18 @@ export default defineConfig({
   projects: [
     { name: 'chromium', use: { ...devices['Desktop Chrome'], viewport } },
     { name: 'webkit', use: { ...devices['Desktop Safari'], viewport } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'], viewport } },
+    {
+      name: 'firefox',
+      use: {
+        ...devices['Desktop Firefox'],
+        viewport,
+        // Linux CI runners have no GPU, and Firefox blocklists software WebGL there, so the
+        // editor can't create a WebGL2 surface. Force it on (Mesa llvmpipe).
+        launchOptions: {
+          firefoxUserPrefs: { 'webgl.force-enabled': true, 'webgl.disabled': false },
+        },
+      },
+    },
   ],
   webServer: {
     command: `pnpm exec tsx src/playwright/serve.ts --port ${PORT}`,
