@@ -6,7 +6,7 @@
 import type Anthropic from '@anthropic-ai/sdk';
 import { executeTool, type ToolHost } from './tools';
 import { SUGGEST_JOB_TOOL, suggestJobInput, type JobSuggestion, type Prefix } from './prefix';
-import { ASK_QUESTIONS_TOOL, askQuestionsInput, type QuestionSet } from './questions';
+import { ASK_FOLLOWUP_TOOL, askFollowupInput, type QuestionSet } from './questions';
 
 export type MessageStreamParams = Omit<Anthropic.MessageCreateParamsStreaming, 'stream'>;
 
@@ -45,13 +45,13 @@ export interface RunTurnOptions {
   maxIterations?: number;
   maxTokens?: number;
   effort?: Effort;
-  /** Whether ask_questions may end the turn (false on scoped "ask agent" edits). Default true. */
+  /** Whether ask_followup may end the turn (false on scoped "ask agent" edits). Default true. */
   allowQuestions?: boolean;
   onUpdate?: (u: TurnUpdate) => void;
 }
 
 /**
- * A question set the turn ended on. The last assistant turn holds the ask_questions tool_use;
+ * A question set the turn ended on. The last assistant turn holds the ask_followup tool_use;
  * its tool_result is sent when the user answers, together with `results` (the tool results of
  * any other tool calls in that same assistant turn, which must share the user message).
  */
@@ -153,13 +153,13 @@ export async function runAgentTurn(o: RunTurnOptions): Promise<TurnResult> {
       const act: ToolActivity = { id: tu.id, name: tu.name, status: 'running' };
       activity.push(act);
       update(null);
-      if (tu.name === ASK_QUESTIONS_TOOL) {
-        const parsed = askQuestionsInput.safeParse(tu.input);
+      if (tu.name === ASK_FOLLOWUP_TOOL) {
+        const parsed = askFollowupInput.safeParse(tu.input);
         const error =
           o.allowQuestions === false
             ? 'Questions are not available here. Use your judgement and make the change.'
             : questions
-              ? 'Ask all your questions in one ask_questions call.'
+              ? 'Ask all your questions in one ask_followup call.'
               : !parsed.success
                 ? `Invalid input: ${parsed.error.issues[0]?.path.join('.') || '(root)'} ${parsed.error.issues[0]?.message ?? 'invalid'}`.trim()
                 : null;

@@ -1,12 +1,13 @@
 import { describe, expect, it } from 'vitest';
 import type Anthropic from '@anthropic-ai/sdk';
 import {
-  ASK_QUESTIONS_TOOL,
+  ASK_FOLLOWUP_TOOL,
   AnswerError,
   answersSummary,
-  askQuestionsInput,
+  askFollowupInput,
   buildPrefix,
   formatAnswersForModel,
+  ToolError,
   type ToolHost,
   runAgentTurn,
   validateAnswers,
@@ -14,10 +15,10 @@ import {
 } from './index';
 import { scriptedGateway, text, toolUse } from './evals/scripted';
 
-// No tools are registered until Epic 4; the loop still has to handle calls to them.
+// No editor here: contract tools fail with a ToolError, which the loop returns to the model.
 const host: ToolHost = {
   runtime: 'interactive',
-  run: () => Promise.reject(new Error('no tools')),
+  run: () => Promise.reject(new ToolError('no editor in this test')),
 };
 
 const set: QuestionSet = {
@@ -52,9 +53,9 @@ const userTurn = (t: string): Anthropic.MessageParam => ({
   content: [{ type: 'text', text: t }],
 });
 
-describe('ask_questions input', () => {
+describe('ask_followup input', () => {
   it('accepts a valid question set', () => {
-    expect(askQuestionsInput.safeParse(set).success).toBe(true);
+    expect(askFollowupInput.safeParse(set).success).toBe(true);
   });
 
   it.each([
@@ -94,14 +95,14 @@ describe('ask_questions input', () => {
     ],
     ['bad id', { questions: [{ ...set.questions[0]!, id: 'has space' }] }],
   ])('rejects %s', (_, input) => {
-    expect(askQuestionsInput.safeParse(input).success).toBe(false);
+    expect(askFollowupInput.safeParse(input).success).toBe(false);
   });
 
   it('is in the interactive prefix only, with a JSON schema', () => {
-    const tool = buildPrefix('interactive').tools.find((t) => t.name === ASK_QUESTIONS_TOOL);
+    const tool = buildPrefix('interactive').tools.find((t) => t.name === ASK_FOLLOWUP_TOOL);
     expect(tool?.input_schema).toMatchObject({ type: 'object', required: ['questions'] });
-    expect(buildPrefix('interactive').system[0]!.text).toContain(ASK_QUESTIONS_TOOL);
-    expect(buildPrefix('job').tools.map((t) => t.name)).not.toContain(ASK_QUESTIONS_TOOL);
+    expect(buildPrefix('interactive').system[0]!.text).toContain(ASK_FOLLOWUP_TOOL);
+    expect(buildPrefix('job').tools.map((t) => t.name)).not.toContain(ASK_FOLLOWUP_TOOL);
   });
 });
 
@@ -167,14 +168,14 @@ describe('answers', () => {
   });
 });
 
-describe('ask_questions in a turn', () => {
+describe('ask_followup in a turn', () => {
   it('ends the turn with the question set pending (no tool_result yet)', async () => {
     const { gateway, requests } = scriptedGateway([
       {
         content: [
           text('A few questions first.'),
           toolUse('tu_o', 'get_outline', {}),
-          toolUse('tu_q', ASK_QUESTIONS_TOOL, set),
+          toolUse('tu_q', ASK_FOLLOWUP_TOOL, set),
         ],
       },
       { content: [text('should not be called')] },
@@ -197,7 +198,7 @@ describe('ask_questions in a turn', () => {
 
   it('returns an error result for invalid input and keeps going', async () => {
     const { gateway, requests } = scriptedGateway([
-      { content: [toolUse('tu_q', ASK_QUESTIONS_TOOL, { questions: [] })] },
+      { content: [toolUse('tu_q', ASK_FOLLOWUP_TOOL, { questions: [] })] },
       { content: [text('Making it anyway.')] },
     ]);
     const res = await runAgentTurn({
@@ -216,7 +217,7 @@ describe('ask_questions in a turn', () => {
 
   it('refuses questions where they are not allowed (scoped edits)', async () => {
     const { gateway, requests } = scriptedGateway([
-      { content: [toolUse('tu_q', ASK_QUESTIONS_TOOL, set)] },
+      { content: [toolUse('tu_q', ASK_FOLLOWUP_TOOL, set)] },
       { content: [text('ok')] },
     ]);
     const res = await runAgentTurn({

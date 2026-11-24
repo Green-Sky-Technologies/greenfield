@@ -16,3 +16,6 @@ test-results/
 
 # Claude Code agent worktrees (contain copies of local env files)
 .claude/worktrees/
+.vercel
+.env*
+!.env.example

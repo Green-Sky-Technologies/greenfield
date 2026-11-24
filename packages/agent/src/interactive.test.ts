@@ -17,7 +17,7 @@ const userTurn = (t: string): Anthropic.MessageParam => ({
   content: [{ type: 'text', text: t }],
 });
 
-/** No tools are registered until Epic 4; every call is unknown to the loop. */
+/** No editor here: every contract tool call fails with a ToolError. */
 const calls: string[] = [];
 const host: ToolHost = {
   runtime: 'interactive',
