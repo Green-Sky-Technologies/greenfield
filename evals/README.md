@@ -1,9 +1,24 @@
 # Agent evals (Story 5.13)
 
 > **Story 1.2 removed the harness.** It ran the HTML model's DesignDoc tools and linter, which
-> are gone. The golden prompts in `golden/` stay: Story 1.4 replays their tool calls against the
-> bridge mock, and Epic 4 brings back a harness for the FigCraft tools. The rest of this page
-> describes the old harness, which ran at commit `ef05c3b`.
+> are gone. The golden prompts in `golden/` stay, and Epic 4 (Story 4.8) brings back a model
+> harness for the FigCraft tools. The rest of this page describes the old harness, which ran at
+> commit `ef05c3b`.
+>
+> **Until then (Story 1.4):** `packages/contracts/src/golden.test.ts` replays, for every case, a
+> scripted sequence of the tool calls a good agent would send (read the selection or a layer, one
+> `run_batch`, `render`; or offer a job) through `executeTool` against a `MockEditor` holding the
+> `landing` fixture (`@greenfield/contracts/testing`, layers named after the HTML node ids). It
+> runs in `pnpm test`, needs no keys, and checks that every call and result fits the tool
+> contract, that each `run_batch` is one undo step, and the scope expectations on the mock's
+> change set: `touchWithin`, `mustTouch`, `maxTouched`, `noEdits` and `jobSuggestion` (button
+> labels count as their button, as the HTML fixture's Button was one node). A new golden case
+> needs a script there, or the test fails.
+>
+> Not checked yet: `lintClean` (the HTML design-system linter is gone; design systems become
+> FigCraft variables and styles in Epics 2 and 4, and the lint comes back with them) and the
+> token budgets `maxInputTokens` / `maxOutputTokens` (they need a model run; Story 4.8).
+> `maxIterations` is only checked loosely (scripted calls + 1 ≤ the cap).
 
 Golden prompts for the interactive agent. Each case runs the real interactive loop (cached
 prefix, per-turn document context, tool handlers, scope enforcement) against a fixture document
