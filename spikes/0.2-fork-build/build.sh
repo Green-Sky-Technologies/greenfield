@@ -36,8 +36,11 @@ rustup target list --installed 2>/dev/null | grep -qx wasm32-unknown-unknown \
   || echo "warning: could not confirm the wasm32-unknown-unknown target via rustup" >&2
 
 # 1. Source at the pinned commit, reset to pristine (keeps target/, which upstream git-ignores).
+# Init in place rather than clone: CI restores a cached $SRC/target before this runs, so $SRC can
+# exist without .git, and `git clone` refuses a non-empty directory.
 if [[ ! -d "$SRC/.git" ]]; then
-  git clone --quiet --no-checkout "$REPO" "$SRC"
+  git init --quiet "$SRC"
+  git -C "$SRC" remote add origin "$REPO"
 fi
 git -C "$SRC" fetch --quiet --tags origin
 git -C "$SRC" checkout --quiet --force "$REF"
