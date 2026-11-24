@@ -5,6 +5,7 @@
   "exports": {
     ".": "./src/index.ts",
     "./mock": "./src/mock.ts",
+    "./file": "./src/file.ts",
     "./playwright": "./src/playwright/index.ts",
     "./playwright/server": "./src/playwright/server.ts"
   },

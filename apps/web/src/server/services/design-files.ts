@@ -9,6 +9,7 @@ import { assertCan } from '@greenfield/authz';
 import type { Db } from '@greenfield/db';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { mirrorFileComments } from './comments';
 import { getProject } from './projects';
 import { ValidationError, type Actor } from './types';
 
@@ -109,12 +110,16 @@ export async function loadDesignFile(
   return bytes ? { name: documentName(project.name), bytes } : null;
 }
 
+/**
+ * Store the project's document, then mirror its comment threads into `comment_index`
+ * (`comments: null` when the bytes aren't a document the reader understands).
+ */
 export async function saveDesignFile(
   db: Db,
   actor: Actor,
   storage: DesignFileStorage,
   input: { projectId: string; bytes: Uint8Array },
-): Promise<{ size: number }> {
+): Promise<{ size: number; comments: number | null }> {
   assertCan(actor.role, 'design:edit');
   const project = await getProject(db, actor, input.projectId);
   if (project.archivedAt)
@@ -122,7 +127,11 @@ export async function saveDesignFile(
   if (input.bytes.byteLength === 0) throw new ValidationError('Empty file');
   if (input.bytes.byteLength > MAX_DESIGN_FILE_BYTES) throw new ValidationError('File too large');
   await storage.put(keyFor(actor.workspace.id, project.id), input.bytes);
-  return { size: input.bytes.byteLength };
+  const mirrored = await mirrorFileComments(db, actor, {
+    projectId: project.id,
+    bytes: input.bytes,
+  });
+  return { size: input.bytes.byteLength, comments: mirrored?.threads ?? null };
 }
 
 /** Copy one project's document to another (duplicating a project). No-op when there is none. */

@@ -1,11 +1,13 @@
 /**
- * GET  /api/comments?projectId=…[&status=open|resolved]  -> { threads }
- * POST /api/comments  <- { projectId, anchor, body, mentions?, kind?, fallback? }  -> { thread }
+ * GET /api/comments?projectId=…[&status=open|resolved]  -> { threads }
+ *
+ * The project's comment threads as mirrored from its saved file (Story 6.1). People write
+ * comments in the editor; they reach the server with the file (PUT /api/projects/:id/file).
  */
 import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
-import { apiActor, apiError, jsonBody } from '@/server/api';
-import { createThread, listThreads } from '@/server/services/comments';
+import { apiActor, apiError } from '@/server/api';
+import { listComments } from '@/server/services/comments';
 import { NotFoundError } from '@/server/services/types';
 
 export async function GET(req: NextRequest) {
@@ -14,20 +16,10 @@ export async function GET(req: NextRequest) {
     const projectId = req.nextUrl.searchParams.get('projectId');
     if (!projectId) throw new NotFoundError('Project not found');
     const status = req.nextUrl.searchParams.get('status');
-    const threads = await listThreads(getDb(), actor, projectId, {
-      status: status === 'open' || status === 'resolved' ? status : undefined,
+    const threads = await listComments(getDb(), actor, projectId, {
+      resolved: status === 'resolved' ? true : status === 'open' ? false : undefined,
     });
     return NextResponse.json({ threads });
-  } catch (e) {
-    return apiError(e);
-  }
-}
-
-export async function POST(req: NextRequest) {
-  try {
-    const actor = await apiActor();
-    const thread = await createThread(getDb(), actor, await jsonBody(req, 64 * 1024));
-    return NextResponse.json({ thread }, { status: 201 });
   } catch (e) {
     return apiError(e);
   }

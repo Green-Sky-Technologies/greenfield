@@ -36,6 +36,13 @@
       "when": 1795540062036,
       "tag": "0004_remove_html_model",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1795548653743,
+      "tag": "0005_comment_index",
+      "breakpoints": true
     }
   ]
 }

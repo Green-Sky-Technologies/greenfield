@@ -3,6 +3,7 @@
  *
  * - `createBridge({ iframe })`: the real editor (FigCraft in host + control mode) as an `Editor`.
  * - `@greenfield/bridge/mock`: `MockEditor`, the same interface in memory, for unit tests.
+ * - `@greenfield/bridge/file`: `readFileComments`, a saved document's comment threads (no editor).
  * - `@greenfield/bridge/playwright`: fixtures that drive the real editor from Playwright tests.
  */
 export { createBridge, editorSrc, type BridgeOptions } from './bridge';
@@ -13,6 +14,19 @@ export {
   flatten,
   type NodeRecord,
 } from './change-detect';
+export {
+  addComment,
+  deleteComment,
+  listComments,
+  replyToComment,
+  resolveComment,
+  type AddCommentInput,
+  type CommentMention,
+  type CommentMessage,
+  type CommentReaction,
+  type CommentThread,
+  type ListCommentsOptions,
+} from './comments';
 export {
   isRef,
   ref,

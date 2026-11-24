@@ -1,4 +1,4 @@
-/** Epics 3.8 and 6: edit locks, comments, notifications, share links, activity. */
+/** Epics 3.8 and 6: edit locks, presence, notifications, share links, activity. */
 import {
   bigserial,
   index,
@@ -43,64 +43,6 @@ export const presence = pgTable(
     lastSeenAt: timestamp('last_seen_at', { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [uniqueIndex('presence_project_session_idx').on(t.projectId, t.sessionId)],
-);
-
-export const threadStatusEnum = pgEnum('comment_thread_status', ['open', 'resolved']);
-export const threadKindEnum = pgEnum('comment_thread_kind', ['discussion', 'agent_request']);
-
-/**
- * A pinned comment thread. `anchor` is
- *   { type: 'node', frameId, nodeId, offset?: {x,y} } | { type: 'canvas', x, y }
- * When the node is deleted, the thread keeps its last known canvas position (`fallback`).
- */
-export const commentThreads = pgTable(
-  'comment_threads',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    workspaceId: uuid('workspace_id')
-      .notNull()
-      .references(() => workspaces.id, { onDelete: 'cascade' }),
-    projectId: uuid('project_id')
-      .notNull()
-      .references(() => projects.id, { onDelete: 'cascade' }),
-    kind: threadKindEnum('kind').notNull().default('discussion'),
-    status: threadStatusEnum('status').notNull().default('open'),
-    anchor: jsonb('anchor').notNull(),
-    fallback: jsonb('fallback'),
-    /** For agent_request threads: the agent conversation handling it (Story 5.7). */
-    agentConversationId: uuid('agent_conversation_id'),
-    resolvedBy: text('resolved_by'),
-    resolvedAt: timestamp('resolved_at', { withTimezone: true }),
-    createdBy: text('created_by').notNull(),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-    updatedAt: timestamp('updated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow()
-      .$onUpdate(() => new Date()),
-  },
-  (t) => [index('comment_threads_project_idx').on(t.projectId, t.status)],
-);
-
-export const comments = pgTable(
-  'comments',
-  {
-    id: uuid('id').primaryKey().defaultRandom(),
-    threadId: uuid('thread_id')
-      .notNull()
-      .references(() => commentThreads.id, { onDelete: 'cascade' }),
-    workspaceId: uuid('workspace_id')
-      .notNull()
-      .references(() => workspaces.id, { onDelete: 'cascade' }),
-    authorType: actorTypeEnum('author_type').notNull().default('user'),
-    authorId: text('author_id').notNull(),
-    body: text('body').notNull(),
-    /** Clerk user ids mentioned with @. */
-    mentions: text('mentions').array().notNull().default([]),
-    editedAt: timestamp('edited_at', { withTimezone: true }),
-    deletedAt: timestamp('deleted_at', { withTimezone: true }),
-    createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
-  },
-  (t) => [index('comments_thread_idx').on(t.threadId, t.createdAt)],
 );
 
 /** In-app notifications (mentions, control requests, job completions). */
@@ -175,7 +117,5 @@ export const activity = pgTable(
 );
 
 export type EditLockRow = typeof editLocks.$inferSelect;
-export type CommentThreadRow = typeof commentThreads.$inferSelect;
-export type CommentRow = typeof comments.$inferSelect;
 export type ShareLinkRow = typeof shareLinks.$inferSelect;
 export type ActivityRow = typeof activity.$inferSelect;

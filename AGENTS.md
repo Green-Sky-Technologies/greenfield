@@ -31,7 +31,8 @@ Read `SPEC.md` for product scope. Stories are referenced by number (e.g. "Story 
   variables and styles), not in the app chrome.
 - **The editor** is FigCraft, served from `/editor/` (downloaded by `apps/web/scripts/fetch-editor.mjs`,
   pinned by sha256, gitignored) and embedded on the project page. App code talks to it only
-  through `packages/bridge` (Story 1.3). A project's file goes through `services/design-files`.
+  through `packages/bridge` (Story 1.3). A project's file goes through `services/design-files`;
+  each save mirrors its comment threads into `comment_index` (`services/comments`, Story 6.1).
 - **The agent is off until Epic 4.** Story 1.2 removed its HTML-model tools: running a turn or a
   job throws `AgentUnavailableError` (503). The loop, prefix, metering and SSE in
   `@greenfield/agent` stay for Epic 4 to wire to the FigCraft tools.

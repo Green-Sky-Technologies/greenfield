@@ -3,7 +3,8 @@
  *
  * GET /api/projects/:projectId/file -> 200 application/octet-stream (x-file-name, x-storage)
  *                                     | 204 when nothing is saved yet
- * PUT /api/projects/:projectId/file <- the raw document bytes -> { size, storage }
+ * PUT /api/projects/:projectId/file <- the raw document bytes -> { size, storage, comments }
+ *                                     (comments: threads mirrored from the file, or null)
  *
  * Reading needs project:read, saving design:edit (services/design-files). Bodies are never
  * logged.
@@ -50,7 +51,7 @@ export async function PUT(req: NextRequest, ctx: Ctx) {
     const bytes = new Uint8Array(await req.arrayBuffer());
     const storage = defaultDesignFileStorage();
     const r = await saveDesignFile(getDb(), actor, storage, { projectId, bytes });
-    return NextResponse.json({ size: r.size, storage: storage.kind });
+    return NextResponse.json({ size: r.size, storage: storage.kind, comments: r.comments });
   } catch (e) {
     return apiError(e);
   }
