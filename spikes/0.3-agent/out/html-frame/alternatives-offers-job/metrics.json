@@ -1,0 +1,31 @@
+{
+  "arm": "html",
+  "variant": "html-frame",
+  "caseId": "alternatives-offers-job",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": false,
+  "failures": [
+    "job suggestion: expected alternatives, got null"
+  ],
+  "touched": [],
+  "transactions": 0,
+  "turns": 1,
+  "toolCalls": 1,
+  "jobSuggestion": null,
+  "stopReason": "tool_use",
+  "usage": {
+    "inputTokens": 4,
+    "outputTokens": 594,
+    "cacheReadTokens": 27380,
+    "cacheWriteTokens": 613,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 12957
+  },
+  "wallMs": 4654,
+  "finalText": "I can set up a few layout alternatives to compare. First, a few questions to steer them.",
+  "commands": [],
+  "notes": [
+    "turn ended on ask_questions"
+  ]
+}

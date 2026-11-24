@@ -1,0 +1,903 @@
+{
+  "arm": "figcraft",
+  "variant": "v2",
+  "caseId": "x-build-pricing",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "new:22",
+    "new:23",
+    "new:24",
+    "new:25",
+    "new:26",
+    "new:27",
+    "new:28",
+    "new:29",
+    "new:30",
+    "new:31",
+    "new:32",
+    "new:33",
+    "new:34",
+    "new:35",
+    "new:36",
+    "new:37",
+    "new:38",
+    "new:39",
+    "new:40",
+    "new:41",
+    "new:42",
+    "new:43",
+    "new:44",
+    "new:45",
+    "new:46",
+    "new:47",
+    "new:48",
+    "new:49",
+    "new:50",
+    "new:51",
+    "new:52",
+    "new:53",
+    "new:54",
+    "new:55",
+    "new:56",
+    "new:57",
+    "new:58",
+    "new:59",
+    "new:60",
+    "new:61"
+  ],
+  "transactions": 4,
+  "turns": 8,
+  "toolCalls": 11,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 18,
+    "outputTokens": 6865,
+    "cacheReadTokens": 134738,
+    "cacheWriteTokens": 20235,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 146221
+  },
+  "wallMs": 46016,
+  "finalText": "I added a pricing section and an FAQ section below the features, both matching the page's existing styling. The pricing section has the heading \"Simple, honest pricing\" and three cards: Free ($0), Pro ($24) and Team ($49). Each card has a price, a three-item feature list and a button at the bottom. Pro has an indigo border, a \"Recommended\" badge and a filled button. The FAQ has four question-and-answer cards.\n\nI made up the prices, feature lists and FAQ wording as placeholders, so replace them with your real details.\n\nThe pricing row has a fixed height of 400px so the three cards stay equal. If you add more lines to a card, you'll need to raise that height.",
+  "commands": [
+    {
+      "command": "node.create",
+      "as": "ps",
+      "params": {
+        "type": "frame",
+        "name": "n_pricing0001",
+        "parent": 2,
+        "props": {
+          "layout": "vertical",
+          "gap": 32,
+          "padding": [
+            64,
+            24,
+            64,
+            24
+          ],
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_pricingtitle",
+        "parent": {
+          "$ref": "ps"
+        },
+        "text": "Simple, honest pricing",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Bold",
+          "fontSize": 36,
+          "fill": "#18181B",
+          "lineHeight": "115%"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "row",
+      "params": {
+        "type": "frame",
+        "name": "n_pricingrow01",
+        "parent": {
+          "$ref": "ps"
+        },
+        "props": {
+          "layout": "horizontal",
+          "gap": 16,
+          "crossAlign": "min",
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "c1",
+      "params": {
+        "type": "frame",
+        "name": "n_tierfree000",
+        "parent": {
+          "$ref": "row"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 24,
+          "sizingH": "fill",
+          "sizingV": "fill",
+          "fill": "#F6F6F4",
+          "cornerRadius": 16
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierfree_name",
+        "parent": {
+          "$ref": "c1"
+        },
+        "text": "Free",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 18,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierfree_price",
+        "parent": {
+          "$ref": "c1"
+        },
+        "text": "$0 / month",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Bold",
+          "fontSize": 36,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierfree_list",
+        "parent": {
+          "$ref": "c1"
+        },
+        "text": "3 projects\nLive HTML frames\nCommunity support",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "lineHeight": "150%",
+          "paragraphSpacing": 8,
+          "sizingH": "fill",
+          "textAutoResize": "height"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "frame",
+        "name": "n_tierfree_spacer",
+        "parent": {
+          "$ref": "c1"
+        },
+        "props": {
+          "sizingV": "fill",
+          "sizingH": "fill",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "b1",
+      "params": {
+        "type": "frame",
+        "name": "n_tierfree_cta",
+        "parent": {
+          "$ref": "c1"
+        },
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "mainAlign": "center",
+          "crossAlign": "center",
+          "sizingH": "fill",
+          "fill": "none",
+          "stroke": "#E4E4E7",
+          "cornerRadius": 8
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierfree_cta_label",
+        "parent": {
+          "$ref": "b1"
+        },
+        "text": "Start free",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 14,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "c2",
+      "params": {
+        "type": "frame",
+        "name": "n_tierpro0000",
+        "parent": {
+          "$ref": "row"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 24,
+          "sizingH": "fill",
+          "sizingV": "fill",
+          "fill": "#FFFFFF",
+          "stroke": "#4F46E5",
+          "strokeWeight": 2,
+          "cornerRadius": 16
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "badge",
+      "params": {
+        "type": "frame",
+        "name": "n_tierpro_badge",
+        "parent": {
+          "$ref": "c2"
+        },
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            4,
+            12,
+            4,
+            12
+          ],
+          "sizingH": "hug",
+          "fill": "#4F46E5",
+          "cornerRadius": 9999
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierpro_badge_label",
+        "parent": {
+          "$ref": "badge"
+        },
+        "text": "Recommended",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 12,
+          "fill": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierpro_name",
+        "parent": {
+          "$ref": "c2"
+        },
+        "text": "Pro",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 18,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierpro_price",
+        "parent": {
+          "$ref": "c2"
+        },
+        "text": "$24 / month",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Bold",
+          "fontSize": 36,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierpro_list",
+        "parent": {
+          "$ref": "c2"
+        },
+        "text": "Unlimited projects\nDesign system tokens\nReact + Tailwind export",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "lineHeight": "150%",
+          "paragraphSpacing": 8,
+          "sizingH": "fill",
+          "textAutoResize": "height"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "frame",
+        "name": "n_tierpro_spacer",
+        "parent": {
+          "$ref": "c2"
+        },
+        "props": {
+          "sizingV": "fill",
+          "sizingH": "fill",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "b2",
+      "params": {
+        "type": "frame",
+        "name": "n_tierpro_cta",
+        "parent": {
+          "$ref": "c2"
+        },
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "mainAlign": "center",
+          "crossAlign": "center",
+          "sizingH": "fill",
+          "fill": "#4F46E5",
+          "cornerRadius": 8
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierpro_cta_label",
+        "parent": {
+          "$ref": "b2"
+        },
+        "text": "Get Pro",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 14,
+          "fill": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "c3",
+      "params": {
+        "type": "frame",
+        "name": "n_tierteam000",
+        "parent": {
+          "$ref": "row"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 16,
+          "padding": 24,
+          "sizingH": "fill",
+          "sizingV": "fill",
+          "fill": "#F6F6F4",
+          "cornerRadius": 16
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierteam_name",
+        "parent": {
+          "$ref": "c3"
+        },
+        "text": "Team",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 18,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierteam_price",
+        "parent": {
+          "$ref": "c3"
+        },
+        "text": "$49 / month",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Bold",
+          "fontSize": 36,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierteam_list",
+        "parent": {
+          "$ref": "c3"
+        },
+        "text": "Everything in Pro\nShared libraries\nPriority support",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "lineHeight": "150%",
+          "paragraphSpacing": 8,
+          "sizingH": "fill",
+          "textAutoResize": "height"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "frame",
+        "name": "n_tierteam_spacer",
+        "parent": {
+          "$ref": "c3"
+        },
+        "props": {
+          "sizingV": "fill",
+          "sizingH": "fill",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "b3",
+      "params": {
+        "type": "frame",
+        "name": "n_tierteam_cta",
+        "parent": {
+          "$ref": "c3"
+        },
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "mainAlign": "center",
+          "crossAlign": "center",
+          "sizingH": "fill",
+          "fill": "none",
+          "stroke": "#E4E4E7",
+          "cornerRadius": 8
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_tierteam_cta_label",
+        "parent": {
+          "$ref": "b3"
+        },
+        "text": "Contact sales",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 14,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "fs",
+      "params": {
+        "type": "frame",
+        "name": "n_faq00000001",
+        "parent": 2,
+        "props": {
+          "layout": "vertical",
+          "gap": 24,
+          "padding": [
+            64,
+            24,
+            96,
+            24
+          ],
+          "sizingH": "fill",
+          "sizingV": "hug",
+          "fill": "none"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqtitle001",
+        "parent": {
+          "$ref": "fs"
+        },
+        "text": "Frequently asked questions",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Bold",
+          "fontSize": 36,
+          "fill": "#18181B",
+          "lineHeight": "115%"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "q1",
+      "params": {
+        "type": "frame",
+        "name": "n_faqitem01",
+        "parent": {
+          "$ref": "fs"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "sizingH": "fill",
+          "fill": "#F6F6F4",
+          "cornerRadius": 16
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqitem01_q",
+        "parent": {
+          "$ref": "q1"
+        },
+        "text": "Can I try Pro before paying?",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 18,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqitem01_a",
+        "parent": {
+          "$ref": "q1"
+        },
+        "text": "Yes. Every Pro plan starts with a 14-day free trial, no card required.",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "lineHeight": "150%",
+          "sizingH": "fill",
+          "textAutoResize": "height"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "q2",
+      "params": {
+        "type": "frame",
+        "name": "n_faqitem02",
+        "parent": {
+          "$ref": "fs"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "sizingH": "fill",
+          "fill": "#F6F6F4",
+          "cornerRadius": 16
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqitem02_q",
+        "parent": {
+          "$ref": "q2"
+        },
+        "text": "Can I change plans later?",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 18,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqitem02_a",
+        "parent": {
+          "$ref": "q2"
+        },
+        "text": "Upgrade or downgrade at any time. Changes apply at your next billing date.",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "lineHeight": "150%",
+          "sizingH": "fill",
+          "textAutoResize": "height"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "q3",
+      "params": {
+        "type": "frame",
+        "name": "n_faqitem03",
+        "parent": {
+          "$ref": "fs"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "sizingH": "fill",
+          "fill": "#F6F6F4",
+          "cornerRadius": 16
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqitem03_q",
+        "parent": {
+          "$ref": "q3"
+        },
+        "text": "Is the exported code production-ready?",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 18,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqitem03_a",
+        "parent": {
+          "$ref": "q3"
+        },
+        "text": "Yes. Exports are clean React and Tailwind that use your design tokens.",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "lineHeight": "150%",
+          "sizingH": "fill",
+          "textAutoResize": "height"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "q4",
+      "params": {
+        "type": "frame",
+        "name": "n_faqitem04",
+        "parent": {
+          "$ref": "fs"
+        },
+        "props": {
+          "layout": "vertical",
+          "gap": 8,
+          "padding": 24,
+          "sizingH": "fill",
+          "fill": "#F6F6F4",
+          "cornerRadius": 16
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqitem04_q",
+        "parent": {
+          "$ref": "q4"
+        },
+        "text": "Do you offer discounts for teams?",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Semibold",
+          "fontSize": 18,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "name": "n_faqitem04_a",
+        "parent": {
+          "$ref": "q4"
+        },
+        "text": "Annual billing saves 20%, and we offer education and nonprofit pricing.",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Regular",
+          "fontSize": 14,
+          "fill": "#6B6B70",
+          "lineHeight": "150%",
+          "sizingH": "fill",
+          "textAutoResize": "height"
+        }
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 24,
+        "sizingV": "fixed",
+        "height": 360
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 25,
+        "sizingV": "fill"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 32,
+        "sizingV": "fill"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 41,
+        "sizingV": "fill"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "ids": [
+          30,
+          39,
+          48,
+          34,
+          37,
+          46
+        ],
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 24,
+        "height": 380
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 33,
+        "sizingH": "hug",
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 34,
+        "textAutoResize": "widthAndHeight"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 24,
+        "height": 400
+      }
+    }
+  ]
+}

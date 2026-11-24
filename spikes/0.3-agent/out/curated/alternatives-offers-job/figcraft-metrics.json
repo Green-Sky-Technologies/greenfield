@@ -1,0 +1,26 @@
+{
+  "arm": "figcraft",
+  "variant": "curated",
+  "caseId": "alternatives-offers-job",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [],
+  "transactions": 0,
+  "turns": 2,
+  "toolCalls": 1,
+  "jobSuggestion": "alternatives",
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 465,
+    "cacheReadTokens": 12789,
+    "cacheWriteTokens": 1428,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 10790
+  },
+  "wallMs": 4869,
+  "finalText": "I haven't changed anything on the page. Comparing several full-page layouts needs new frames, so I've offered a background job that makes 3 alternatives. Your current page stays as it is. The job keeps your copy and design tokens and changes the structure. Examples are a split hero, a centered hero, and a bento-style feature grid. Start the job if you want to compare them.",
+  "commands": []
+}

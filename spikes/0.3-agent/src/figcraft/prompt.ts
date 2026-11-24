@@ -124,6 +124,15 @@ const RENDER_HINT: Record<Variant['render'], string> = {
   none: '- Verify numbers with get_node when you need to; you cannot see pixels.',
 };
 
+/** v2 (from v1 failures): fonts fall back silently; card rows need equal heights. */
+const CRAFT = `<craft>
+- Every text layer you create sets fontFamily explicitly (the token font, "SF Pro"), together with fontStyle. Without a family the editor uses a default font that may not be installed: it then renders Regular whatever fontStyle says, and inspect will not tell you. Check weights in the render.
+- New sections copy the look of the existing page: the same section padding, heading size and weight (headings are Bold or Semibold, never Regular), card fill and radius. Read a sibling section first (get_node) and reuse its values.
+- Rows of cards: a horizontal row with crossAlign min; give each card sizingH fill and sizingV fill so they share the tallest height, make each card a vertical layout, and push a card's button to the bottom with a spacer frame (sizingV fill, no fill) or mainAlign spaceBetween.
+- Buttons are horizontal auto-layout frames (padding, mainAlign center, crossAlign center, sizingH hug unless they fill a card) with a text child; labels Semibold or Medium.
+- Build a whole section in one batch, then render once and fix what looks off in a second batch.
+</craft>`;
+
 export function systemFor(v: Variant): Anthropic.TextBlockParam[] {
   const shape =
     v.tools === 'run_command'
@@ -138,7 +147,13 @@ export function systemFor(v: Variant): Anthropic.TextBlockParam[] {
   const text =
     v.prompt === 'minimal'
       ? `${BASE}\n${RENDER_HINT[v.render]}\n\n${TOKENS_BLOCK}`
-      : [BASE + '\n' + RENDER_HINT[v.render] + (shape ? `\n${shape}` : ''), CONVENTIONS, TOKENS_BLOCK, commandsBlock].join(
+      : [
+          BASE + '\n' + RENDER_HINT[v.render] + (shape ? `\n${shape}` : ''),
+          CONVENTIONS,
+          ...(v.prompt === 'v2' ? [CRAFT] : []),
+          TOKENS_BLOCK,
+          commandsBlock,
+        ].join(
           '\n\n',
         );
   return [{ type: 'text', text, cache_control: { type: 'ephemeral' } }];

@@ -1,0 +1,2182 @@
+{
+  "case": "x-build-pricing",
+  "prompt": "Build a pricing section directly below the features section: a heading, three tiers (Free, Pro, Team) as cards with the price, a short feature list and a call-to-action button each, with Pro highlighted as recommended. Then add an FAQ section with four questions and answers below it. Build it directly on this page now; do not suggest a job.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "v2",
+    "caseId": "x-build-pricing",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "new:22",
+      "new:23",
+      "new:24",
+      "new:25",
+      "new:26",
+      "new:27",
+      "new:28",
+      "new:29",
+      "new:30",
+      "new:31",
+      "new:32",
+      "new:33",
+      "new:34",
+      "new:35",
+      "new:36",
+      "new:37",
+      "new:38",
+      "new:39",
+      "new:40",
+      "new:41",
+      "new:42",
+      "new:43",
+      "new:44",
+      "new:45",
+      "new:46",
+      "new:47",
+      "new:48",
+      "new:49",
+      "new:50",
+      "new:51",
+      "new:52",
+      "new:53",
+      "new:54",
+      "new:55",
+      "new:56",
+      "new:57",
+      "new:58",
+      "new:59",
+      "new:60",
+      "new:61",
+      "new:62"
+    ],
+    "transactions": 6,
+    "turns": 10,
+    "toolCalls": 16,
+    "jobSuggestion": null,
+    "stopReason": "max_iterations",
+    "usage": {
+      "inputTokens": 22,
+      "outputTokens": 7011,
+      "cacheReadTokens": 179842,
+      "cacheWriteTokens": 19627,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 155190
+    },
+    "wallMs": 47358,
+    "finalText": "Pricing cards are missing; let me inspect the row.",
+    "commands": [
+      {
+        "command": "node.create",
+        "as": "ps",
+        "params": {
+          "type": "frame",
+          "name": "n_pricing001",
+          "parent": 2,
+          "props": {
+            "layout": "vertical",
+            "gap": 32,
+            "padding": [
+              64,
+              24,
+              64,
+              24
+            ],
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "#FFFFFF"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "ps"
+          },
+          "name": "n_pricehead01",
+          "text": "Simple, transparent pricing",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Bold",
+            "fontSize": 36,
+            "fill": "#18181B",
+            "lineHeight": "115%"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "row",
+        "params": {
+          "type": "frame",
+          "name": "n_pricerow01",
+          "parent": {
+            "$ref": "ps"
+          },
+          "props": {
+            "layout": "horizontal",
+            "gap": 16,
+            "crossAlign": "min",
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "c1",
+        "params": {
+          "type": "frame",
+          "name": "n_tierfree01",
+          "parent": {
+            "$ref": "row"
+          },
+          "props": {
+            "layout": "vertical",
+            "gap": 16,
+            "padding": 24,
+            "sizingH": "fill",
+            "sizingV": "fill",
+            "cornerRadius": 16,
+            "fill": "#F6F6F4"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c1"
+          },
+          "name": "n_tierfree01_name",
+          "text": "Free",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 18,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c1"
+          },
+          "name": "n_tierfree01_price",
+          "text": "$0 / month",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Bold",
+            "fontSize": 36,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c1"
+          },
+          "name": "n_tierfree01_list",
+          "text": "3 projects\nLive HTML frames\nCommunity support",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70",
+            "lineHeight": "150%",
+            "paragraphSpacing": 8
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c1"
+          },
+          "name": "n_tierfree01_spacer",
+          "props": {
+            "sizingH": "fill",
+            "sizingV": "fill",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "b1",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c1"
+          },
+          "name": "n_tierfree01_cta",
+          "props": {
+            "layout": "horizontal",
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "sizingH": "fill",
+            "cornerRadius": 8,
+            "fill": "#FFFFFF",
+            "stroke": "#E4E4E7"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "b1"
+          },
+          "name": "n_tierfree01_cta_label",
+          "text": "Start free",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 14,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "c2",
+        "params": {
+          "type": "frame",
+          "name": "n_tierpro0001",
+          "parent": {
+            "$ref": "row"
+          },
+          "props": {
+            "layout": "vertical",
+            "gap": 16,
+            "padding": 24,
+            "sizingH": "fill",
+            "sizingV": "fill",
+            "cornerRadius": 16,
+            "fill": "#FFFFFF",
+            "stroke": "#4F46E5",
+            "strokeWeight": 2
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "badge",
+        "params": {
+          "type": "frame",
+          "name": "n_tierpro0001_badge",
+          "parent": {
+            "$ref": "c2"
+          },
+          "props": {
+            "layout": "horizontal",
+            "padding": [
+              4,
+              12,
+              4,
+              12
+            ],
+            "cornerRadius": 9999,
+            "fill": "#4F46E5",
+            "sizingH": "hug"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "badge"
+          },
+          "name": "n_tierpro0001_badge_label",
+          "text": "Recommended",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 12,
+            "fill": "#FFFFFF"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c2"
+          },
+          "name": "n_tierpro0001_name",
+          "text": "Pro",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 18,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c2"
+          },
+          "name": "n_tierpro0001_price",
+          "text": "$24 / month",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Bold",
+            "fontSize": 36,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c2"
+          },
+          "name": "n_tierpro0001_list",
+          "text": "Unlimited projects\nDesign system tokens\nReact + Tailwind export\nPriority support",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70",
+            "lineHeight": "150%",
+            "paragraphSpacing": 8
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c2"
+          },
+          "name": "n_tierpro0001_spacer",
+          "props": {
+            "sizingH": "fill",
+            "sizingV": "fill",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "b2",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c2"
+          },
+          "name": "n_tierpro0001_cta",
+          "props": {
+            "layout": "horizontal",
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "sizingH": "fill",
+            "cornerRadius": 8,
+            "fill": "#4F46E5"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "b2"
+          },
+          "name": "n_tierpro0001_cta_label",
+          "text": "Get Pro",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 14,
+            "fill": "#FFFFFF"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "c3",
+        "params": {
+          "type": "frame",
+          "name": "n_tierteam001",
+          "parent": {
+            "$ref": "row"
+          },
+          "props": {
+            "layout": "vertical",
+            "gap": 16,
+            "padding": 24,
+            "sizingH": "fill",
+            "sizingV": "fill",
+            "cornerRadius": 16,
+            "fill": "#F6F6F4"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c3"
+          },
+          "name": "n_tierteam001_name",
+          "text": "Team",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 18,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c3"
+          },
+          "name": "n_tierteam001_price",
+          "text": "$60 / month",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Bold",
+            "fontSize": 36,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c3"
+          },
+          "name": "n_tierteam001_list",
+          "text": "Everything in Pro\nShared libraries\nSSO and roles",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70",
+            "lineHeight": "150%",
+            "paragraphSpacing": 8
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c3"
+          },
+          "name": "n_tierteam001_spacer",
+          "props": {
+            "sizingH": "fill",
+            "sizingV": "fill",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "b3",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c3"
+          },
+          "name": "n_tierteam001_cta",
+          "props": {
+            "layout": "horizontal",
+            "padding": [
+              8,
+              16,
+              8,
+              16
+            ],
+            "mainAlign": "center",
+            "crossAlign": "center",
+            "sizingH": "fill",
+            "cornerRadius": 8,
+            "fill": "#FFFFFF",
+            "stroke": "#E4E4E7"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "b3"
+          },
+          "name": "n_tierteam001_cta_label",
+          "text": "Contact sales",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 14,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "fs",
+        "params": {
+          "type": "frame",
+          "name": "n_faq0000001",
+          "parent": 2,
+          "props": {
+            "layout": "vertical",
+            "gap": 32,
+            "padding": [
+              64,
+              24,
+              96,
+              24
+            ],
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "#FFFFFF"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "fs"
+          },
+          "name": "n_faqhead001",
+          "text": "Frequently asked questions",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Bold",
+            "fontSize": 36,
+            "fill": "#18181B",
+            "lineHeight": "115%"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "fl",
+        "params": {
+          "type": "frame",
+          "name": "n_faqlist001",
+          "parent": {
+            "$ref": "fs"
+          },
+          "props": {
+            "layout": "vertical",
+            "gap": 16,
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "q1",
+        "params": {
+          "type": "frame",
+          "name": "n_faq1",
+          "parent": {
+            "$ref": "fl"
+          },
+          "props": {
+            "layout": "vertical",
+            "gap": 8,
+            "padding": 24,
+            "sizingH": "fill",
+            "cornerRadius": 16,
+            "fill": "#F6F6F4"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "q1"
+          },
+          "name": "n_faq1_q",
+          "text": "Can I try Acme for free?",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 18,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "q1"
+          },
+          "name": "n_faq1_a",
+          "text": "Yes. The Free plan has no time limit and includes three projects.",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70",
+            "lineHeight": "150%"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "q2",
+        "params": {
+          "type": "frame",
+          "name": "n_faq2",
+          "parent": {
+            "$ref": "fl"
+          },
+          "props": {
+            "layout": "vertical",
+            "gap": 8,
+            "padding": 24,
+            "sizingH": "fill",
+            "cornerRadius": 16,
+            "fill": "#F6F6F4"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "q2"
+          },
+          "name": "n_faq2_q",
+          "text": "Can I change plans later?",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 18,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "q2"
+          },
+          "name": "n_faq2_a",
+          "text": "Upgrade or downgrade at any time. Changes apply on your next billing date.",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70",
+            "lineHeight": "150%"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "q3",
+        "params": {
+          "type": "frame",
+          "name": "n_faq3",
+          "parent": {
+            "$ref": "fl"
+          },
+          "props": {
+            "layout": "vertical",
+            "gap": 8,
+            "padding": 24,
+            "sizingH": "fill",
+            "cornerRadius": 16,
+            "fill": "#F6F6F4"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "q3"
+          },
+          "name": "n_faq3_q",
+          "text": "What code can I export?",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 18,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "q3"
+          },
+          "name": "n_faq3_a",
+          "text": "Pro and Team export React with Tailwind, using your design tokens.",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70",
+            "lineHeight": "150%"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "q4",
+        "params": {
+          "type": "frame",
+          "name": "n_faq4",
+          "parent": {
+            "$ref": "fl"
+          },
+          "props": {
+            "layout": "vertical",
+            "gap": 8,
+            "padding": 24,
+            "sizingH": "fill",
+            "cornerRadius": 16,
+            "fill": "#F6F6F4"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "q4"
+          },
+          "name": "n_faq4_q",
+          "text": "Do you offer team discounts?",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 18,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "q4"
+          },
+          "name": "n_faq4_a",
+          "text": "Contact sales for volume pricing on teams of more than 20 people.",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70",
+            "lineHeight": "150%"
+          }
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 24,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 25,
+          "sizingV": "fill"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 25,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 32,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 41,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 33,
+          "sizingH": "hug",
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 24,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 25,
+          "sizingV": "fill"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 41,
+          "sizingV": "fill"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 30,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 39,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 46,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 32,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 24,
+          "sizingV": "hug"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 25,
+          "sizingV": "fill"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 41,
+          "sizingV": "fill"
+        }
+      },
+      {
+        "command": "node.set",
+        "params": {
+          "id": 32,
+          "sizingV": "fill"
+        }
+      }
+    ]
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "x-build-pricing",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_root000001",
+      "n_price00001",
+      "n_priceh0001",
+      "n_pricegrid1",
+      "n_tierfree01",
+      "n_tfreenm01",
+      "n_tfreepr01",
+      "n_tfreels01",
+      "n_tfreeli01",
+      "n_tfreeli02",
+      "n_tfreeli03",
+      "n_tfreebt01",
+      "n_tierpro001",
+      "n_tprobdg01",
+      "n_tpronm001",
+      "n_tpropr001",
+      "n_tprols001",
+      "n_tproli001",
+      "n_tproli002",
+      "n_tproli003",
+      "n_tprobt001",
+      "n_tierteam01",
+      "n_tteamnm01",
+      "n_tteampr01",
+      "n_tteamls01",
+      "n_tteamli01",
+      "n_tteamli02",
+      "n_tteamli03",
+      "n_tteambt01",
+      "n_faq0000001",
+      "n_faqh000001",
+      "n_faqlist001",
+      "n_faqitem001",
+      "n_faqq00001",
+      "n_faqa00001",
+      "n_faqitem002",
+      "n_faqq00002",
+      "n_faqa00002",
+      "n_faqitem003",
+      "n_faqq00003",
+      "n_faqa00003",
+      "n_faqitem004",
+      "n_faqq00004",
+      "n_faqa00004"
+    ],
+    "transactions": 1,
+    "turns": 4,
+    "toolCalls": 4,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 10,
+      "outputTokens": 7604,
+      "cacheReadTokens": 124047,
+      "cacheWriteTokens": 8081,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 121072
+    },
+    "wallMs": 39878,
+    "finalText": "I added a pricing section and an FAQ section below Features. The lint check found no issues.\n\n- **Pricing:** There's a centered heading and three tier cards. Free is $0, Pro is $19 and Team is $49, each per month. Each card has a three-item feature list and a Button. Pro has a primary border, a shadow, a \"Recommended\" badge and the primary Button. Free and Team use the secondary Button. The cards stack on mobile and sit in three columns from the md breakpoint up.\n- **FAQ:** There's a heading and four question-and-answer pairs. They cover the free plan, changing plans, code export and Team billing.\n\nThe prices, feature lists and FAQ answers are placeholder copy I wrote, so replace them with your real details.",
+    "commands": [
+      {
+        "ops": [
+          {
+            "op": "insertSubtree",
+            "parentId": "n_root000001",
+            "index": 3,
+            "nodes": [
+              {
+                "id": "n_price00001",
+                "name": "Pricing",
+                "parentId": "n_root000001",
+                "children": [
+                  "n_priceh0001",
+                  "n_pricegrid1"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.8"
+                    },
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.16"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "section",
+                "props": {}
+              },
+              {
+                "id": "n_priceh0001",
+                "name": "Pricing heading",
+                "parentId": "n_price00001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.4xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.bold"
+                    },
+                    "lineHeight": {
+                      "token": "leading.tight"
+                    },
+                    "textAlign": "center",
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h2",
+                "props": {
+                  "text": "Simple, transparent pricing"
+                }
+              },
+              {
+                "id": "n_pricegrid1",
+                "name": "Tiers",
+                "parentId": "n_price00001",
+                "children": [
+                  "n_tierfree01",
+                  "n_tierpro001",
+                  "n_tierteam01"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "grid",
+                    "alignItems": "stretch",
+                    "gap": {
+                      "token": "space.4"
+                    },
+                    "gridTemplateColumns": "repeat(1, minmax(0, 1fr))"
+                  },
+                  "md": {
+                    "gridTemplateColumns": "repeat(3, minmax(0, 1fr))"
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tierfree01",
+                "name": "Tier Free",
+                "parentId": "n_pricegrid1",
+                "children": [
+                  "n_tfreenm01",
+                  "n_tfreepr01",
+                  "n_tfreels01",
+                  "n_tfreebt01"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.4"
+                    },
+                    "paddingTop": {
+                      "token": "space.6"
+                    },
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.6"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    },
+                    "backgroundColor": {
+                      "token": "color.surface"
+                    },
+                    "borderRadius": {
+                      "token": "radius.lg"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "article",
+                "props": {}
+              },
+              {
+                "id": "n_tfreenm01",
+                "parentId": "n_tierfree01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h3",
+                "props": {
+                  "text": "Free"
+                }
+              },
+              {
+                "id": "n_tfreepr01",
+                "parentId": "n_tierfree01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.4xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.bold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "p",
+                "props": {
+                  "text": "$0 / month"
+                }
+              },
+              {
+                "id": "n_tfreels01",
+                "name": "Features",
+                "parentId": "n_tierfree01",
+                "children": [
+                  "n_tfreeli01",
+                  "n_tfreeli02",
+                  "n_tfreeli03"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.2"
+                    },
+                    "flexGrow": 1
+                  }
+                },
+                "type": "box",
+                "tag": "ul",
+                "props": {}
+              },
+              {
+                "id": "n_tfreeli01",
+                "parentId": "n_tfreels01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "3 projects"
+                }
+              },
+              {
+                "id": "n_tfreeli02",
+                "parentId": "n_tfreels01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "Basic components"
+                }
+              },
+              {
+                "id": "n_tfreeli03",
+                "parentId": "n_tfreels01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "Community support"
+                }
+              },
+              {
+                "id": "n_tfreebt01",
+                "name": "Free CTA",
+                "parentId": "n_tierfree01",
+                "children": [],
+                "positioning": "flow",
+                "style": {},
+                "type": "instance",
+                "componentRef": {
+                  "componentId": "Button",
+                  "variant": {
+                    "variant": "secondary"
+                  }
+                },
+                "props": {
+                  "values": {
+                    "label": "Start free"
+                  }
+                }
+              },
+              {
+                "id": "n_tierpro001",
+                "name": "Tier Pro (Recommended)",
+                "parentId": "n_pricegrid1",
+                "children": [
+                  "n_tprobdg01",
+                  "n_tpronm001",
+                  "n_tpropr001",
+                  "n_tprols001",
+                  "n_tprobt001"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.4"
+                    },
+                    "paddingTop": {
+                      "token": "space.6"
+                    },
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.6"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    },
+                    "backgroundColor": {
+                      "token": "color.background"
+                    },
+                    "borderWidth": 2,
+                    "borderStyle": "solid",
+                    "borderColor": {
+                      "token": "color.primary"
+                    },
+                    "borderRadius": {
+                      "token": "radius.lg"
+                    },
+                    "boxShadow": {
+                      "token": "shadow.md"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "article",
+                "props": {}
+              },
+              {
+                "id": "n_tprobdg01",
+                "name": "Badge",
+                "parentId": "n_tierpro001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "alignSelf": "flex-start",
+                    "paddingTop": {
+                      "token": "space.1"
+                    },
+                    "paddingRight": {
+                      "token": "space.3"
+                    },
+                    "paddingBottom": {
+                      "token": "space.1"
+                    },
+                    "paddingLeft": {
+                      "token": "space.3"
+                    },
+                    "fontSize": {
+                      "token": "text.xs"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.primaryText"
+                    },
+                    "backgroundColor": {
+                      "token": "color.primary"
+                    },
+                    "borderRadius": {
+                      "token": "radius.full"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "small",
+                "props": {
+                  "text": "Recommended"
+                }
+              },
+              {
+                "id": "n_tpronm001",
+                "parentId": "n_tierpro001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h3",
+                "props": {
+                  "text": "Pro"
+                }
+              },
+              {
+                "id": "n_tpropr001",
+                "parentId": "n_tierpro001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.4xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.bold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "p",
+                "props": {
+                  "text": "$19 / month"
+                }
+              },
+              {
+                "id": "n_tprols001",
+                "name": "Features",
+                "parentId": "n_tierpro001",
+                "children": [
+                  "n_tproli001",
+                  "n_tproli002",
+                  "n_tproli003"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.2"
+                    },
+                    "flexGrow": 1
+                  }
+                },
+                "type": "box",
+                "tag": "ul",
+                "props": {}
+              },
+              {
+                "id": "n_tproli001",
+                "parentId": "n_tprols001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "Unlimited projects"
+                }
+              },
+              {
+                "id": "n_tproli002",
+                "parentId": "n_tprols001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "Custom design system"
+                }
+              },
+              {
+                "id": "n_tproli003",
+                "parentId": "n_tprols001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "React + Tailwind export"
+                }
+              },
+              {
+                "id": "n_tprobt001",
+                "name": "Pro CTA",
+                "parentId": "n_tierpro001",
+                "children": [],
+                "positioning": "flow",
+                "style": {},
+                "type": "instance",
+                "componentRef": {
+                  "componentId": "Button",
+                  "variant": {
+                    "variant": "primary"
+                  }
+                },
+                "props": {
+                  "values": {
+                    "label": "Get Pro"
+                  }
+                }
+              },
+              {
+                "id": "n_tierteam01",
+                "name": "Tier Team",
+                "parentId": "n_pricegrid1",
+                "children": [
+                  "n_tteamnm01",
+                  "n_tteampr01",
+                  "n_tteamls01",
+                  "n_tteambt01"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.4"
+                    },
+                    "paddingTop": {
+                      "token": "space.6"
+                    },
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.6"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    },
+                    "backgroundColor": {
+                      "token": "color.surface"
+                    },
+                    "borderRadius": {
+                      "token": "radius.lg"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "article",
+                "props": {}
+              },
+              {
+                "id": "n_tteamnm01",
+                "parentId": "n_tierteam01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h3",
+                "props": {
+                  "text": "Team"
+                }
+              },
+              {
+                "id": "n_tteampr01",
+                "parentId": "n_tierteam01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.4xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.bold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "p",
+                "props": {
+                  "text": "$49 / month"
+                }
+              },
+              {
+                "id": "n_tteamls01",
+                "name": "Features",
+                "parentId": "n_tierteam01",
+                "children": [
+                  "n_tteamli01",
+                  "n_tteamli02",
+                  "n_tteamli03"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.2"
+                    },
+                    "flexGrow": 1
+                  }
+                },
+                "type": "box",
+                "tag": "ul",
+                "props": {}
+              },
+              {
+                "id": "n_tteamli01",
+                "parentId": "n_tteamls01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "Everything in Pro"
+                }
+              },
+              {
+                "id": "n_tteamli02",
+                "parentId": "n_tteamls01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "Shared workspaces"
+                }
+              },
+              {
+                "id": "n_tteamli03",
+                "parentId": "n_tteamls01",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "li",
+                "props": {
+                  "text": "Priority support"
+                }
+              },
+              {
+                "id": "n_tteambt01",
+                "name": "Team CTA",
+                "parentId": "n_tierteam01",
+                "children": [],
+                "positioning": "flow",
+                "style": {},
+                "type": "instance",
+                "componentRef": {
+                  "componentId": "Button",
+                  "variant": {
+                    "variant": "secondary"
+                  }
+                },
+                "props": {
+                  "values": {
+                    "label": "Contact sales"
+                  }
+                }
+              }
+            ]
+          },
+          {
+            "op": "insertSubtree",
+            "parentId": "n_root000001",
+            "index": 4,
+            "nodes": [
+              {
+                "id": "n_faq0000001",
+                "name": "FAQ",
+                "parentId": "n_root000001",
+                "children": [
+                  "n_faqh000001",
+                  "n_faqlist001"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.8"
+                    },
+                    "width": "fill",
+                    "maxWidth": "48rem",
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.16"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    },
+                    "marginRight": "auto",
+                    "marginLeft": "auto"
+                  }
+                },
+                "type": "box",
+                "tag": "section",
+                "props": {}
+              },
+              {
+                "id": "n_faqh000001",
+                "name": "FAQ heading",
+                "parentId": "n_faq0000001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.4xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.bold"
+                    },
+                    "lineHeight": {
+                      "token": "leading.tight"
+                    },
+                    "textAlign": "center",
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h2",
+                "props": {
+                  "text": "Frequently asked questions"
+                }
+              },
+              {
+                "id": "n_faqlist001",
+                "name": "Questions",
+                "parentId": "n_faq0000001",
+                "children": [
+                  "n_faqitem001",
+                  "n_faqitem002",
+                  "n_faqitem003",
+                  "n_faqitem004"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.4"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_faqitem001",
+                "name": "FAQ 1",
+                "parentId": "n_faqlist001",
+                "children": [
+                  "n_faqq00001",
+                  "n_faqa00001"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.2"
+                    },
+                    "paddingBottom": {
+                      "token": "space.4"
+                    },
+                    "borderBottomWidth": 1,
+                    "borderStyle": "solid",
+                    "borderColor": {
+                      "token": "color.border"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_faqq00001",
+                "parentId": "n_faqitem001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.lg"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h3",
+                "props": {
+                  "text": "Can I try Acme for free?"
+                }
+              },
+              {
+                "id": "n_faqa00001",
+                "parentId": "n_faqitem001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "lineHeight": {
+                      "token": "leading.normal"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "p",
+                "props": {
+                  "text": "Yes. The Free plan has no time limit and includes up to three projects."
+                }
+              },
+              {
+                "id": "n_faqitem002",
+                "name": "FAQ 2",
+                "parentId": "n_faqlist001",
+                "children": [
+                  "n_faqq00002",
+                  "n_faqa00002"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.2"
+                    },
+                    "paddingBottom": {
+                      "token": "space.4"
+                    },
+                    "borderBottomWidth": 1,
+                    "borderStyle": "solid",
+                    "borderColor": {
+                      "token": "color.border"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_faqq00002",
+                "parentId": "n_faqitem002",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.lg"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h3",
+                "props": {
+                  "text": "Can I change plans later?"
+                }
+              },
+              {
+                "id": "n_faqa00002",
+                "parentId": "n_faqitem002",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "lineHeight": {
+                      "token": "leading.normal"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "p",
+                "props": {
+                  "text": "Anytime. Upgrades apply immediately and downgrades take effect at the next billing cycle."
+                }
+              },
+              {
+                "id": "n_faqitem003",
+                "name": "FAQ 3",
+                "parentId": "n_faqlist001",
+                "children": [
+                  "n_faqq00003",
+                  "n_faqa00003"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.2"
+                    },
+                    "paddingBottom": {
+                      "token": "space.4"
+                    },
+                    "borderBottomWidth": 1,
+                    "borderStyle": "solid",
+                    "borderColor": {
+                      "token": "color.border"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_faqq00003",
+                "parentId": "n_faqitem003",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.lg"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h3",
+                "props": {
+                  "text": "Does the exported code work with my stack?"
+                }
+              },
+              {
+                "id": "n_faqa00003",
+                "parentId": "n_faqitem003",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "lineHeight": {
+                      "token": "leading.normal"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "p",
+                "props": {
+                  "text": "Pro and Team export clean React and Tailwind components that drop into any modern codebase."
+                }
+              },
+              {
+                "id": "n_faqitem004",
+                "name": "FAQ 4",
+                "parentId": "n_faqlist001",
+                "children": [
+                  "n_faqq00004",
+                  "n_faqa00004"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.2"
+                    },
+                    "paddingBottom": {
+                      "token": "space.4"
+                    },
+                    "borderBottomWidth": 1,
+                    "borderStyle": "solid",
+                    "borderColor": {
+                      "token": "color.border"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_faqq00004",
+                "parentId": "n_faqitem004",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.lg"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h3",
+                "props": {
+                  "text": "How does Team billing work?"
+                }
+              },
+              {
+                "id": "n_faqa00004",
+                "parentId": "n_faqitem004",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "lineHeight": {
+                      "token": "leading.normal"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "p",
+                "props": {
+                  "text": "Team is billed monthly per workspace, with unlimited editors and a single invoice."
+                }
+              }
+            ]
+          }
+        ],
+        "label": "Add pricing and FAQ sections"
+      }
+    ]
+  }
+}

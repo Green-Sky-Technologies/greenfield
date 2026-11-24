@@ -1,0 +1,303 @@
+{
+  "arm": "figcraft",
+  "variant": "minimal",
+  "caseId": "density-slider",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": false,
+  "failures": [
+    "patch scope: touched outside n_features01: new:22, new:23, new:24, new:25, new:26, new:27, new:28, new:29, new:30"
+  ],
+  "touched": [
+    "new:22",
+    "new:23",
+    "new:24",
+    "new:25",
+    "new:26",
+    "new:27",
+    "new:28",
+    "new:29",
+    "new:30"
+  ],
+  "transactions": 2,
+  "turns": 8,
+  "toolCalls": 12,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 18,
+    "outputTokens": 3466,
+    "cacheReadTokens": 136379,
+    "cacheWriteTokens": 23504,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 120732
+  },
+  "wallMs": 29237,
+  "finalText": "Creation takes only basic params, so I'll set the rest with node.set.\nI added a \"Card density\" segmented control (Compact / Comfortable / Spacious) just above the feature cards. It follows your tokens: pill shape, with Comfortable highlighted in the primary colour.\n\nIt's a static visual only. Clicking an option doesn't change the cards yet, and Comfortable matches the current 24px padding. I can wire it up as a prototype interaction, or as a variable mode that changes card padding and gap, if you'd like.",
+  "commands": [
+    {
+      "command": "node.create",
+      "as": "bar",
+      "params": {
+        "type": "frame",
+        "name": "density_control",
+        "parent": 2,
+        "index": 1
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "bar"
+        },
+        "layout": "horizontal",
+        "gap": 16,
+        "padding": [
+          0,
+          24,
+          16,
+          24
+        ],
+        "crossAlign": "center",
+        "sizingH": "fill",
+        "sizingV": "hug",
+        "fill": "none"
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "lbl",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "bar"
+        },
+        "name": "density_label",
+        "characters": "Card density"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "lbl"
+        },
+        "fontFamily": "SF Pro",
+        "fontStyle": "Medium",
+        "fontSize": 14,
+        "fill": "#6B6B70"
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "seg",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "bar"
+        },
+        "name": "density_segmented"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "seg"
+        },
+        "layout": "horizontal",
+        "gap": 4,
+        "padding": 4,
+        "crossAlign": "center",
+        "cornerRadius": 9999,
+        "fill": "#F6F6F4",
+        "stroke": "#E4E4E7",
+        "strokeWeight": 1,
+        "sizingH": "hug",
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o1",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "seg"
+        },
+        "name": "density_compact"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "o1"
+        },
+        "layout": "horizontal",
+        "padding": [
+          8,
+          16,
+          8,
+          16
+        ],
+        "cornerRadius": 9999,
+        "fill": "none",
+        "sizingH": "hug",
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "t1",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o1"
+        },
+        "name": "density_compact_label",
+        "characters": "Compact"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "t1"
+        },
+        "fontFamily": "SF Pro",
+        "fontStyle": "Medium",
+        "fontSize": 14,
+        "fill": "#6B6B70"
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o2",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "seg"
+        },
+        "name": "density_comfortable"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "o2"
+        },
+        "layout": "horizontal",
+        "padding": [
+          8,
+          16,
+          8,
+          16
+        ],
+        "cornerRadius": 9999,
+        "fill": "#4F46E5",
+        "sizingH": "hug",
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "t2",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o2"
+        },
+        "name": "density_comfortable_label",
+        "characters": "Comfortable"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "t2"
+        },
+        "fontFamily": "SF Pro",
+        "fontStyle": "Medium",
+        "fontSize": 14,
+        "fill": "#FFFFFF"
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "o3",
+      "params": {
+        "type": "frame",
+        "parent": {
+          "$ref": "seg"
+        },
+        "name": "density_spacious"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "o3"
+        },
+        "layout": "horizontal",
+        "padding": [
+          8,
+          16,
+          8,
+          16
+        ],
+        "cornerRadius": 9999,
+        "fill": "none",
+        "sizingH": "hug",
+        "sizingV": "hug"
+      }
+    },
+    {
+      "command": "node.create",
+      "as": "t3",
+      "params": {
+        "type": "text",
+        "parent": {
+          "$ref": "o3"
+        },
+        "name": "density_spacious_label",
+        "characters": "Spacious"
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": {
+          "$ref": "t3"
+        },
+        "fontFamily": "SF Pro",
+        "fontStyle": "Medium",
+        "fontSize": 14,
+        "fill": "#6B6B70"
+      }
+    },
+    {
+      "command": "node.reorder",
+      "params": {
+        "id": 22,
+        "index": 2
+      }
+    },
+    {
+      "command": "node.set",
+      "params": {
+        "id": 22,
+        "padding": [
+          0,
+          24,
+          16,
+          24
+        ]
+      }
+    }
+  ]
+}

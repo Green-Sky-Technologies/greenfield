@@ -1,0 +1,1236 @@
+{
+  "case": "x-build-testimonials",
+  "prompt": "Add a testimonials section after the features: a heading and three customer quote cards, each with the quote, a round avatar placeholder, the person's name and their company. Match the existing page style. Build it directly; do not suggest a job.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "v2",
+    "caseId": "x-build-testimonials",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "new:22",
+      "new:23",
+      "new:24",
+      "new:25",
+      "new:26",
+      "new:27",
+      "new:28",
+      "new:29",
+      "new:30",
+      "new:31",
+      "new:32",
+      "new:33",
+      "new:34",
+      "new:35",
+      "new:36",
+      "new:37",
+      "new:38",
+      "new:39",
+      "new:40",
+      "new:41",
+      "new:42",
+      "new:43",
+      "new:44",
+      "new:45"
+    ],
+    "transactions": 2,
+    "turns": 6,
+    "toolCalls": 6,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 14,
+      "outputTokens": 3590,
+      "cacheReadTokens": 68289,
+      "cacheWriteTokens": 8357,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 70478
+    },
+    "wallMs": 33746,
+    "finalText": "Quotes 2 and 3 are missing their opening quote marks. I'll fix that.\nI added a \"Loved by product teams\" section after the features. It has a Bold 36px heading and three quote cards in a row. Each card has the quote, a round grey avatar placeholder, the person's name and their company. The cards use the same surface fill, 16px radius and 24px padding as the feature cards.\n\nThe render showed quotes 2 and 3 missing their opening quote marks, so I added them to both. I haven't re-rendered since that fix.\n\nThe quotes, names and companies are placeholders I made up (Maya Chen at Northwind, Daniel Ortiz at Lumen Labs, Priya Nair at Foundry). Swap in real customers when you have them.",
+    "commands": [
+      {
+        "command": "node.create",
+        "as": "sec",
+        "params": {
+          "type": "frame",
+          "parent": 2,
+          "name": "n_testimonials",
+          "props": {
+            "layout": "vertical",
+            "gap": 24,
+            "padding": [
+              0,
+              24,
+              64,
+              24
+            ],
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "sec"
+          },
+          "name": "n_testi_heading",
+          "text": "Loved by product teams",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Bold",
+            "fontSize": 36,
+            "fill": "#18181B",
+            "lineHeight": "115%"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "row",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "sec"
+          },
+          "name": "n_testi_row",
+          "props": {
+            "layout": "horizontal",
+            "gap": 16,
+            "crossAlign": "min",
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "c1",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "row"
+          },
+          "name": "n_testi1card",
+          "props": {
+            "layout": "vertical",
+            "gap": 24,
+            "padding": 24,
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "#F6F6F4",
+            "cornerRadius": 16
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c1"
+          },
+          "name": "n_testi1quote",
+          "text": "“We went from prompt to production-ready screens in a single afternoon.”",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 16,
+            "fill": "#18181B",
+            "lineHeight": "150%",
+            "sizingH": "fill",
+            "textAutoResize": "height"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "p1",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c1"
+          },
+          "name": "n_testi1person",
+          "props": {
+            "layout": "horizontal",
+            "gap": 12,
+            "crossAlign": "center",
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "ellipse",
+          "parent": {
+            "$ref": "p1"
+          },
+          "name": "n_testi1avatar",
+          "width": 40,
+          "height": 40,
+          "props": {
+            "fill": "#E4E4E7"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "i1",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "p1"
+          },
+          "name": "n_testi1info",
+          "props": {
+            "layout": "vertical",
+            "gap": 4,
+            "sizingH": "hug",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "i1"
+          },
+          "name": "n_testi1name",
+          "text": "Maya Chen",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 14,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "i1"
+          },
+          "name": "n_testi1company",
+          "text": "Northwind",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "c2",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "row"
+          },
+          "name": "n_testi2card",
+          "props": {
+            "layout": "vertical",
+            "gap": 24,
+            "padding": 24,
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "#F6F6F4",
+            "cornerRadius": 16
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c2"
+          },
+          "name": "n_testi2quote",
+          "text": "Our design system finally stays consistent across every team and screen.",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 16,
+            "fill": "#18181B",
+            "lineHeight": "150%",
+            "sizingH": "fill",
+            "textAutoResize": "height"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "p2",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c2"
+          },
+          "name": "n_testi2person",
+          "props": {
+            "layout": "horizontal",
+            "gap": 12,
+            "crossAlign": "center",
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "ellipse",
+          "parent": {
+            "$ref": "p2"
+          },
+          "name": "n_testi2avatar",
+          "width": 40,
+          "height": 40,
+          "props": {
+            "fill": "#E4E4E7"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "i2",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "p2"
+          },
+          "name": "n_testi2info",
+          "props": {
+            "layout": "vertical",
+            "gap": 4,
+            "sizingH": "hug",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "i2"
+          },
+          "name": "n_testi2name",
+          "text": "Daniel Ortiz",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 14,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "i2"
+          },
+          "name": "n_testi2company",
+          "text": "Lumen Labs",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "c3",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "row"
+          },
+          "name": "n_testi3card",
+          "props": {
+            "layout": "vertical",
+            "gap": 24,
+            "padding": 24,
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "#F6F6F4",
+            "cornerRadius": 16
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "c3"
+          },
+          "name": "n_testi3quote",
+          "text": "Code handoff is painless. Engineers get exactly what we designed.",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 16,
+            "fill": "#18181B",
+            "lineHeight": "150%",
+            "sizingH": "fill",
+            "textAutoResize": "height"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "p3",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "c3"
+          },
+          "name": "n_testi3person",
+          "props": {
+            "layout": "horizontal",
+            "gap": 12,
+            "crossAlign": "center",
+            "sizingH": "fill",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "ellipse",
+          "parent": {
+            "$ref": "p3"
+          },
+          "name": "n_testi3avatar",
+          "width": 40,
+          "height": 40,
+          "props": {
+            "fill": "#E4E4E7"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "as": "i3",
+        "params": {
+          "type": "frame",
+          "parent": {
+            "$ref": "p3"
+          },
+          "name": "n_testi3info",
+          "props": {
+            "layout": "vertical",
+            "gap": 4,
+            "sizingH": "hug",
+            "sizingV": "hug",
+            "fill": "none"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "i3"
+          },
+          "name": "n_testi3name",
+          "text": "Priya Nair",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Semibold",
+            "fontSize": 14,
+            "fill": "#18181B"
+          }
+        }
+      },
+      {
+        "command": "node.create",
+        "params": {
+          "type": "text",
+          "parent": {
+            "$ref": "i3"
+          },
+          "name": "n_testi3company",
+          "text": "Foundry",
+          "props": {
+            "fontFamily": "SF Pro",
+            "fontStyle": "Regular",
+            "fontSize": 14,
+            "fill": "#6B6B70"
+          }
+        }
+      },
+      {
+        "command": "text.set",
+        "params": {
+          "id": 33,
+          "text": "“Our design system finally stays consistent across every team and screen.”"
+        }
+      },
+      {
+        "command": "text.set",
+        "params": {
+          "id": 40,
+          "text": "“Code handoff is painless. Engineers get exactly what we designed.”"
+        }
+      }
+    ]
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "x-build-testimonials",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [
+      "n_root000001",
+      "n_testi000001",
+      "n_testihead01",
+      "n_testigrid01",
+      "n_tcard000001",
+      "n_tquote00001",
+      "n_tperson0001",
+      "n_tavatar0001",
+      "n_tinfo0000001",
+      "n_tname0000001",
+      "n_tcomp0000001",
+      "n_tcard000002",
+      "n_tquote00002",
+      "n_tperson0002",
+      "n_tavatar0002",
+      "n_tinfo0000002",
+      "n_tname0000002",
+      "n_tcomp0000002",
+      "n_tcard000003",
+      "n_tquote00003",
+      "n_tperson0003",
+      "n_tavatar0003",
+      "n_tinfo0000003",
+      "n_tname0000003",
+      "n_tcomp0000003"
+    ],
+    "transactions": 2,
+    "turns": 5,
+    "toolCalls": 5,
+    "jobSuggestion": null,
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 12,
+      "outputTokens": 4470,
+      "cacheReadTokens": 157114,
+      "cacheWriteTokens": 4878,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 88342
+    },
+    "wallMs": 24509,
+    "finalText": "I added a testimonials section after Features. It has a \"Loved by product teams\" heading and three quote cards. Each card has a quote, a round avatar placeholder, a name and a company. The cards use the same surface, radius and padding as the feature cards. They show in one column on mobile and three columns from the medium breakpoint up. Lint flagged the avatar sizes as literal values, so I switched them to the `space.12` token.\n\nThe quotes, names and companies are placeholder text. The names are Maya Chen (Northwind), Daniel Okafor (Lumen Labs) and Priya Raman (Orbit Systems).",
+    "commands": [
+      {
+        "ops": [
+          {
+            "op": "insertSubtree",
+            "parentId": "n_root000001",
+            "index": 3,
+            "nodes": [
+              {
+                "id": "n_testi000001",
+                "name": "Testimonials",
+                "parentId": "n_root000001",
+                "children": [
+                  "n_testihead01",
+                  "n_testigrid01"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.6"
+                    },
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.16"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "section",
+                "props": {}
+              },
+              {
+                "id": "n_testihead01",
+                "parentId": "n_testi000001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.2xl"
+                    },
+                    "fontWeight": {
+                      "token": "weight.bold"
+                    },
+                    "lineHeight": {
+                      "token": "leading.tight"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  },
+                  "md": {
+                    "fontSize": {
+                      "token": "text.4xl"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "h2",
+                "props": {
+                  "text": "Loved by product teams"
+                }
+              },
+              {
+                "id": "n_testigrid01",
+                "name": "Quotes",
+                "parentId": "n_testi000001",
+                "children": [
+                  "n_tcard000001",
+                  "n_tcard000002",
+                  "n_tcard000003"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "grid",
+                    "gap": {
+                      "token": "space.4"
+                    },
+                    "gridTemplateColumns": "repeat(1, minmax(0, 1fr))"
+                  },
+                  "md": {
+                    "gridTemplateColumns": "repeat(3, minmax(0, 1fr))"
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tcard000001",
+                "name": "Testimonial 1",
+                "parentId": "n_testigrid01",
+                "children": [
+                  "n_tquote00001",
+                  "n_tperson0001"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.6"
+                    },
+                    "paddingTop": {
+                      "token": "space.6"
+                    },
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.6"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    },
+                    "backgroundColor": {
+                      "token": "color.surface"
+                    },
+                    "borderRadius": {
+                      "token": "radius.lg"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "article",
+                "props": {}
+              },
+              {
+                "id": "n_tquote00001",
+                "parentId": "n_tcard000001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "lineHeight": {
+                      "token": "leading.normal"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "blockquote",
+                "props": {
+                  "text": "“We went from brief to a production-ready screen in an afternoon.”"
+                }
+              },
+              {
+                "id": "n_tperson0001",
+                "parentId": "n_tcard000001",
+                "children": [
+                  "n_tavatar0001",
+                  "n_tinfo0000001"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "alignItems": "center",
+                    "gap": {
+                      "token": "space.3"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tavatar0001",
+                "name": "Avatar",
+                "parentId": "n_tperson0001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "flexShrink": 0,
+                    "width": 48,
+                    "height": 48,
+                    "backgroundColor": {
+                      "token": "color.border"
+                    },
+                    "borderRadius": {
+                      "token": "radius.full"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tinfo0000001",
+                "parentId": "n_tperson0001",
+                "children": [
+                  "n_tname0000001",
+                  "n_tcomp0000001"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column"
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tname0000001",
+                "parentId": "n_tinfo0000001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.sm"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "strong",
+                "props": {
+                  "text": "Maya Chen"
+                }
+              },
+              {
+                "id": "n_tcomp0000001",
+                "parentId": "n_tinfo0000001",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.sm"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "span",
+                "props": {
+                  "text": "Northwind"
+                }
+              },
+              {
+                "id": "n_tcard000002",
+                "name": "Testimonial 2",
+                "parentId": "n_testigrid01",
+                "children": [
+                  "n_tquote00002",
+                  "n_tperson0002"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.6"
+                    },
+                    "paddingTop": {
+                      "token": "space.6"
+                    },
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.6"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    },
+                    "backgroundColor": {
+                      "token": "color.surface"
+                    },
+                    "borderRadius": {
+                      "token": "radius.lg"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "article",
+                "props": {}
+              },
+              {
+                "id": "n_tquote00002",
+                "parentId": "n_tcard000002",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "lineHeight": {
+                      "token": "leading.normal"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "blockquote",
+                "props": {
+                  "text": "Our design system finally stays consistent, because every screen uses the same tokens."
+                }
+              },
+              {
+                "id": "n_tperson0002",
+                "parentId": "n_tcard000002",
+                "children": [
+                  "n_tavatar0002",
+                  "n_tinfo0000002"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "alignItems": "center",
+                    "gap": {
+                      "token": "space.3"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tavatar0002",
+                "name": "Avatar",
+                "parentId": "n_tperson0002",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "flexShrink": 0,
+                    "width": 48,
+                    "height": 48,
+                    "backgroundColor": {
+                      "token": "color.border"
+                    },
+                    "borderRadius": {
+                      "token": "radius.full"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tinfo0000002",
+                "parentId": "n_tperson0002",
+                "children": [
+                  "n_tname0000002",
+                  "n_tcomp0000002"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column"
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tname0000002",
+                "parentId": "n_tinfo0000002",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.sm"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "strong",
+                "props": {
+                  "text": "Daniel Okafor"
+                }
+              },
+              {
+                "id": "n_tcomp0000002",
+                "parentId": "n_tinfo0000002",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.sm"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "span",
+                "props": {
+                  "text": "Lumen Labs"
+                }
+              },
+              {
+                "id": "n_tcard000003",
+                "name": "Testimonial 3",
+                "parentId": "n_testigrid01",
+                "children": [
+                  "n_tquote00003",
+                  "n_tperson0003"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column",
+                    "gap": {
+                      "token": "space.6"
+                    },
+                    "paddingTop": {
+                      "token": "space.6"
+                    },
+                    "paddingRight": {
+                      "token": "space.6"
+                    },
+                    "paddingBottom": {
+                      "token": "space.6"
+                    },
+                    "paddingLeft": {
+                      "token": "space.6"
+                    },
+                    "backgroundColor": {
+                      "token": "color.surface"
+                    },
+                    "borderRadius": {
+                      "token": "radius.lg"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "article",
+                "props": {}
+              },
+              {
+                "id": "n_tquote00003",
+                "parentId": "n_tcard000003",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.base"
+                    },
+                    "lineHeight": {
+                      "token": "leading.normal"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "blockquote",
+                "props": {
+                  "text": "Handoff used to take weeks. Now engineers export the code and ship it."
+                }
+              },
+              {
+                "id": "n_tperson0003",
+                "parentId": "n_tcard000003",
+                "children": [
+                  "n_tavatar0003",
+                  "n_tinfo0000003"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "row",
+                    "alignItems": "center",
+                    "gap": {
+                      "token": "space.3"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tavatar0003",
+                "name": "Avatar",
+                "parentId": "n_tperson0003",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "flexShrink": 0,
+                    "width": 48,
+                    "height": 48,
+                    "backgroundColor": {
+                      "token": "color.border"
+                    },
+                    "borderRadius": {
+                      "token": "radius.full"
+                    }
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tinfo0000003",
+                "parentId": "n_tperson0003",
+                "children": [
+                  "n_tname0000003",
+                  "n_tcomp0000003"
+                ],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "display": "flex",
+                    "flexDirection": "column"
+                  }
+                },
+                "type": "box",
+                "tag": "div",
+                "props": {}
+              },
+              {
+                "id": "n_tname0000003",
+                "parentId": "n_tinfo0000003",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.sm"
+                    },
+                    "fontWeight": {
+                      "token": "weight.semibold"
+                    },
+                    "color": {
+                      "token": "color.text"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "strong",
+                "props": {
+                  "text": "Priya Raman"
+                }
+              },
+              {
+                "id": "n_tcomp0000003",
+                "parentId": "n_tinfo0000003",
+                "children": [],
+                "positioning": "flow",
+                "style": {
+                  "base": {
+                    "fontSize": {
+                      "token": "text.sm"
+                    },
+                    "color": {
+                      "token": "color.muted"
+                    }
+                  }
+                },
+                "type": "text",
+                "tag": "span",
+                "props": {
+                  "text": "Orbit Systems"
+                }
+              }
+            ]
+          }
+        ],
+        "label": "Add testimonials section"
+      },
+      {
+        "ops": [
+          {
+            "op": "setStyle",
+            "id": "n_tavatar0001",
+            "breakpoint": "base",
+            "prop": "width",
+            "value": {
+              "token": "space.12"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_tavatar0001",
+            "breakpoint": "base",
+            "prop": "height",
+            "value": {
+              "token": "space.12"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_tavatar0002",
+            "breakpoint": "base",
+            "prop": "width",
+            "value": {
+              "token": "space.12"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_tavatar0002",
+            "breakpoint": "base",
+            "prop": "height",
+            "value": {
+              "token": "space.12"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_tavatar0003",
+            "breakpoint": "base",
+            "prop": "width",
+            "value": {
+              "token": "space.12"
+            }
+          },
+          {
+            "op": "setStyle",
+            "id": "n_tavatar0003",
+            "breakpoint": "base",
+            "prop": "height",
+            "value": {
+              "token": "space.12"
+            }
+          }
+        ],
+        "label": "Tokenize avatar size"
+      }
+    ]
+  }
+}

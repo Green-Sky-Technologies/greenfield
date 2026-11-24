@@ -1,0 +1,31 @@
+{
+  "arm": "html",
+  "variant": "html-frame",
+  "caseId": "pricing-page-offers-job",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": false,
+  "failures": [
+    "job suggestion: expected generate, got null"
+  ],
+  "touched": [],
+  "transactions": 0,
+  "turns": 1,
+  "toolCalls": 1,
+  "jobSuggestion": null,
+  "stopReason": "tool_use",
+  "usage": {
+    "inputTokens": 4,
+    "outputTokens": 606,
+    "cacheReadTokens": 27990,
+    "cacheWriteTokens": 0,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 11666
+  },
+  "wallMs": 4422,
+  "finalText": "This is a new page, so I need a few details before I design it.",
+  "commands": [],
+  "notes": [
+    "turn ended on ask_questions"
+  ]
+}

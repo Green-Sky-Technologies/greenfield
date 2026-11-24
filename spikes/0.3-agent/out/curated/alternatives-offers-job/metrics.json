@@ -1,0 +1,61 @@
+{
+  "case": "alternatives-offers-job",
+  "prompt": "What would this page look like with a completely different layout? I'd like to compare a few.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "curated",
+    "caseId": "alternatives-offers-job",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [],
+    "transactions": 0,
+    "turns": 2,
+    "toolCalls": 1,
+    "jobSuggestion": "alternatives",
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 465,
+      "cacheReadTokens": 12789,
+      "cacheWriteTokens": 1428,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 10790
+    },
+    "wallMs": 4869,
+    "finalText": "I haven't changed anything on the page. Comparing several full-page layouts needs new frames, so I've offered a background job that makes 3 alternatives. Your current page stays as it is. The job keeps your copy and design tokens and changes the structure. Examples are a split hero, a centered hero, and a bento-style feature grid. Start the job if you want to compare them.",
+    "commands": []
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "alternatives-offers-job",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": false,
+    "failures": [
+      "job suggestion: expected alternatives, got null"
+    ],
+    "touched": [],
+    "transactions": 0,
+    "turns": 1,
+    "toolCalls": 1,
+    "jobSuggestion": null,
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 4,
+      "outputTokens": 594,
+      "cacheReadTokens": 27380,
+      "cacheWriteTokens": 613,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 12957
+    },
+    "wallMs": 4654,
+    "finalText": "I can set up a few layout alternatives to compare. First, a few questions to steer them.",
+    "commands": [],
+    "notes": [
+      "turn ended on ask_questions"
+    ]
+  }
+}

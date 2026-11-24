@@ -1,0 +1,1214 @@
+{
+  "arm": "html",
+  "variant": "html-frame",
+  "caseId": "x-build-pricing",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_root000001",
+    "n_price00001",
+    "n_priceh0001",
+    "n_pricegrid1",
+    "n_pfree00001",
+    "n_pfreet0001",
+    "n_pfreep0001",
+    "n_pfreel0001",
+    "n_pfreei0001",
+    "n_pfreei0002",
+    "n_pfreei0003",
+    "n_pfreeb0001",
+    "n_ppro000001",
+    "n_pprobadge1",
+    "n_pprot00001",
+    "n_pprop00001",
+    "n_pprol00001",
+    "n_pproi00001",
+    "n_pproi00002",
+    "n_pproi00003",
+    "n_pprob00001",
+    "n_pteam00001",
+    "n_pteamt0001",
+    "n_pteamp0001",
+    "n_pteaml0001",
+    "n_pteami0001",
+    "n_pteami0002",
+    "n_pteami0003",
+    "n_pteamb0001",
+    "n_faq0000001",
+    "n_faqh000001",
+    "n_faqlist001",
+    "n_faqi00001",
+    "n_faqq00001",
+    "n_faqa00001",
+    "n_faqi00002",
+    "n_faqq00002",
+    "n_faqa00002",
+    "n_faqi00003",
+    "n_faqq00003",
+    "n_faqa00003",
+    "n_faqi00004",
+    "n_faqq00004",
+    "n_faqa00004"
+  ],
+  "transactions": 1,
+  "turns": 4,
+  "toolCalls": 4,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 10,
+    "outputTokens": 7380,
+    "cacheReadTokens": 121895,
+    "cacheWriteTokens": 9818,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 122744
+  },
+  "wallMs": 38947,
+  "finalText": "I added a pricing section and an FAQ section below Features, and the lint check found no issues.\n\n- **Pricing:** It has a heading and three cards (Free $0, Pro $24, Team $60). Each card has a price, three feature bullets and a button. Pro stands out with a primary-colour border, a shadow and a \"Recommended\" badge, and it gets the primary button while the other two use the secondary one. The cards sit in one row on tablet and wider, and stack on mobile.\n- **FAQ:** It has a heading and four question-and-answer pairs, laid out in a centred column.\n\nThe prices, bullets and FAQ answers are placeholder copy I wrote, so replace them with your real plans and answers.",
+  "commands": [
+    {
+      "ops": [
+        {
+          "op": "insertSubtree",
+          "parentId": "n_root000001",
+          "index": 3,
+          "nodes": [
+            {
+              "id": "n_price00001",
+              "name": "Pricing",
+              "parentId": "n_root000001",
+              "children": [
+                "n_priceh0001",
+                "n_pricegrid1"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.8"
+                  },
+                  "paddingTop": {
+                    "token": "space.16"
+                  },
+                  "paddingRight": {
+                    "token": "space.6"
+                  },
+                  "paddingBottom": {
+                    "token": "space.16"
+                  },
+                  "paddingLeft": {
+                    "token": "space.6"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "section",
+              "props": {}
+            },
+            {
+              "id": "n_priceh0001",
+              "parentId": "n_price00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.4xl"
+                  },
+                  "fontWeight": {
+                    "token": "weight.bold"
+                  },
+                  "textAlign": "center",
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h2",
+              "props": {
+                "text": "Simple, honest pricing"
+              }
+            },
+            {
+              "id": "n_pricegrid1",
+              "name": "Tiers",
+              "parentId": "n_price00001",
+              "children": [
+                "n_pfree00001",
+                "n_ppro000001",
+                "n_pteam00001"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "grid",
+                  "alignItems": "stretch",
+                  "gap": {
+                    "token": "space.4"
+                  },
+                  "gridTemplateColumns": "repeat(1, minmax(0, 1fr))"
+                },
+                "md": {
+                  "gridTemplateColumns": "repeat(3, minmax(0, 1fr))"
+                }
+              },
+              "type": "box",
+              "tag": "div",
+              "props": {}
+            },
+            {
+              "id": "n_pfree00001",
+              "name": "Tier Free",
+              "parentId": "n_pricegrid1",
+              "children": [
+                "n_pfreet0001",
+                "n_pfreep0001",
+                "n_pfreel0001",
+                "n_pfreeb0001"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.4"
+                  },
+                  "paddingTop": {
+                    "token": "space.6"
+                  },
+                  "paddingRight": {
+                    "token": "space.6"
+                  },
+                  "paddingBottom": {
+                    "token": "space.6"
+                  },
+                  "paddingLeft": {
+                    "token": "space.6"
+                  },
+                  "backgroundColor": {
+                    "token": "color.surface"
+                  },
+                  "borderRadius": {
+                    "token": "radius.lg"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "article",
+              "props": {}
+            },
+            {
+              "id": "n_pfreet0001",
+              "parentId": "n_pfree00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.xl"
+                  },
+                  "fontWeight": {
+                    "token": "weight.semibold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h3",
+              "props": {
+                "text": "Free"
+              }
+            },
+            {
+              "id": "n_pfreep0001",
+              "parentId": "n_pfree00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.4xl"
+                  },
+                  "fontWeight": {
+                    "token": "weight.bold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "p",
+              "props": {
+                "text": "$0 /mo"
+              }
+            },
+            {
+              "id": "n_pfreel0001",
+              "parentId": "n_pfree00001",
+              "children": [
+                "n_pfreei0001",
+                "n_pfreei0002",
+                "n_pfreei0003"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.2"
+                  },
+                  "flexGrow": 1
+                }
+              },
+              "type": "box",
+              "tag": "ul",
+              "props": {}
+            },
+            {
+              "id": "n_pfreei0001",
+              "parentId": "n_pfreel0001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "3 projects"
+              }
+            },
+            {
+              "id": "n_pfreei0002",
+              "parentId": "n_pfreel0001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "Live HTML frames"
+              }
+            },
+            {
+              "id": "n_pfreei0003",
+              "parentId": "n_pfreel0001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "Community support"
+              }
+            },
+            {
+              "id": "n_pfreeb0001",
+              "parentId": "n_pfree00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {},
+              "type": "instance",
+              "componentRef": {
+                "componentId": "Button",
+                "variant": {
+                  "variant": "secondary"
+                }
+              },
+              "props": {
+                "values": {
+                  "label": "Start free"
+                }
+              }
+            },
+            {
+              "id": "n_ppro000001",
+              "name": "Tier Pro (Recommended)",
+              "parentId": "n_pricegrid1",
+              "children": [
+                "n_pprobadge1",
+                "n_pprot00001",
+                "n_pprop00001",
+                "n_pprol00001",
+                "n_pprob00001"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.4"
+                  },
+                  "paddingTop": {
+                    "token": "space.6"
+                  },
+                  "paddingRight": {
+                    "token": "space.6"
+                  },
+                  "paddingBottom": {
+                    "token": "space.6"
+                  },
+                  "paddingLeft": {
+                    "token": "space.6"
+                  },
+                  "backgroundColor": {
+                    "token": "color.background"
+                  },
+                  "borderWidth": 2,
+                  "borderStyle": "solid",
+                  "borderColor": {
+                    "token": "color.primary"
+                  },
+                  "borderRadius": {
+                    "token": "radius.lg"
+                  },
+                  "boxShadow": {
+                    "token": "shadow.md"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "article",
+              "props": {}
+            },
+            {
+              "id": "n_pprobadge1",
+              "name": "Badge",
+              "parentId": "n_ppro000001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "alignSelf": "flex-start",
+                  "paddingTop": {
+                    "token": "space.1"
+                  },
+                  "paddingRight": {
+                    "token": "space.3"
+                  },
+                  "paddingBottom": {
+                    "token": "space.1"
+                  },
+                  "paddingLeft": {
+                    "token": "space.3"
+                  },
+                  "fontSize": {
+                    "token": "text.xs"
+                  },
+                  "fontWeight": {
+                    "token": "weight.semibold"
+                  },
+                  "color": {
+                    "token": "color.primaryText"
+                  },
+                  "backgroundColor": {
+                    "token": "color.primary"
+                  },
+                  "borderRadius": {
+                    "token": "radius.full"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "span",
+              "props": {
+                "text": "Recommended"
+              }
+            },
+            {
+              "id": "n_pprot00001",
+              "parentId": "n_ppro000001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.xl"
+                  },
+                  "fontWeight": {
+                    "token": "weight.semibold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h3",
+              "props": {
+                "text": "Pro"
+              }
+            },
+            {
+              "id": "n_pprop00001",
+              "parentId": "n_ppro000001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.4xl"
+                  },
+                  "fontWeight": {
+                    "token": "weight.bold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "p",
+              "props": {
+                "text": "$24 /mo"
+              }
+            },
+            {
+              "id": "n_pprol00001",
+              "parentId": "n_ppro000001",
+              "children": [
+                "n_pproi00001",
+                "n_pproi00002",
+                "n_pproi00003"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.2"
+                  },
+                  "flexGrow": 1
+                }
+              },
+              "type": "box",
+              "tag": "ul",
+              "props": {}
+            },
+            {
+              "id": "n_pproi00001",
+              "parentId": "n_pprol00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "Unlimited projects"
+              }
+            },
+            {
+              "id": "n_pproi00002",
+              "parentId": "n_pprol00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "Design system sync"
+              }
+            },
+            {
+              "id": "n_pproi00003",
+              "parentId": "n_pprol00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "React + Tailwind export"
+              }
+            },
+            {
+              "id": "n_pprob00001",
+              "parentId": "n_ppro000001",
+              "children": [],
+              "positioning": "flow",
+              "style": {},
+              "type": "instance",
+              "componentRef": {
+                "componentId": "Button",
+                "variant": {
+                  "variant": "primary"
+                }
+              },
+              "props": {
+                "values": {
+                  "label": "Go Pro"
+                }
+              }
+            },
+            {
+              "id": "n_pteam00001",
+              "name": "Tier Team",
+              "parentId": "n_pricegrid1",
+              "children": [
+                "n_pteamt0001",
+                "n_pteamp0001",
+                "n_pteaml0001",
+                "n_pteamb0001"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.4"
+                  },
+                  "paddingTop": {
+                    "token": "space.6"
+                  },
+                  "paddingRight": {
+                    "token": "space.6"
+                  },
+                  "paddingBottom": {
+                    "token": "space.6"
+                  },
+                  "paddingLeft": {
+                    "token": "space.6"
+                  },
+                  "backgroundColor": {
+                    "token": "color.surface"
+                  },
+                  "borderRadius": {
+                    "token": "radius.lg"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "article",
+              "props": {}
+            },
+            {
+              "id": "n_pteamt0001",
+              "parentId": "n_pteam00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.xl"
+                  },
+                  "fontWeight": {
+                    "token": "weight.semibold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h3",
+              "props": {
+                "text": "Team"
+              }
+            },
+            {
+              "id": "n_pteamp0001",
+              "parentId": "n_pteam00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.4xl"
+                  },
+                  "fontWeight": {
+                    "token": "weight.bold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "p",
+              "props": {
+                "text": "$60 /mo"
+              }
+            },
+            {
+              "id": "n_pteaml0001",
+              "parentId": "n_pteam00001",
+              "children": [
+                "n_pteami0001",
+                "n_pteami0002",
+                "n_pteami0003"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.2"
+                  },
+                  "flexGrow": 1
+                }
+              },
+              "type": "box",
+              "tag": "ul",
+              "props": {}
+            },
+            {
+              "id": "n_pteami0001",
+              "parentId": "n_pteaml0001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "Everything in Pro"
+              }
+            },
+            {
+              "id": "n_pteami0002",
+              "parentId": "n_pteaml0001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "Shared libraries"
+              }
+            },
+            {
+              "id": "n_pteami0003",
+              "parentId": "n_pteaml0001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "li",
+              "props": {
+                "text": "Priority support"
+              }
+            },
+            {
+              "id": "n_pteamb0001",
+              "parentId": "n_pteam00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {},
+              "type": "instance",
+              "componentRef": {
+                "componentId": "Button",
+                "variant": {
+                  "variant": "secondary"
+                }
+              },
+              "props": {
+                "values": {
+                  "label": "Contact sales"
+                }
+              }
+            }
+          ]
+        },
+        {
+          "op": "insertSubtree",
+          "parentId": "n_root000001",
+          "index": 4,
+          "nodes": [
+            {
+              "id": "n_faq0000001",
+              "name": "FAQ",
+              "parentId": "n_root000001",
+              "children": [
+                "n_faqh000001",
+                "n_faqlist001"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.8"
+                  },
+                  "width": "fill",
+                  "maxWidth": "48rem",
+                  "paddingTop": {
+                    "token": "space.16"
+                  },
+                  "paddingRight": {
+                    "token": "space.6"
+                  },
+                  "paddingBottom": {
+                    "token": "space.16"
+                  },
+                  "paddingLeft": {
+                    "token": "space.6"
+                  },
+                  "marginRight": "auto",
+                  "marginLeft": "auto"
+                }
+              },
+              "type": "box",
+              "tag": "section",
+              "props": {}
+            },
+            {
+              "id": "n_faqh000001",
+              "parentId": "n_faq0000001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.4xl"
+                  },
+                  "fontWeight": {
+                    "token": "weight.bold"
+                  },
+                  "textAlign": "center",
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h2",
+              "props": {
+                "text": "Frequently asked questions"
+              }
+            },
+            {
+              "id": "n_faqlist001",
+              "name": "Questions",
+              "parentId": "n_faq0000001",
+              "children": [
+                "n_faqi00001",
+                "n_faqi00002",
+                "n_faqi00003",
+                "n_faqi00004"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.4"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "div",
+              "props": {}
+            },
+            {
+              "id": "n_faqi00001",
+              "name": "FAQ 1",
+              "parentId": "n_faqlist001",
+              "children": [
+                "n_faqq00001",
+                "n_faqa00001"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.2"
+                  },
+                  "paddingBottom": {
+                    "token": "space.4"
+                  },
+                  "borderBottomWidth": 1,
+                  "borderStyle": "solid",
+                  "borderColor": {
+                    "token": "color.border"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "article",
+              "props": {}
+            },
+            {
+              "id": "n_faqq00001",
+              "parentId": "n_faqi00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.lg"
+                  },
+                  "fontWeight": {
+                    "token": "weight.semibold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h3",
+              "props": {
+                "text": "Can I try it before paying?"
+              }
+            },
+            {
+              "id": "n_faqa00001",
+              "parentId": "n_faqi00001",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "lineHeight": {
+                    "token": "leading.normal"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "p",
+              "props": {
+                "text": "Yes. The Free plan has no time limit, and you can upgrade whenever you need more."
+              }
+            },
+            {
+              "id": "n_faqi00002",
+              "name": "FAQ 2",
+              "parentId": "n_faqlist001",
+              "children": [
+                "n_faqq00002",
+                "n_faqa00002"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.2"
+                  },
+                  "paddingBottom": {
+                    "token": "space.4"
+                  },
+                  "borderBottomWidth": 1,
+                  "borderStyle": "solid",
+                  "borderColor": {
+                    "token": "color.border"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "article",
+              "props": {}
+            },
+            {
+              "id": "n_faqq00002",
+              "parentId": "n_faqi00002",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.lg"
+                  },
+                  "fontWeight": {
+                    "token": "weight.semibold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h3",
+              "props": {
+                "text": "Can I change plans later?"
+              }
+            },
+            {
+              "id": "n_faqa00002",
+              "parentId": "n_faqi00002",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "lineHeight": {
+                    "token": "leading.normal"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "p",
+              "props": {
+                "text": "Absolutely. Upgrade or downgrade at any time and billing is prorated automatically."
+              }
+            },
+            {
+              "id": "n_faqi00003",
+              "name": "FAQ 3",
+              "parentId": "n_faqlist001",
+              "children": [
+                "n_faqq00003",
+                "n_faqa00003"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.2"
+                  },
+                  "paddingBottom": {
+                    "token": "space.4"
+                  },
+                  "borderBottomWidth": 1,
+                  "borderStyle": "solid",
+                  "borderColor": {
+                    "token": "color.border"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "article",
+              "props": {}
+            },
+            {
+              "id": "n_faqq00003",
+              "parentId": "n_faqi00003",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.lg"
+                  },
+                  "fontWeight": {
+                    "token": "weight.semibold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h3",
+              "props": {
+                "text": "Does the exported code work with my stack?"
+              }
+            },
+            {
+              "id": "n_faqa00003",
+              "parentId": "n_faqi00003",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "lineHeight": {
+                    "token": "leading.normal"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "p",
+              "props": {
+                "text": "Exports are React components styled with Tailwind, ready to drop into any modern React project."
+              }
+            },
+            {
+              "id": "n_faqi00004",
+              "name": "FAQ 4",
+              "parentId": "n_faqlist001",
+              "children": [
+                "n_faqq00004",
+                "n_faqa00004"
+              ],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "display": "flex",
+                  "flexDirection": "column",
+                  "gap": {
+                    "token": "space.2"
+                  },
+                  "paddingBottom": {
+                    "token": "space.4"
+                  },
+                  "borderBottomWidth": 1,
+                  "borderStyle": "solid",
+                  "borderColor": {
+                    "token": "color.border"
+                  }
+                }
+              },
+              "type": "box",
+              "tag": "article",
+              "props": {}
+            },
+            {
+              "id": "n_faqq00004",
+              "parentId": "n_faqi00004",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.lg"
+                  },
+                  "fontWeight": {
+                    "token": "weight.semibold"
+                  },
+                  "color": {
+                    "token": "color.text"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "h3",
+              "props": {
+                "text": "How does Team billing work?"
+              }
+            },
+            {
+              "id": "n_faqa00004",
+              "parentId": "n_faqi00004",
+              "children": [],
+              "positioning": "flow",
+              "style": {
+                "base": {
+                  "fontSize": {
+                    "token": "text.base"
+                  },
+                  "lineHeight": {
+                    "token": "leading.normal"
+                  },
+                  "color": {
+                    "token": "color.muted"
+                  }
+                }
+              },
+              "type": "text",
+              "tag": "p",
+              "props": {
+                "text": "Team is billed monthly per workspace, with shared libraries and priority support included."
+              }
+            }
+          ]
+        }
+      ],
+      "label": "Add pricing and FAQ sections"
+    }
+  ]
+}

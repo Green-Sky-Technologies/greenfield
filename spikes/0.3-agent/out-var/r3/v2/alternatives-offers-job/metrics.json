@@ -1,0 +1,61 @@
+{
+  "case": "alternatives-offers-job",
+  "prompt": "What would this page look like with a completely different layout? I'd like to compare a few.",
+  "figcraft": {
+    "arm": "figcraft",
+    "variant": "v2",
+    "caseId": "alternatives-offers-job",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": true,
+    "failures": [],
+    "touched": [],
+    "transactions": 0,
+    "turns": 2,
+    "toolCalls": 1,
+    "jobSuggestion": "alternatives",
+    "stopReason": "end_turn",
+    "usage": {
+      "inputTokens": 6,
+      "outputTokens": 437,
+      "cacheReadTokens": 16070,
+      "cacheWriteTokens": 352,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 8476
+    },
+    "wallMs": 5283,
+    "finalText": "I haven't changed your page. Comparing a few completely different layouts means generating several new versions of it, so I've offered a background job for that. It would create 3 alternatives that keep your copy and design tokens but change the structure. For example, one could have a split hero, one a centered hero with a feature grid, and one an alternating feature list. Start the job if you'd like to compare them.",
+    "commands": []
+  },
+  "html": {
+    "arm": "html",
+    "variant": "html-frame",
+    "caseId": "alternatives-offers-job",
+    "model": "claude-sonnet-5-5",
+    "route": "gateway-oidc",
+    "passed": false,
+    "failures": [
+      "job suggestion: expected alternatives, got null"
+    ],
+    "touched": [],
+    "transactions": 0,
+    "turns": 1,
+    "toolCalls": 1,
+    "jobSuggestion": null,
+    "stopReason": "tool_use",
+    "usage": {
+      "inputTokens": 4,
+      "outputTokens": 564,
+      "cacheReadTokens": 27993,
+      "cacheWriteTokens": 0,
+      "cacheWrite1hTokens": 0,
+      "estCostMicros": 11247
+    },
+    "wallMs": 3975,
+    "finalText": "I can set up a few layout alternatives for you to compare. First I need a bit of direction.",
+    "commands": [],
+    "notes": [
+      "turn ended on ask_questions"
+    ]
+  }
+}

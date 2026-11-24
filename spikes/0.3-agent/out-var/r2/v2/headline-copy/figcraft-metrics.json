@@ -1,0 +1,36 @@
+{
+  "arm": "figcraft",
+  "variant": "v2",
+  "caseId": "headline-copy",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_herotitle1"
+  ],
+  "transactions": 1,
+  "turns": 3,
+  "toolCalls": 2,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 8,
+    "outputTokens": 171,
+    "cacheReadTokens": 25810,
+    "cacheWriteTokens": 0,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 6888
+  },
+  "wallMs": 3232,
+  "finalText": "I changed the headline to \"Design at the speed of thought\". In the render it now wraps onto two lines, and the styling is unchanged.",
+  "commands": [
+    {
+      "command": "text.set",
+      "params": {
+        "id": 8,
+        "characters": "Design at the speed of thought"
+      }
+    }
+  ]
+}

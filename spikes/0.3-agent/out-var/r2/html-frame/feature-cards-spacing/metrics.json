@@ -1,0 +1,163 @@
+{
+  "arm": "html",
+  "variant": "html-frame",
+  "caseId": "feature-cards-spacing",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_features01",
+    "n_feat1card00",
+    "n_feat2card00",
+    "n_feat3card00"
+  ],
+  "transactions": 1,
+  "turns": 2,
+  "toolCalls": 1,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 923,
+    "cacheReadTokens": 60305,
+    "cacheWriteTokens": 0,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 21303
+  },
+  "wallMs": 6041,
+  "finalText": "I tightened the spacing in the features section:\n\n- **Gap between cards:** `space.4` → `space.3`.\n- **Section bottom padding:** `space.16` → `space.12`.\n- **Card padding:** `space.6` → `space.4` on all three cards.\n\nI didn't run the lint check on these edits.",
+  "commands": [
+    {
+      "ops": [
+        {
+          "op": "setStyle",
+          "id": "n_features01",
+          "breakpoint": "base",
+          "prop": "gap",
+          "value": {
+            "token": "space.3"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_features01",
+          "breakpoint": "base",
+          "prop": "paddingBottom",
+          "value": {
+            "token": "space.12"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat1card00",
+          "breakpoint": "base",
+          "prop": "paddingTop",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat1card00",
+          "breakpoint": "base",
+          "prop": "paddingBottom",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat1card00",
+          "breakpoint": "base",
+          "prop": "paddingLeft",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat1card00",
+          "breakpoint": "base",
+          "prop": "paddingRight",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat2card00",
+          "breakpoint": "base",
+          "prop": "paddingTop",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat2card00",
+          "breakpoint": "base",
+          "prop": "paddingBottom",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat2card00",
+          "breakpoint": "base",
+          "prop": "paddingLeft",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat2card00",
+          "breakpoint": "base",
+          "prop": "paddingRight",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat3card00",
+          "breakpoint": "base",
+          "prop": "paddingTop",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat3card00",
+          "breakpoint": "base",
+          "prop": "paddingBottom",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat3card00",
+          "breakpoint": "base",
+          "prop": "paddingLeft",
+          "value": {
+            "token": "space.4"
+          }
+        },
+        {
+          "op": "setStyle",
+          "id": "n_feat3card00",
+          "breakpoint": "base",
+          "prop": "paddingRight",
+          "value": {
+            "token": "space.4"
+          }
+        }
+      ],
+      "label": "Tighten features spacing"
+    }
+  ]
+}

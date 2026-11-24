@@ -5,3 +5,7 @@
 !out/
 out/**/transcript.json
 out-scripted/**/transcript.json
+# Repeat runs (variance): keep metrics and reports only.
+out-var/**/transcript.json
+out-var/**/*.png
+out-var/**/*.figcraft

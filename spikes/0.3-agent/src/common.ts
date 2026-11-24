@@ -9,10 +9,18 @@ import {
 } from '@crunch/agent';
 // The eval harness isn't exported from @crunch/agent's entry; reuse its case schema and loader.
 import { loadGoldenCases } from '../../../packages/agent/src/evals/cli';
-import type { GoldenCase } from '../../../packages/agent/src/evals/harness';
+import { goldenCase, type GoldenCase } from '../../../packages/agent/src/evals/harness';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 export type { GoldenCase };
-export const loadCases = (): GoldenCase[] => loadGoldenCases();
+/** Golden cases plus, with SPIKE_EXTRA=1, the build-a-screen cases in extra-cases.json (not golden). */
+export const loadCases = (): GoldenCase[] => {
+  const golden = loadGoldenCases();
+  if (process.env.SPIKE_EXTRA !== '1') return golden;
+  const raw = JSON.parse(readFileSync(join(import.meta.dirname, '..', 'extra-cases.json'), 'utf8'));
+  return [...golden, ...(raw as unknown[]).map((c) => goldenCase.parse(c))];
+};
 
 export interface Usage {
   inputTokens: number;

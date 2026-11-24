@@ -1,0 +1,16 @@
+[
+  {
+    "id": "x-build-pricing",
+    "description": "EXTRA (not golden): build a whole section directly, the Epic 0 demo shape. Both arms are told not to hand off a job.",
+    "fixture": "landing",
+    "prompt": "Build a pricing section directly below the features section: a heading, three tiers (Free, Pro, Team) as cards with the price, a short feature list and a call-to-action button each, with Pro highlighted as recommended. Then add an FAQ section with four questions and answers below it. Build it directly on this page now; do not suggest a job.",
+    "expect": { "jobSuggestion": null }
+  },
+  {
+    "id": "x-build-testimonials",
+    "description": "EXTRA (not golden): add a styled section matching the page's existing look.",
+    "fixture": "landing",
+    "prompt": "Add a testimonials section after the features: a heading and three customer quote cards, each with the quote, a round avatar placeholder, the person's name and their company. Match the existing page style. Build it directly; do not suggest a job.",
+    "expect": { "jobSuggestion": null }
+  }
+]

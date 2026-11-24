@@ -1,0 +1,26 @@
+{
+  "arm": "figcraft",
+  "variant": "full-catalog",
+  "caseId": "alternatives-offers-job",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [],
+  "transactions": 0,
+  "turns": 2,
+  "toolCalls": 1,
+  "jobSuggestion": "alternatives",
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 6,
+    "outputTokens": 416,
+    "cacheReadTokens": 97983,
+    "cacheWriteTokens": 1385,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 27231
+  },
+  "wallMs": 5493,
+  "finalText": "Comparing layouts means building several new versions of the page. I've offered a background job that makes three alternatives of the page, so I haven't changed your current design. The three are a split hero, a centered hero over a feature grid, and a stacked layout with alternating feature rows. All three keep your copy and design tokens. Start the job if you'd like to compare them.",
+  "commands": []
+}

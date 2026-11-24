@@ -3,7 +3,7 @@
  * context. Named presets below; any axis can be overridden from the CLI (the run's variant name
  * then spells the axes out).
  */
-export type PromptVariant = 'base' | 'full-catalog' | 'minimal';
+export type PromptVariant = 'base' | 'full-catalog' | 'minimal' | 'v2';
 /**
  * batch:       batch + run_command (read-only) + get_node + list_commands + render + suggest job
  * run_command: one command per call (no batch) + get_node + list_commands + render + suggest job
@@ -32,6 +32,8 @@ export const PRESETS: Record<string, Omit<Variant, 'name'>> = {
   curated: { prompt: 'base', tools: 'curated', render: 'tool', context: 'subtree' },
   'full-catalog': { prompt: 'full-catalog', tools: 'batch', render: 'tool', context: 'subtree' },
   minimal: { prompt: 'minimal', tools: 'batch', render: 'tool', context: 'outline' },
+  /** v1 + craft rules learned from v1's build-a-screen failures (font fallback, card rows). */
+  v2: { prompt: 'v2', tools: 'batch', render: 'tool', context: 'subtree' },
 };
 
 /** Commands the `curated` shape allows and the base prompt documents. */

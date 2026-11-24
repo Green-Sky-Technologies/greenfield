@@ -1,0 +1,175 @@
+{
+  "arm": "figcraft",
+  "variant": "run-command",
+  "caseId": "density-slider",
+  "model": "claude-sonnet-5-5",
+  "route": "gateway-oidc",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_features01",
+    "new:22",
+    "new:23",
+    "new:24",
+    "new:25",
+    "new:26",
+    "new:27",
+    "new:28"
+  ],
+  "transactions": 8,
+  "turns": 5,
+  "toolCalls": 9,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 12,
+    "outputTokens": 1868,
+    "cacheReadTokens": 48812,
+    "cacheWriteTokens": 6136,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 43806
+  },
+  "wallMs": 17308,
+  "finalText": "Now the three options.\nI added a density control above the feature cards. It's a pill-shaped segmented control (`n_densityctl01`) with Compact, Default and Spacious options, and Default is highlighted. To make room I raised the section's top padding to 64.\n\nIt's only the visual control for now. Nothing is wired up, so clicking an option doesn't change the card padding or gap yet.",
+  "commands": [
+    {
+      "command": "node.set",
+      "params": {
+        "ids": [
+          12
+        ],
+        "paddingTop": 64
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "frame",
+        "parent": 12,
+        "name": "n_densityctl01",
+        "x": 24,
+        "y": 16,
+        "props": {
+          "layout": "horizontal",
+          "gap": 4,
+          "padding": 4,
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "#F6F6F4",
+          "cornerRadius": 9999,
+          "absolute": true,
+          "stroke": "#E4E4E7",
+          "strokeWeight": 1
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "frame",
+        "parent": 22,
+        "name": "n_density_compact",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "#FFFFFF",
+          "cornerRadius": 9999
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "frame",
+        "parent": 22,
+        "name": "n_density_default",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "#4F46E5",
+          "cornerRadius": 9999
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "frame",
+        "parent": 22,
+        "name": "n_density_spacious",
+        "props": {
+          "layout": "horizontal",
+          "padding": [
+            8,
+            16,
+            8,
+            16
+          ],
+          "sizingH": "hug",
+          "sizingV": "hug",
+          "fill": "#FFFFFF",
+          "cornerRadius": 9999
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": 23,
+        "name": "n_density_compact_label",
+        "text": "Compact",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#18181B"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": 24,
+        "name": "n_density_default_label",
+        "text": "Default",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#FFFFFF"
+        }
+      }
+    },
+    {
+      "command": "node.create",
+      "params": {
+        "type": "text",
+        "parent": 25,
+        "name": "n_density_spacious_label",
+        "text": "Spacious",
+        "props": {
+          "fontFamily": "SF Pro",
+          "fontStyle": "Medium",
+          "fontSize": 14,
+          "fill": "#18181B"
+        }
+      }
+    }
+  ]
+}
