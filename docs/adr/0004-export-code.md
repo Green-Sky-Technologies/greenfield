@@ -27,13 +27,13 @@ in the sandbox) should be built only if FigCraft's output isn't good enough.
 All of these are editor commands, so the app reaches them through `packages/bridge` the same way
 7.1 reaches `file.export`. They are deterministic, instant, use no model, and a Viewer can run them.
 
-| Command | Output |
-| --- | --- |
-| `inspect.code {language}` | `css` (one layer's declarations), `html`, `react`, `vue`, `leptos` (the layer tree, class names + a CSS file), **`tailwind`** (React + Tailwind v4 utilities, instances inlined with their overrides, bound variables as theme utilities, optional `mobile` frame → mobile-first `lg:` classes), `swiftui`, `compose`, `flutter`, `arkui`; `unit: rem` |
-| `variable.export {format: 'tailwind' \| 'css' \| …}` | the theme the `tailwind` utilities read (`@theme` block, other modes as `[data-theme="Dark"]`) |
-| `inspect.componentCode` | a component's definition with typed props from its variants and properties, plus usage for an instance |
-| `codeConnect.set` / `export` / `import` | link a component to the team's real component (`importPath`, `name`, `template`); generated code then imports and calls it. Exported as `figcraft.connect.json`, and `figcraft-cli connect` publishes a repo's mappings to a file |
-| `inspect.assets` + `file.exportLayers {assets: true}` | the icons (SVG) and images (PNG) to hand over with the code |
+| Command                                               | Output                                                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `inspect.code {language}`                             | `css` (one layer's declarations), `html`, `react`, `vue`, `leptos` (the layer tree, class names + a CSS file), **`tailwind`** (React + Tailwind v4 utilities, instances inlined with their overrides, bound variables as theme utilities, optional `mobile` frame → mobile-first `lg:` classes), `swiftui`, `compose`, `flutter`, `arkui`; `unit: rem` |
+| `variable.export {format: 'tailwind' \| 'css' \| …}`  | the theme the `tailwind` utilities read (`@theme` block, other modes as `[data-theme="Dark"]`)                                                                                                                                                                                                                                                         |
+| `inspect.componentCode`                               | a component's definition with typed props from its variants and properties, plus usage for an instance                                                                                                                                                                                                                                                 |
+| `codeConnect.set` / `export` / `import`               | link a component to the team's real component (`importPath`, `name`, `template`); generated code then imports and calls it. Exported as `figcraft.connect.json`, and `figcraft-cli connect` publishes a repo's mappings to a file                                                                                                                      |
+| `inspect.assets` + `file.exportLayers {assets: true}` | the icons (SVG) and images (PNG) to hand over with the code                                                                                                                                                                                                                                                                                            |
 
 Samples: [`frame.tailwind.jsx`](0004-export-code/frame.tailwind.jsx) with
 [`theme.tailwind.css`](0004-export-code/theme.tailwind.css), [`frame.jsx`](0004-export-code/frame.jsx)
@@ -47,15 +47,17 @@ Samples: [`frame.tailwind.jsx`](0004-export-code/frame.tailwind.jsx) with
 export function Chip() {
   return (
     <div className="relative flex flex-row gap-[6px] py-2 px-4 items-center rounded-full bg-brand">
-      <p className="text-onbrand font-['Inter'] text-[13px] font-medium leading-[1.4]">All trails</p>
+      <p className="text-onbrand font-['Inter'] text-[13px] font-medium leading-[1.4]">
+        All trails
+      </p>
     </div>
   );
 }
 
 // chip.connected.jsx (Code Connect: Chip → @/components/chip)
-import { Chip } from "@/components/chip";
+import { Chip } from '@/components/chip';
 
-<Chip selected="On" />
+<Chip selected="On" />;
 ```
 
 ## Fidelity check
@@ -65,8 +67,8 @@ Tailwind 4.3 (theme from `variable.export`), with no hand edits, renders it in C
 diffs it against the editor's own PNG of the frame (`file.export`). It compiled and rendered first
 time.
 
-| Editor (`file.export`) | Generated React + Tailwind |
-| --- | --- |
+| Editor (`file.export`)                              | Generated React + Tailwind                              |
+| --------------------------------------------------- | ------------------------------------------------------- |
 | ![editor](0004-export-code/render-editor-light.png) | ![tailwind](0004-export-code/render-tailwind-light.png) |
 
 **9.2 % of pixels differ** by more than 48/255 in any channel. Layout, spacing, colours, radii,
