@@ -42,6 +42,7 @@ export default async function ProjectPage({
       }))}
       meId={actor.userId}
       canShare={can(actor.role, 'share:manage')}
+      canExport={can(actor.role, 'export:deterministic')}
       canComment={can(actor.role, 'design:comment') && !archived}
       author={author}
       canEdit={can(actor.role, 'design:edit') && !archived}

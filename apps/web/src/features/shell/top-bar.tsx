@@ -8,6 +8,7 @@
 import type { Editor } from '@greenfield/bridge';
 import Link from 'next/link';
 import type { Ref } from 'react';
+import { ExportMenu } from '@/features/export/export-menu';
 import { People, type Person } from './people';
 import type { ShellMenu } from './project-shell';
 import { ShareMenu } from './share-menu';
@@ -20,6 +21,7 @@ export interface TopBarProps {
   people: Person[];
   meId: string;
   canShare: boolean;
+  canExport: boolean;
   canComment: boolean;
   editor: Editor | null;
   menu: ShellMenu;
@@ -34,6 +36,7 @@ export function TopBar({
   people,
   meId,
   canShare,
+  canExport,
   editor,
   menu,
   onMenu,
@@ -88,6 +91,7 @@ export function TopBar({
       <div className="flex items-center justify-end gap-2">
         <People people={people} meId={meId} />
         <ZoomControl editor={editor} open={menu === 'zoom'} onToggle={() => toggle('zoom')} />
+        {canExport && editor && <ExportMenu editor={editor} />}
         <ShareMenu
           projectId={project.id}
           canShare={canShare}

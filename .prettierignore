@@ -11,3 +11,5 @@ spikes
 .claude
 # Byte-exact test snapshots (the agent tool definitions are compared byte for byte)
 __snapshots__
+# Generated code samples, kept verbatim (ADR 0004)
+docs/adr/0004-export-code/
