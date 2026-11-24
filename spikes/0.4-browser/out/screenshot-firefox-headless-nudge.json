@@ -1,0 +1,173 @@
+{
+  "browser": "firefox-headless",
+  "extra": "",
+  "tries": 20,
+  "cells": [
+    {
+      "scenario": "nodoc",
+      "method": "screenshot",
+      "tries": 20,
+      "ok": 19,
+      "latency": {
+        "n": 19,
+        "p50": 149.4,
+        "p95": 162,
+        "max": 162,
+        "mean": 148.9
+      },
+      "failMs": {
+        "n": 1,
+        "p50": 30006.8,
+        "p95": 30006.8,
+        "max": 30006.8,
+        "mean": 30006.8
+      },
+      "errors": [
+        "frame.evaluate: figcraft did not answer ui.screenshot within 30 s (a hidden tab answers when it is shown again)\n__wbg_new_343a093a3c2ffb4e@http://127.0.0.1:3104/editor/figcraft-web-f987f34d74d47a59.js:1598:25\n@http://127.0.0.1:3104/editor/figcraft-web-f987f34d74d47a59_bg.wasm:wasm-function[6144]:0xb"
+      ],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 385,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "nodoc",
+      "method": "screenshotNudge",
+      "tries": 20,
+      "ok": 20,
+      "latency": {
+        "n": 20,
+        "p50": 149.3,
+        "p95": 153.8,
+        "max": 162.2,
+        "mean": 150.7
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 385,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "small",
+      "method": "screenshot",
+      "visibility": "visible",
+      "tries": 20,
+      "ok": 16,
+      "latency": {
+        "n": 16,
+        "p50": 143.2,
+        "p95": 162.5,
+        "max": 162.5,
+        "mean": 146.1
+      },
+      "failMs": {
+        "n": 4,
+        "p50": 30006.4,
+        "p95": 30015.1,
+        "max": 30015.1,
+        "mean": 30008.9
+      },
+      "errors": [
+        "frame.evaluate: figcraft did not answer ui.screenshot within 30 s (a hidden tab answers when it is shown again)\n__wbg_new_343a093a3c2ffb4e@http://127.0.0.1:3104/editor/figcraft-web-f987f34d74d47a59.js:1598:25\n@http://127.0.0.1:3104/editor/figcraft-web-f987f34d74d47a59_bg.wasm:wasm-function[6144]:0xb"
+      ],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 118,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "small",
+      "method": "screenshotNudge",
+      "visibility": "visible",
+      "tries": 20,
+      "ok": 20,
+      "latency": {
+        "n": 20,
+        "p50": 150.6,
+        "p95": 156.4,
+        "max": 156.7,
+        "mean": 148.8
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 118,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "large",
+      "method": "screenshot",
+      "visibility": "visible",
+      "tries": 20,
+      "ok": 19,
+      "latency": {
+        "n": 19,
+        "p50": 153.5,
+        "p95": 196.4,
+        "max": 196.4,
+        "mean": 154.9
+      },
+      "failMs": {
+        "n": 1,
+        "p50": 30012.7,
+        "p95": 30012.7,
+        "max": 30012.7,
+        "mean": 30012.7
+      },
+      "errors": [
+        "frame.evaluate: figcraft did not answer ui.screenshot within 30 s (a hidden tab answers when it is shown again)\n__wbg_new_343a093a3c2ffb4e@http://127.0.0.1:3104/editor/figcraft-web-f987f34d74d47a59.js:1598:25\n@http://127.0.0.1:3104/editor/figcraft-web-f987f34d74d47a59_bg.wasm:wasm-function[6144]:0xb"
+      ],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 169,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "large",
+      "method": "screenshotNudge",
+      "visibility": "visible",
+      "tries": 20,
+      "ok": 20,
+      "latency": {
+        "n": 20,
+        "p50": 150.7,
+        "p95": 156.3,
+        "max": 156.4,
+        "mean": 150.3
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 169,
+        "transparentPct": 0
+      }
+    }
+  ],
+  "version": "157.0",
+  "readyMs": 286,
+  "backend": "[figcraft_web::web] figcraft-web/src/web.rs:58: figcraft-web: wgpu backend Gl",
+  "warnings": [
+    "[eframe::web::app_runner] eframe/src/web/app_runner.rs:353: Unhandled egui viewport command: RequestPaintWhileHidden - not implemented in web backend"
+  ]
+}

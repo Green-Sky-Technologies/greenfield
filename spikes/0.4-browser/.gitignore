@@ -1,0 +1,7 @@
+# Story 0.4 spike: the editor build, the FigCraft clone and generated files stay local.
+editor/
+figcraft/
+gen/
+# out/ is ignored repo-wide; keep this spike's results.
+!/out/
+out/*.log
