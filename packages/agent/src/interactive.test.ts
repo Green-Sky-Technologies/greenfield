@@ -4,7 +4,9 @@ import {
   buildPrefix,
   executeTool,
   prefixBytes,
+  runAgentStep,
   runAgentTurn,
+  stepResults,
   ToolError,
   turnText,
   type ToolHost,
@@ -134,5 +136,65 @@ describe('runAgentTurn', () => {
       host,
     });
     expect(r2.stopReason).toBe('refusal');
+  });
+});
+
+describe('runAgentStep', () => {
+  it('hands valid calls to the host and answers the rest itself, in tool_use order', async () => {
+    const { gateway } = scriptedGateway([
+      {
+        content: [
+          toolUse('tu_1', 'get_outline', {}),
+          toolUse('tu_2', 'get_outline', { depth: 'deep' }),
+          toolUse('tu_3', 'suggest_generation_job', {
+            kind: 'generate',
+            prompt: 'A pricing page',
+            reason: 'Needs a new frame',
+          }),
+          toolUse('tu_4', 'patch_nodes', {}),
+        ],
+      },
+    ]);
+    const step = await runAgentStep({
+      gateway,
+      model: 'm',
+      prefix: buildPrefix('interactive'),
+      messages: [userTurn('x')],
+    });
+    expect(step.kind).toBe('tools');
+    expect(step.calls).toEqual([{ id: 'tu_1', name: 'get_outline', input: {} }]);
+    expect(Object.keys(step.resolved).sort()).toEqual(['tu_2', 'tu_3', 'tu_4']);
+    expect(step.jobSuggestion).toMatchObject({ kind: 'generate' });
+    const results = stepResults(step, {
+      tu_1: { type: 'tool_result', tool_use_id: 'tu_1', content: 'outline' },
+    });
+    expect(results.map((r) => [r.tool_use_id, r.is_error ?? false])).toEqual([
+      ['tu_1', false],
+      ['tu_2', true],
+      ['tu_3', false],
+      ['tu_4', true],
+    ]);
+  });
+
+  it('ends on a reply without tool calls', async () => {
+    const { gateway } = scriptedGateway([{ content: [text('Done.')] }]);
+    const step = await runAgentStep({
+      gateway,
+      model: 'm',
+      prefix: buildPrefix('interactive'),
+      messages: [userTurn('x')],
+    });
+    expect(step).toMatchObject({ kind: 'final', calls: [], stopReason: 'end_turn' });
+  });
+});
+
+describe('the v2 prompt (D25)', () => {
+  it('carries the craft rules and the curated command reference, not the full catalogue', () => {
+    const text = buildPrefix('interactive').system[0]!.text;
+    expect(text).toContain('<craft>');
+    expect(text).toContain('Every text layer you create sets fontFamily explicitly');
+    expect(text).toMatch(/^node\.set\* — Set properties/m);
+    expect(text).not.toContain('file.open');
+    expect(text.length).toBeLessThan(12_000);
   });
 });

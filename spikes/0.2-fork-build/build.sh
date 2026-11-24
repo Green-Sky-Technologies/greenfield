@@ -1,62 +1,59 @@
 #!/usr/bin/env bash
-# Story 0.2 spike: build figcraft-web from source at a pinned tag, apply our patches, check the size.
+# Build figcraft-web from source at a pinned tag with pinned fonts and tools, apply our patches,
+# and enforce the size budget. Every build runs the size gate; there is no way to skip it.
 #
 # Usage: spikes/0.2-fork-build/build.sh [--no-patches]
 #
-# Needs on PATH: git, cargo + rustc (with the wasm32-unknown-unknown target), trunk, wasm-bindgen
-# (same version as Cargo.lock's wasm-bindgen; trunk runs --offline so it never downloads tools)
-# and wasm-opt (binaryen; must understand --enable-bulk-memory-opt, i.e. binaryen >= 120).
+# Pins live in versions.env. Needs on PATH: git, cargo + rustc (with the wasm32-unknown-unknown
+# target), trunk, wasm-bindgen and wasm-opt at the pinned versions (toolchain.sh installs them in
+# the build image; verify/docker-build.sh runs everything in that image).
+#
+# The size budget (WASM_MAX_BYTES, 25 MiB raw, SPEC.md D26) is in versions.env.
 #
 # Environment:
-#   FIGCRAFT_REPO        default https://github.com/storytold/figcraft
-#   FIGCRAFT_REF         default v0.18.1
-#   FIGCRAFT_SHA         commit FIGCRAFT_REF must resolve to (fails otherwise; tags can move)
-#   FIGCRAFT_SRC         checkout dir, default <this dir>/figcraft
+#   FIGCRAFT_SRC         figcraft checkout dir, default <this dir>/figcraft
+#   CRAFT_FONTS_SRC      craft-fonts checkout dir, default <this dir>/craft-fonts
 #   FIGCRAFT_OUT         where the finished static site is copied, default <this dir>/dist
-#   WASM_MAX_BYTES       size gate, default 25165824 (24 MiB, SPEC.md Story 0.2)
-#   KEEP_WINIT_FORK=1    keep upstream's storytold/winit [patch] (see FINDINGS.md: winit is not
-#                        in the wasm build graph; we drop the patch so the build only fetches
-#                        figcraft, craft-libs and the egui fork)
+#   FIGCRAFT_WEB_FONTS   extra manifest families to embed (upstream's build.rs input; unset by default)
 set -euo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO="${FIGCRAFT_REPO:-https://github.com/storytold/figcraft}"
-REF="${FIGCRAFT_REF:-v0.18.1}"
-SHA="${FIGCRAFT_SHA:-4acc293c2ec941ac1400837ee7e3ab51780399f8}"
+# shellcheck disable=SC1091 # versions.env: plain KEY=value pins
+. "$HERE/versions.env"
 SRC="${FIGCRAFT_SRC:-$HERE/figcraft}"
+FONTS="${CRAFT_FONTS_SRC:-$HERE/craft-fonts}"
 OUT="${FIGCRAFT_OUT:-$HERE/dist}"
-MAX="${WASM_MAX_BYTES:-25165824}"
 APPLY_PATCHES=1
 [[ "${1:-}" == "--no-patches" ]] && APPLY_PATCHES=0
 
 for tool in git cargo rustc trunk wasm-bindgen wasm-opt; do
   command -v "$tool" >/dev/null || { echo "error: $tool not found on PATH" >&2; exit 1; }
 done
-rustup target list --installed 2>/dev/null | grep -qx wasm32-unknown-unknown \
-  || echo "warning: could not confirm the wasm32-unknown-unknown target via rustup" >&2
+# Different tool versions give different bytes: refuse anything but the pins.
+wasm-bindgen --version | grep -qx "wasm-bindgen $WASM_BINDGEN_VERSION" \
+  || { echo "error: need wasm-bindgen $WASM_BINDGEN_VERSION, have '$(wasm-bindgen --version)'" >&2; exit 1; }
+wasm-opt --version | grep -Eq "^wasm-opt version $BINARYEN_VERSION( |$)" \
+  || { echo "error: need wasm-opt $BINARYEN_VERSION, have '$(wasm-opt --version)'" >&2; exit 1; }
 
-# 1. Source at the pinned commit, reset to pristine (keeps target/, which upstream git-ignores).
-# Init in place rather than clone: CI restores a cached $SRC/target before this runs, so $SRC can
-# exist without .git, and `git clone` refuses a non-empty directory.
-if [[ ! -d "$SRC/.git" ]]; then
-  git init --quiet "$SRC"
-  git -C "$SRC" remote add origin "$REPO"
-fi
-git -C "$SRC" fetch --quiet --tags origin
-git -C "$SRC" checkout --quiet --force "$REF"
-git -C "$SRC" clean -fdq
-got="$(git -C "$SRC" rev-parse HEAD)"
-[[ "$got" == "$SHA" ]] || { echo "error: $REF is $got, expected $SHA" >&2; exit 1; }
+# Check out $2 (a full commit sha) from $3 into $1, pristine. Init in place rather than clone: CI
+# restores a cached target/ before this runs, so the dir can exist without .git.
+checkout_pinned() {
+  local dir="$1" sha="$2" repo="$3"
+  if [[ ! -d "$dir/.git" ]]; then
+    git init --quiet "$dir"
+    git -C "$dir" remote add origin "$repo"
+  fi
+  git -C "$dir" cat-file -e "$sha^{commit}" 2>/dev/null || git -C "$dir" fetch --quiet --depth 1 origin "$sha"
+  git -C "$dir" checkout --quiet --force "$sha"
+  git -C "$dir" clean -fdq
+  [[ "$(git -C "$dir" rev-parse HEAD)" == "$sha" ]] || { echo "error: $dir is not at $sha" >&2; exit 1; }
+}
 
-# 2. Build-only adjustment: drop the storytold/winit patch (native-only dependency).
-if [[ "${KEEP_WINIT_FORK:-0}" != "1" ]]; then
-  sed -i.bak '/^winit = .*storytold\/winit/d' "$SRC/Cargo.toml"
-  rm -f "$SRC/Cargo.toml.bak"
-  # Re-pin winit to the same version from crates.io so nothing else in Cargo.lock moves.
-  cargo update --manifest-path "$SRC/Cargo.toml" --quiet -p winit --precise 0.30.13
-fi
+# 1. Sources at pinned commits (FIGCRAFT_SHA is v0.18.1; tags can move, shas can't).
+checkout_pinned "$SRC" "$FIGCRAFT_SHA" "$FIGCRAFT_REPO"
+checkout_pinned "$FONTS" "$CRAFT_FONTS_SHA" "$CRAFT_FONTS_REPO"
 
-# 3. Our patches, in order.
+# 2. Our patches, in order.
 if [[ "$APPLY_PATCHES" == "1" ]]; then
   for p in "$HERE"/patches/*.patch; do
     [[ -f "$p" ]] || continue
@@ -65,14 +62,16 @@ if [[ "$APPLY_PATCHES" == "1" ]]; then
   done
 fi
 
-# 4. Upstream's own web recipe (packaging/web/package.sh): trunk build --release in apps/figcraft-web.
-#    index.html selects the web-release profile and wasm-opt -Oz. Fixed build metadata keeps
-#    the output byte-for-byte comparable between builds.
-export FIGCRAFT_BUILD_SHA="$SHA"
+# 3. Upstream's web recipe (packaging/web/package.sh): trunk build --release in apps/figcraft-web,
+#    with craft-fonts embedded as in upstream's release builds. index.html selects the web-release
+#    profile and wasm-opt -Oz. Fixed build metadata keeps the output byte-for-byte reproducible.
+export CRAFT_FONTS_DIR="$FONTS" CRAFT_FONTS_REQUIRED=1
+export FIGCRAFT_BUILD_SHA="$FIGCRAFT_SHA"
 export FIGCRAFT_BUILD_DATE="${FIGCRAFT_BUILD_DATE:-2026-01-01}"
 export SOURCE_DATE_EPOCH="${SOURCE_DATE_EPOCH:-1767225600}"
 start=$(date +%s)
-# Fetch first: trunk --offline also keeps cargo off the network.
+# Fetch first (this also fetches the pinned storytold/egui and storytold/winit forks): trunk
+# --offline keeps cargo off the network.
 cargo fetch --manifest-path "$SRC/Cargo.toml" --locked --target wasm32-unknown-unknown
 mid=$(date +%s)
 (cd "$SRC/apps/figcraft-web" && trunk build --release --offline --locked)
@@ -82,27 +81,37 @@ echo "cargo fetch: $((mid - start)) s, trunk build: $((end - mid)) s"
 SITE="$SRC/dist/web"
 [[ -f "$SITE/index.html" ]] || { echo "error: $SITE/index.html missing" >&2; exit 1; }
 
-# 5. Size gate and report.
+sha256() {
+  if command -v sha256sum >/dev/null; then sha256sum "$1" | cut -d' ' -f1; else shasum -a 256 "$1" | cut -d' ' -f1; fi
+}
+
+# 4. Size gate (every build) and report.
 count=0
 for wasm in "$SITE"/*.wasm; do
   [[ -f "$wasm" ]] || continue
   count=$((count + 1))
   size=$(wc -c <"$wasm" | tr -d ' ')
-  gz=$(gzip -9 -c "$wasm" | wc -c | tr -d ' ')
+  gz=$(gzip -9 -n -c "$wasm" | wc -c | tr -d ' ')
   br=""
   command -v brotli >/dev/null && br=$(brotli -q 11 -c "$wasm" | wc -c | tr -d ' ')
-  if command -v sha256sum >/dev/null; then sum=$(sha256sum "$wasm" | cut -d' ' -f1)
-  else sum=$(shasum -a 256 "$wasm" | cut -d' ' -f1); fi
-  echo "$(basename "$wasm"): raw $size B, gzip-9 $gz B, brotli-11 ${br:-n/a} B, sha256 $sum (limit $MAX B)"
-  if [[ "$size" -ge "$MAX" ]]; then
-    echo "error: $(basename "$wasm") is $size bytes, not under $MAX" >&2
+  echo "$(basename "$wasm"): raw $size B, gzip-9 $gz B, brotli-11 ${br:-n/a} B, sha256 $(sha256 "$wasm") (limit $WASM_MAX_BYTES B)"
+  if [[ "$size" -gt "$WASM_MAX_BYTES" ]]; then
+    echo "error: $(basename "$wasm") is $size bytes, over the $WASM_MAX_BYTES-byte budget (SPEC.md D26)" >&2
     exit 1
   fi
 done
 [[ "$count" -gt 0 ]] || { echo "error: no .wasm in $SITE" >&2; exit 1; }
-echo "dist total: $(du -sk "$SITE" | cut -f1) KiB"
 
+# 5. Site plus licences: FigCraft's MIT/Apache texts and NOTICE, and every craft-fonts family's
+#    OFL text as OFL-<family-dir>.txt (upstream's copy_font_licences in packaging/env.sh).
 rm -rf "$OUT"
 mkdir -p "$OUT"
 cp -R "$SITE/." "$OUT/"
+for f in LICENSE-MIT LICENSE-APACHE NOTICE ATTRIBUTION.md; do cp "$SRC/$f" "$OUT/"; done
+for lic in "$FONTS"/fonts/*/OFL.txt; do
+  cp "$lic" "$OUT/OFL-$(basename "$(dirname "$lic")").txt"
+done
+sums="$(cd "$OUT" && find . -type f | LC_ALL=C sort | while read -r f; do echo "$(sha256 "$f")  $f"; done)"
+echo "$sums" >"$OUT/SHA256SUMS"
+echo "dist: $(find "$OUT" -type f | wc -l | tr -d ' ') files, $(du -sk "$OUT" | cut -f1) KiB, SHA256SUMS sha256 $(sha256 "$OUT/SHA256SUMS")"
 echo "site copied to $OUT"

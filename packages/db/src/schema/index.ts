@@ -4,3 +4,4 @@ export * from './assets';
 export * from './collab';
 export * from './comments';
 export * from './agent';
+export * from './files';

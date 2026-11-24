@@ -16,7 +16,7 @@ live HTML frames; that model was removed in Story 1.2.
 
 ## Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield&project-name=greenfield&repository-name=greenfield&env=CREDENTIALS_MASTER_KEYS%2CCRON_SECRET&envDescription=Two%20random%20secrets.%20Generate%20each%20with%3A%20openssl%20rand%20-base64%2032&envLink=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield%23deploy-to-vercel&integration-ids=oac_7uYNbc9CdDAZmNqbt3LEkO3a&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22public%22%7D%5D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield&project-name=greenfield&repository-name=greenfield&env=CREDENTIALS_MASTER_KEYS%2CCRON_SECRET&envDescription=Two%20random%20secrets.%20Generate%20each%20with%3A%20openssl%20rand%20-base64%2032&envLink=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield%23deploy-to-vercel&integration-ids=oac_7uYNbc9CdDAZmNqbt3LEkO3a&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22private%22%7D%5D)
 
 Everything runs on Vercel. The button walks you through it:
 
@@ -114,8 +114,8 @@ your `PATH`. Without a Blob token, design files are saved under `apps/web/.data/
 The project was renamed from CrunchDesign to Greenfield.
 
 - **Environment variables:** `CRUNCH_AI_GATEWAY`, `CRUNCH_APP_URL` and `CRUNCH_AWS_PRINCIPAL_ARN`
-  are now `GREENFIELD_*`. The old names still work for one release and log a deprecation
-  warning. Rename them in Vercel and in `.env.local`.
+  are now `GREENFIELD_*`, and the old names are no longer read. Rename them in Vercel and in
+  `.env.local`.
 - **Local database:** it is now `greenfield` (user and password `greenfield`) in a new Docker
   Compose project, so it starts empty. Your old `crunchdesign` container and volume are left
   alone. To switch, stop the old container, then start and migrate the new one:

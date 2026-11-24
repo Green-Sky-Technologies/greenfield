@@ -54,6 +54,19 @@ ready, no document, failed). `run_batch` diffs the current page before and after
 2.3 events) and returns `changes: {added, removed, changed}`; once the batch has applied it never
 reports a failure, so a model never retries an applied edit.
 
+### Turn context and scope (Stories 4.1, 4.2)
+
+`buildTurnContext(editor, {selection?})` builds the `<document>` block for a user turn, next to
+the editor: the selection's subtree (`node.get` with `CONTEXT_FIELDS`), a one-line-per-layer
+outline of the page, and the file's variables and styles, compacted (hex colours, defaults
+dropped) and capped (`CONTEXT_LIMITS`). The selection is the turn's `scope`. A one-element
+request stays under `ONE_ELEMENT_TOKEN_BUDGET` (`src/context.test.ts`; about 780 tokens on the
+landing fixture in the real editor).
+
+Pass `scope` to `executeTool` and a `run_batch` that adds, removes or edits layers outside it
+is undone (`edit.undo`, only if it is still the newest undo step) and fails with `scope`.
+Layers auto layout only moved or resized don't count.
+
 ### Testing
 
 `@greenfield/contracts/testing` has the `landing` golden fixture (`buildLanding(editor)`), the

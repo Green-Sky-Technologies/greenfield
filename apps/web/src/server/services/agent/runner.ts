@@ -5,7 +5,6 @@
 import type { JobRunner } from '@greenfield/contracts';
 import { VercelSandboxRunner, type PreparedJob, type SandboxApi } from '@greenfield/sandbox-runner';
 import { AgentUnavailableError } from '../types';
-import { readEnv } from '@/server/env';
 
 /**
  * Build a job's sandbox spec. Not available until Story 4.5: the jobs drove the HTML model's
@@ -23,7 +22,7 @@ export async function prepareJob(): Promise<PreparedJob> {
  * production URL.
  */
 export function appUrl(env: Record<string, string | undefined> = process.env): string {
-  const configured = readEnv('GREENFIELD_APP_URL', env);
+  const configured = env.GREENFIELD_APP_URL;
   if (configured) return configured.replace(/\/+$/, '');
   if (env.VERCEL_ENV === 'production' && env.VERCEL_PROJECT_PRODUCTION_URL)
     return `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`;

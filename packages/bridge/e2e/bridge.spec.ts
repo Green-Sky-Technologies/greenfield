@@ -226,3 +226,32 @@ test('a hidden tab fails fast with EditorHiddenError', async ({ editor }) => {
   await editor.setHidden(false);
   await expect(editor.inspect({ depth: 0, fields: [] })).resolves.toMatchObject({ dirty: false });
 });
+
+test('the editor runs under its CSP with no violations (Story 8.1)', async ({ page }) => {
+  const violations: string[] = [];
+  page.on('console', (m) => {
+    if (/content.security.policy|\bCSP\b/i.test(m.text())) violations.push(m.text());
+  });
+  await page.exposeBinding('__cspViolation', (_s, v: string) => void violations.push(v));
+  await page.addInitScript(() =>
+    document.addEventListener('securitypolicyviolation', (e) =>
+      (window as unknown as { __cspViolation(v: string): void }).__cspViolation(
+        `${location.pathname}: ${e.effectiveDirective} ${e.blockedURI}`,
+      ),
+    ),
+  );
+  const editorPage = page.waitForResponse((r) => r.url().includes('/editor/index.html'));
+  const editor = await openEditor(page);
+  const csp = (await (await editorPage).allHeaders())['content-security-policy'] ?? '';
+  expect(csp).toContain("'wasm-unsafe-eval'");
+  expect(csp).not.toMatch(/'unsafe-eval'|'unsafe-inline'/);
+
+  // Exercise the paths that create elements, styles and blobs: edit, render, save.
+  await newDoc(editor);
+  const { id } = (await editor.execute('node.create', { type: 'text', text: 'Hello' })) as {
+    id: number;
+  };
+  await editor.render({ ids: [id], scale: 1 });
+  await editor.nextSave(() => editor.save());
+  expect(violations).toEqual([]);
+});

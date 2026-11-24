@@ -13,6 +13,7 @@ import { createServer, type Server } from 'node:http';
 import { existsSync, readFileSync, statSync } from 'node:fs';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { EMBEDDING_PAGE_CSP, editorCsp } from '../csp';
 
 const here = fileURLToPath(new URL('.', import.meta.url));
 /** `apps/web/public/editor` in this repository. */
@@ -96,17 +97,27 @@ export async function startHostServer(opts: HostServerOptions = {}): Promise<Hos
       `No editor in ${editorDir}. Run \`node spikes/0.1-embed/fetch-editor.mjs\` from the repo root.`,
     );
   }
+  // The same policies the app sends (next.config.ts), so the suites run under them.
+  const csp = editorCsp(readFileSync(join(editorDir, 'index.html'), 'utf8'));
   const server: Server = createServer((req, res) => {
     const url = new URL(req.url ?? '/', 'http://localhost');
-    const send = (status: number, body: string | Buffer, type = 'text/plain; charset=utf-8') => {
+    const send = (
+      status: number,
+      body: string | Buffer,
+      type = 'text/plain; charset=utf-8',
+      policy = csp,
+    ) => {
       res.writeHead(status, {
         'content-type': type,
         'cache-control': 'no-store',
         'x-content-type-options': 'nosniff',
+        'content-security-policy': policy,
       });
       res.end(body);
     };
-    if (url.pathname === '/__bridge/host.html') return send(200, HOST_HTML, TYPES['.html']);
+    if (url.pathname === '/__bridge/host.html') {
+      return send(200, HOST_HTML, TYPES['.html'], EMBEDDING_PAGE_CSP);
+    }
     if (url.pathname === '/__bridge/host.js') {
       buildHostScript().then(
         (js) => send(200, js, TYPES['.js']),

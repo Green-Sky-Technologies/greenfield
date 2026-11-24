@@ -284,7 +284,10 @@ export class RemoteEditor implements Editor {
     if (first) {
       void this.page
         .evaluate(() => {
-          const w = window as Window & { __bridgeChangeOff?: () => void };
+          const w = window as Window & {
+            __bridgeChangeOff?: () => void;
+            __greenfieldBridgeEvent?: (type: string, payload: unknown) => void;
+          };
           w.__bridgeChangeOff?.();
           w.__bridgeChangeOff = w.__greenfieldBridge!.editor.onChange((c) =>
             w.__greenfieldBridgeEvent?.('change', c),

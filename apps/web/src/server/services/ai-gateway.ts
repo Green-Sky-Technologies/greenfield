@@ -15,7 +15,6 @@
 import 'server-only';
 import { getVercelOidcToken } from '@vercel/oidc';
 import { buildGatewayClient, type ClaudeClient } from '@greenfield/providers';
-import { readEnv } from '@/server/env';
 
 type Env = Record<string, string | undefined>;
 
@@ -27,7 +26,7 @@ export interface DeploymentGatewayConfig {
 
 /** Whether the deployment gateway is on, from env only. Cheap; call it per request. */
 export function deploymentGatewayConfig(env: Env = process.env): DeploymentGatewayConfig {
-  const mode = readEnv('GREENFIELD_AI_GATEWAY', env)?.trim().toLowerCase();
+  const mode = env.GREENFIELD_AI_GATEWAY?.trim().toLowerCase();
   const apiKey = Boolean(env.AI_GATEWAY_API_KEY?.trim());
   const enabled =
     mode === 'off' || mode === 'false' || mode === '0'

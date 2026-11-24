@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Download the pinned upstream figcraft-web release, verify its sha256 and unpack it into
+ * Download the figcraft-web release pinned in packages/bridge/editor-release.json, verify its sha256 and unpack it into
  * apps/web/public/editor/ (gitignored), so the app serves the editor at /editor/. Runs before
  * `dev` and `build` (package.json `predev`/`prebuild`, scripts/vercel-build.mjs) and does
  * nothing when the pinned version is already there. Epic 2 swaps the release for the fork's
@@ -18,11 +18,14 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const VERSION = '0.18.1';
-const URL_ = `https://github.com/storytold/figcraft/releases/download/v${VERSION}/figcraft-web-${VERSION}.zip`;
-const SHA256 = '2fbeb93f5022b0a7cc9d8528f1ed7e2b54c94d213ef79e65128aa898c399f02b';
-
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'); // apps/web
+// The one pin, shared with packages/bridge (its tests fail when its generated types disagree).
+const pin = JSON.parse(
+  fs.readFileSync(path.join(root, '../../packages/bridge/editor-release.json'), 'utf8'),
+);
+const VERSION = pin.version;
+const SHA256 = pin.sha256;
+const URL_ = `https://github.com/storytold/figcraft/releases/download/v${VERSION}/figcraft-web-${VERSION}.zip`;
 const dest = path.join(root, 'public/editor');
 const stamp = path.join(dest, '.figcraft-version');
 
