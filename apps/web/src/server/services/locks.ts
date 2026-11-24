@@ -3,8 +3,8 @@
  *
  * - One lock per project (edit_locks). It's live while its heartbeat is newer than
  *   EDIT_LOCK_TTL_MS (2 minutes), so a lock expires 2 minutes after the holder's tab dies.
- *   Nothing enforces it on writes right now: the HTML model's write path did, and was removed in
- *   Story 1.2. The editor shell (Epic 5) and file saves (Epic 3) take it up again.
+ *   Saves enforce it (services/design-files, Story 3.1): only the holding tab (sessionId) with a
+ *   live heartbeat may save.
  * - Acquiring is a single atomic upsert that only wins if the lock is free, expired, or already
  *   held by the same user (a second tab of the same user takes it over).
  * - Presence: every open editor tab (viewers too) heartbeats a presence row; rows older than
@@ -202,9 +202,14 @@ export async function heartbeat(
   if (actor.role !== 'viewer') {
     // The lock belongs to the user, not a tab: don't rewrite sessionId (live tabs are tracked in
     // presence), or the tab that beat last would decide whether closing another tab drops it.
+    // The one exception is a hand-off: the receiving tab's first heartbeat adopts the lock, so
+    // its saves pass the lock check.
     await db
       .update(editLocks)
-      .set({ heartbeatAt: new Date() })
+      .set({
+        heartbeatAt: new Date(),
+        sessionId: sql`case when ${editLocks.sessionId} like 'handoff-%' then ${sessionId} else ${editLocks.sessionId} end`,
+      })
       .where(
         and(
           eq(editLocks.projectId, projectId),

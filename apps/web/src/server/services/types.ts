@@ -23,6 +23,11 @@ export class AgentUnavailableError extends Error {
   }
 }
 
+/** The request conflicts with the resource's current state (e.g. a save from a stale edit lock). */
+export class ConflictError extends Error {
+  override name = 'ConflictError';
+}
+
 export class ValidationError extends Error {
   override name = 'ValidationError';
   constructor(

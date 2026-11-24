@@ -1,10 +1,12 @@
 /**
- * The project page's embedded editor (Story 1.2, from the 0.1 spike): open a project from the
- * projects list, edit, Save sends the bytes to the host and they land in storage; reopening shows
- * the same document; dirty state reaches the host. Per browser.
+ * The project page's embedded editor (Story 1.2, from the 0.1 spike; Stories 3.1 and 3.7): a new
+ * project opens on a blank document, edit, Save sends the bytes to the host and they land in
+ * storage; reopening restores the exact document; dirty state reaches the host; a 20 MB document
+ * saves and reopens. Per browser.
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { crc32, deflateSync } from 'node:zlib';
 import type { Frame, Page } from '@playwright/test';
 import { createProject, pageFetch, uniqueName } from '../app/support/app';
 import { expect, test } from '../app/support/fixtures';
@@ -83,6 +85,43 @@ async function openEditor(page: Page, url: string) {
   return { readyWallMs, readyMs, frame: await editorFrame(page) };
 }
 
+/**
+ * The whole document as the editor describes it (pages, nodes and their properties), without the
+ * session state a reload resets (undo history, selection).
+ */
+async function snapshot(frame: Frame): Promise<string> {
+  return frame.evaluate(async () => {
+    const doc = (await window.figcraft.docInspect({})) as Record<string, unknown>;
+    for (const k of ['history', 'selection', 'textEdit', 'dirty']) delete doc[k];
+    return JSON.stringify(doc);
+  });
+}
+
+/** An RGB PNG of random pixels, stored uncompressed: about 3 bytes per pixel, incompressible. */
+function noisePng(width: number, height: number): Buffer {
+  const chunk = (type: string, data: Buffer) => {
+    const len = Buffer.alloc(4);
+    len.writeUInt32BE(data.length);
+    const body = Buffer.concat([Buffer.from(type, 'ascii'), data]);
+    const crc = Buffer.alloc(4);
+    crc.writeUInt32BE(crc32(body));
+    return Buffer.concat([len, body, crc]);
+  };
+  const ihdr = Buffer.alloc(13);
+  ihdr.writeUInt32BE(width, 0);
+  ihdr.writeUInt32BE(height, 4);
+  ihdr.set([8, 2, 0, 0, 0], 8); // 8-bit RGB
+  const rows = Buffer.alloc((width * 3 + 1) * height);
+  for (let i = 0; i < rows.length; i++) rows[i] = (Math.random() * 256) | 0;
+  for (let y = 0; y < height; y++) rows[y * (width * 3 + 1)] = 0; // filter: none
+  return Buffer.concat([
+    Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]),
+    chunk('IHDR', ihdr),
+    chunk('IDAT', deflateSync(rows, { level: 0 })),
+    chunk('IEND', Buffer.alloc(0)),
+  ]);
+}
+
 async function stored(page: Page, projectId: string) {
   const r = await pageFetch(page, `/api/projects/${projectId}/file`);
   return r.status;
@@ -112,13 +151,15 @@ test('editor: open from the projects list, edit, save, reopen', async ({
   await expect(page.getByTitle('Editor')).toBeVisible();
   await expect(status(page)).not.toHaveAttribute('data-ready-ms', '', { timeout: 120_000 });
 
-  // 1. First load: nothing stored yet. Make a document and save it (Save As -> saveAs: true).
+  // 1. First load: nothing stored yet. The host opens a blank document (Story 3.7), not the
+  //    editor's home screen, and this tab holds the edit lock. Edit it and save it.
   let { readyMs, readyWallMs, frame } = await openEditor(page, url);
   metrics.firstReadyMs = readyMs;
   metrics.firstReadyWallMs = readyWallMs;
   await expect(status(page)).toHaveAttribute('data-status', 'empty');
+  await expect(status(page)).toHaveAttribute('data-lock', 'held');
   expect(await stored(page, projectId)).toBe(204);
-  await frame.evaluate(() => window.figcraft.execute('file.new', {}));
+  await expect.poll(() => snapshot(frame).then((s) => JSON.parse(s).pages?.length ?? 0)).toBe(1);
   await createFrame(frame, 'Frame A', 0);
   await expect(status(page)).toHaveAttribute('data-dirty', 'true');
   let t = Date.now();
@@ -128,6 +169,7 @@ test('editor: open from the projects list, edit, save, reopen', async ({
   metrics.firstSaveBytes = Number(await status(page).getAttribute('data-save-size'));
   metrics.storage = await status(page).getAttribute('data-storage');
   metrics.firstSaveMessage = await status(page).getAttribute('data-last-save');
+  expect(metrics.firstSaveMessage).toMatch(new RegExp(`^${name}\\.figcraft saveAs=`));
   expect(await stored(page, projectId)).toBe(200);
   await expect(status(page)).toHaveAttribute('data-dirty', 'false');
 
@@ -151,8 +193,9 @@ test('editor: open from the projects list, edit, save, reopen', async ({
   metrics.saveMessage = await status(page).getAttribute('data-last-save');
   await expect(status(page)).toHaveAttribute('data-dirty', 'false');
   const before = (await nodeNames(frame)).sort();
+  const beforeDoc = await snapshot(frame);
 
-  // 3. Reopen: the same document.
+  // 3. Reopen: the exact document.
   ({ readyMs, frame } = await openEditor(page, url));
   t = Date.now();
   await expect(status(page)).toHaveAttribute('data-status', 'opened');
@@ -160,6 +203,26 @@ test('editor: open from the projects list, edit, save, reopen', async ({
   metrics.reopenWallMs = Date.now() - t;
   metrics.reopenReadyMs = readyMs;
   expect(before).toEqual(expect.arrayContaining(['Frame A', 'Frame B']));
+  expect(await snapshot(frame)).toBe(beforeDoc);
+
+  // 4. A 20 MB document: an incompressible image, saved and reopened.
+  const png = noisePng(2650, 2650);
+  await frame.evaluate(
+    (data) => window.figcraft.execute('image.place', { data, x: 0, y: 400, name: 'Noise' }),
+    png.toString('base64'),
+  );
+  await expect(status(page)).toHaveAttribute('data-dirty', 'true');
+  t = Date.now();
+  await save(frame);
+  await expect(status(page)).toHaveAttribute('data-saves', '1', { timeout: 120_000 }); // counts per page load;
+  metrics.bigSaveWallMs = Date.now() - t;
+  metrics.bigSaveBytes = Number(await status(page).getAttribute('data-save-size'));
+  expect(metrics.bigSaveBytes).toBeGreaterThanOrEqual(20 * 1024 * 1024);
+  const bigDoc = await snapshot(frame);
+  ({ frame } = await openEditor(page, url));
+  await expect(status(page)).toHaveAttribute('data-status', 'opened', { timeout: 120_000 });
+  await expect.poll(() => nodeNames(frame), { timeout: 120_000 }).toContain('Noise');
+  expect(await snapshot(frame)).toBe(bigDoc);
 
   // Clerk's FAPI retries fail CORS in Playwright WebKit now and then ("due to access control
   // checks"); that's the sign-in widget, not the editor. Record it instead of failing the test.
