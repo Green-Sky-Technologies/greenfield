@@ -114,8 +114,8 @@ your `PATH`. Without a Blob token, design files are saved under `apps/web/.data/
 The project was renamed from CrunchDesign to Greenfield.
 
 - **Environment variables:** `CRUNCH_AI_GATEWAY`, `CRUNCH_APP_URL` and `CRUNCH_AWS_PRINCIPAL_ARN`
-  are now `GREENFIELD_*`. The old names still work for one release and log a deprecation
-  warning. Rename them in Vercel and in `.env.local`.
+  are now `GREENFIELD_*`, and the old names are no longer read. Rename them in Vercel and in
+  `.env.local`.
 - **Local database:** it is now `greenfield` (user and password `greenfield`) in a new Docker
   Compose project, so it starts empty. Your old `crunchdesign` container and volume are left
   alone. To switch, stop the old container, then start and migrate the new one:
