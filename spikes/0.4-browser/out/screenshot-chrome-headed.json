@@ -1,0 +1,681 @@
+{
+  "browser": "chrome-headed",
+  "extra": "",
+  "tries": 10,
+  "cells": [
+    {
+      "scenario": "nodoc",
+      "method": "screenshot",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 157.4,
+        "p95": 199.2,
+        "max": 199.2,
+        "mean": 160.7
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 174,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "nodoc",
+      "method": "pwPage",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 34.5,
+        "p95": 43.2,
+        "max": 43.2,
+        "mean": 35.5
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 182,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "nodoc",
+      "method": "pwCanvas",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 59.5,
+        "p95": 73,
+        "max": 73,
+        "mean": 59.8
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 182,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "nodoc",
+      "method": "toDataURL",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 26.6,
+        "p95": 43.7,
+        "max": 43.7,
+        "mean": 30.4
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 174,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "small",
+      "method": "screenshot",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 259.7,
+        "p95": 276.8,
+        "max": 276.8,
+        "mean": 261.7
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 59,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "small",
+      "method": "render",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 18.5,
+        "p95": 19.7,
+        "max": 19.7,
+        "mean": 18.6
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 500,
+        "h": 180,
+        "distinct": 21,
+        "transparentPct": 4
+      }
+    },
+    {
+      "scenario": "small",
+      "method": "export",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 18.1,
+        "p95": 19.3,
+        "max": 19.3,
+        "mean": 18.3
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 500,
+        "h": 180,
+        "distinct": 21,
+        "transparentPct": 4
+      }
+    },
+    {
+      "scenario": "small",
+      "method": "pwPage",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 32.6,
+        "p95": 37.8,
+        "max": 37.8,
+        "mean": 33.9
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 88,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "small",
+      "method": "pwCanvas",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 52.8,
+        "p95": 92.7,
+        "max": 92.7,
+        "mean": 58.4
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 88,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "small",
+      "method": "toDataURL",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 26.2,
+        "p95": 38.8,
+        "max": 38.8,
+        "mean": 27.9
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 59,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "screenshot",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 260,
+        "p95": 1126.4,
+        "max": 1126.4,
+        "mean": 363.4
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 1538,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "render",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 338.9,
+        "p95": 353.7,
+        "max": 353.7,
+        "mean": 341.7
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 960,
+        "distinct": 600,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "export",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 328.8,
+        "p95": 341.4,
+        "max": 341.4,
+        "mean": 330.3
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 960,
+        "distinct": 600,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "pwPage",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 47.1,
+        "p95": 52,
+        "max": 52,
+        "mean": 46.4
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 824,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "pwCanvas",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 66.9,
+        "p95": 81.4,
+        "max": 81.4,
+        "mean": 68.2
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 824,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "toDataURL",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 36.6,
+        "p95": 47.4,
+        "max": 47.4,
+        "mean": 37.6
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 688,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "large",
+      "method": "screenshot",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 184.2,
+        "p95": 244.2,
+        "max": 244.2,
+        "mean": 190.1
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 152,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "large",
+      "method": "render",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 340.8,
+        "p95": 353.1,
+        "max": 353.1,
+        "mean": 343.1
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 5180,
+        "h": 4180,
+        "distinct": 24,
+        "transparentPct": 16
+      }
+    },
+    {
+      "scenario": "large",
+      "method": "export",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 337.3,
+        "p95": 360.6,
+        "max": 360.6,
+        "mean": 341.2
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 5180,
+        "h": 4180,
+        "distinct": 24,
+        "transparentPct": 16
+      }
+    },
+    {
+      "scenario": "large",
+      "method": "pwPage",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 33.7,
+        "p95": 39.6,
+        "max": 39.6,
+        "mean": 34.6
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 125,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "large",
+      "method": "pwCanvas",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 56.8,
+        "p95": 71.6,
+        "max": 71.6,
+        "mean": 57.1
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 125,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "large",
+      "method": "toDataURL",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 25.9,
+        "p95": 38.2,
+        "max": 38.2,
+        "mean": 27.5
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 152,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "background",
+      "method": "screenshot",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 149.2,
+        "p95": 150.9,
+        "max": 150.9,
+        "mean": 149
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 106,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "background",
+      "method": "render",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 48.7,
+        "p95": 52.2,
+        "max": 52.2,
+        "mean": 48.7
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 5180,
+        "h": 580,
+        "distinct": 18,
+        "transparentPct": 40
+      }
+    },
+    {
+      "scenario": "background",
+      "method": "export",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 49.4,
+        "p95": 52.6,
+        "max": 52.6,
+        "mean": 49.4
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 5180,
+        "h": 580,
+        "distinct": 18,
+        "transparentPct": 40
+      }
+    },
+    {
+      "scenario": "background",
+      "method": "pwPage",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 31.8,
+        "p95": 33.2,
+        "max": 33.2,
+        "mean": 30.9
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 94,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "background",
+      "method": "pwCanvas",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 49.2,
+        "p95": 74.1,
+        "max": 74.1,
+        "mean": 50.6
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 94,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "background",
+      "method": "toDataURL",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 19.5,
+        "p95": 37.6,
+        "max": 37.6,
+        "mean": 21.5
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 2880,
+        "h": 1800,
+        "distinct": 106,
+        "transparentPct": 0
+      }
+    }
+  ],
+  "version": "158.0.8127.37",
+  "readyMs": 183.5,
+  "backend": "[figcraft_web::web] figcraft-web/src/web.rs:58: figcraft-web: wgpu backend BrowserWebGpu",
+  "warnings": [
+    "[eframe::web::app_runner] eframe/src/web/app_runner.rs:353: Unhandled egui viewport command: RequestPaintWhileHidden - not implemented in web backend"
+  ]
+}

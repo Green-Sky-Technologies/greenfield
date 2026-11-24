@@ -1,0 +1,405 @@
+{
+  "browser": "firefox-headed",
+  "version": "157.0",
+  "sizes": [],
+  "correctness": null,
+  "frames": [
+    {
+      "nodes": 1000,
+      "mode": "none",
+      "frames": 296,
+      "rafMs": {
+        "n": 295,
+        "p50": 16.7,
+        "p95": 16.9,
+        "max": 33.3,
+        "mean": 17
+      },
+      "over25ms": 6,
+      "polls": 0,
+      "pollGateMs": {
+        "n": 0
+      },
+      "pollFullMs": {
+        "n": 0
+      }
+    },
+    {
+      "nodes": 1000,
+      "mode": "gated-1000",
+      "frames": 296,
+      "rafMs": {
+        "n": 295,
+        "p50": 16.7,
+        "p95": 16.8,
+        "max": 50,
+        "mean": 16.9
+      },
+      "over25ms": 4,
+      "polls": 5,
+      "pollGateMs": {
+        "n": 5,
+        "p50": 22,
+        "p95": 30,
+        "max": 30,
+        "mean": 21.8
+      },
+      "pollFullMs": {
+        "n": 1,
+        "p50": 24,
+        "p95": 24,
+        "max": 24,
+        "mean": 24
+      }
+    },
+    {
+      "nodes": 1000,
+      "mode": "gated-250",
+      "frames": 301,
+      "rafMs": {
+        "n": 300,
+        "p50": 16.7,
+        "p95": 16.9,
+        "max": 17.5,
+        "mean": 16.7
+      },
+      "over25ms": 0,
+      "polls": 18,
+      "pollGateMs": {
+        "n": 18,
+        "p50": 23,
+        "p95": 26,
+        "max": 26,
+        "mean": 22.3
+      },
+      "pollFullMs": {
+        "n": 1,
+        "p50": 27,
+        "p95": 27,
+        "max": 27,
+        "mean": 27
+      }
+    },
+    {
+      "nodes": 1000,
+      "mode": "full-1000",
+      "frames": 303,
+      "rafMs": {
+        "n": 302,
+        "p50": 16.7,
+        "p95": 16.7,
+        "max": 17.5,
+        "mean": 16.7
+      },
+      "over25ms": 0,
+      "polls": 5,
+      "pollGateMs": {
+        "n": 5,
+        "p50": 23,
+        "p95": 27,
+        "max": 27,
+        "mean": 22.6
+      },
+      "pollFullMs": {
+        "n": 5,
+        "p50": 25,
+        "p95": 26,
+        "max": 26,
+        "mean": 24.8
+      }
+    },
+    {
+      "nodes": 1000,
+      "mode": "full-250",
+      "frames": 301,
+      "rafMs": {
+        "n": 300,
+        "p50": 16.7,
+        "p95": 16.8,
+        "max": 17.6,
+        "mean": 16.7
+      },
+      "over25ms": 0,
+      "polls": 17,
+      "pollGateMs": {
+        "n": 17,
+        "p50": 21,
+        "p95": 46,
+        "max": 46,
+        "mean": 22.8
+      },
+      "pollFullMs": {
+        "n": 17,
+        "p50": 24,
+        "p95": 29,
+        "max": 29,
+        "mean": 24.2
+      }
+    },
+    {
+      "nodes": 5000,
+      "mode": "none",
+      "frames": 289,
+      "rafMs": {
+        "n": 288,
+        "p50": 16.7,
+        "p95": 17.4,
+        "max": 50,
+        "mean": 17.4
+      },
+      "over25ms": 12,
+      "polls": 0,
+      "pollGateMs": {
+        "n": 0
+      },
+      "pollFullMs": {
+        "n": 0
+      }
+    },
+    {
+      "nodes": 5000,
+      "mode": "gated-1000",
+      "frames": 288,
+      "rafMs": {
+        "n": 287,
+        "p50": 16.7,
+        "p95": 17.3,
+        "max": 34.2,
+        "mean": 17.4
+      },
+      "over25ms": 13,
+      "polls": 5,
+      "pollGateMs": {
+        "n": 5,
+        "p50": 24,
+        "p95": 42,
+        "max": 42,
+        "mean": 27.2
+      },
+      "pollFullMs": {
+        "n": 1,
+        "p50": 38,
+        "p95": 38,
+        "max": 38,
+        "mean": 38
+      }
+    },
+    {
+      "nodes": 5000,
+      "mode": "gated-250",
+      "frames": 294,
+      "rafMs": {
+        "n": 293,
+        "p50": 16.7,
+        "p95": 17,
+        "max": 33.3,
+        "mean": 17.1
+      },
+      "over25ms": 7,
+      "polls": 18,
+      "pollGateMs": {
+        "n": 18,
+        "p50": 25,
+        "p95": 41,
+        "max": 41,
+        "mean": 27.1
+      },
+      "pollFullMs": {
+        "n": 1,
+        "p50": 36,
+        "p95": 36,
+        "max": 36,
+        "mean": 36
+      }
+    },
+    {
+      "nodes": 5000,
+      "mode": "full-1000",
+      "frames": 294,
+      "rafMs": {
+        "n": 293,
+        "p50": 16.7,
+        "p95": 16.9,
+        "max": 34,
+        "mean": 17.2
+      },
+      "over25ms": 10,
+      "polls": 5,
+      "pollGateMs": {
+        "n": 5,
+        "p50": 21,
+        "p95": 32,
+        "max": 32,
+        "mean": 24
+      },
+      "pollFullMs": {
+        "n": 5,
+        "p50": 39,
+        "p95": 45,
+        "max": 45,
+        "mean": 38.8
+      }
+    },
+    {
+      "nodes": 5000,
+      "mode": "full-250",
+      "frames": 277,
+      "rafMs": {
+        "n": 276,
+        "p50": 16.7,
+        "p95": 33.3,
+        "max": 66.7,
+        "mean": 18.2
+      },
+      "over25ms": 17,
+      "polls": 15,
+      "pollGateMs": {
+        "n": 15,
+        "p50": 23,
+        "p95": 28,
+        "max": 28,
+        "mean": 21.9
+      },
+      "pollFullMs": {
+        "n": 15,
+        "p50": 46,
+        "p95": 71,
+        "max": 71,
+        "mean": 48.9
+      }
+    },
+    {
+      "nodes": 10000,
+      "mode": "none",
+      "frames": 294,
+      "rafMs": {
+        "n": 293,
+        "p50": 16.7,
+        "p95": 17.2,
+        "max": 33.7,
+        "mean": 17.1
+      },
+      "over25ms": 8,
+      "polls": 0,
+      "pollGateMs": {
+        "n": 0
+      },
+      "pollFullMs": {
+        "n": 0
+      }
+    },
+    {
+      "nodes": 10000,
+      "mode": "gated-1000",
+      "frames": 292,
+      "rafMs": {
+        "n": 291,
+        "p50": 16.7,
+        "p95": 16.8,
+        "max": 50,
+        "mean": 17.2
+      },
+      "over25ms": 8,
+      "polls": 5,
+      "pollGateMs": {
+        "n": 5,
+        "p50": 24,
+        "p95": 52,
+        "max": 52,
+        "mean": 28
+      },
+      "pollFullMs": {
+        "n": 1,
+        "p50": 52,
+        "p95": 52,
+        "max": 52,
+        "mean": 52
+      }
+    },
+    {
+      "nodes": 10000,
+      "mode": "gated-250",
+      "frames": 299,
+      "rafMs": {
+        "n": 298,
+        "p50": 16.7,
+        "p95": 16.7,
+        "max": 50,
+        "mean": 16.8
+      },
+      "over25ms": 2,
+      "polls": 18,
+      "pollGateMs": {
+        "n": 18,
+        "p50": 23,
+        "p95": 51,
+        "max": 51,
+        "mean": 24.6
+      },
+      "pollFullMs": {
+        "n": 1,
+        "p50": 64,
+        "p95": 64,
+        "max": 64,
+        "mean": 64
+      }
+    },
+    {
+      "nodes": 10000,
+      "mode": "full-1000",
+      "frames": 285,
+      "rafMs": {
+        "n": 284,
+        "p50": 16.7,
+        "p95": 16.7,
+        "max": 83.3,
+        "mean": 17.7
+      },
+      "over25ms": 6,
+      "polls": 5,
+      "pollGateMs": {
+        "n": 5,
+        "p50": 23,
+        "p95": 24,
+        "max": 24,
+        "mean": 22.6
+      },
+      "pollFullMs": {
+        "n": 5,
+        "p50": 67,
+        "p95": 82,
+        "max": 82,
+        "mean": 69.6
+      }
+    },
+    {
+      "nodes": 10000,
+      "mode": "full-250",
+      "frames": 256,
+      "rafMs": {
+        "n": 255,
+        "p50": 16.7,
+        "p95": 50,
+        "max": 83.3,
+        "mean": 19.5
+      },
+      "over25ms": 14,
+      "polls": 14,
+      "pollGateMs": {
+        "n": 14,
+        "p50": 24,
+        "p95": 26,
+        "max": 26,
+        "mean": 22.8
+      },
+      "pollFullMs": {
+        "n": 14,
+        "p50": 68,
+        "p95": 80,
+        "max": 80,
+        "mean": 67.9
+      }
+    }
+  ],
+  "backend": "[figcraft_web::web] figcraft-web/src/web.rs:58: figcraft-web: wgpu backend BrowserWebGpu"
+}

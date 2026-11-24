@@ -1,0 +1,157 @@
+{
+  "browser": "webkit-headed",
+  "extra": "",
+  "tries": 10,
+  "cells": [
+    {
+      "scenario": "example",
+      "method": "screenshot",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 133.2,
+        "p95": 147.2,
+        "max": 147.2,
+        "mean": 133.8
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 670,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "render",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 307,
+        "p95": 320.4,
+        "max": 320.4,
+        "mean": 310.6
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 960,
+        "distinct": 600,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "export",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 306.5,
+        "p95": 314.6,
+        "max": 314.6,
+        "mean": 307.1
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 960,
+        "distinct": 600,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "pwPage",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 14.9,
+        "p95": 19.8,
+        "max": 19.8,
+        "mean": 15.5
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 670,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "pwCanvas",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 49.8,
+        "p95": 64.5,
+        "max": 64.5,
+        "mean": 50.8
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 670,
+        "transparentPct": 0
+      }
+    },
+    {
+      "scenario": "example",
+      "method": "toDataURL",
+      "visibility": "visible",
+      "tries": 10,
+      "ok": 10,
+      "latency": {
+        "n": 10,
+        "p50": 14.8,
+        "p95": 16.2,
+        "max": 16.2,
+        "mean": 14.9
+      },
+      "failMs": {
+        "n": 0
+      },
+      "errors": [],
+      "image": {
+        "w": 1440,
+        "h": 900,
+        "distinct": 670,
+        "transparentPct": 0
+      }
+    }
+  ],
+  "version": "27.2",
+  "readyMs": 361,
+  "backend": "[figcraft_web::web] figcraft-web/src/web.rs:58: figcraft-web: wgpu backend BrowserWebGpu",
+  "warnings": [
+    "[eframe::web::app_runner] eframe/src/web/app_runner.rs:353: Unhandled egui viewport command: RequestPaintWhileHidden - not implemented in web backend"
+  ]
+}
