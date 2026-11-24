@@ -84,6 +84,20 @@ describe('MockEditor', () => {
     );
   });
 
+  it('select.set replaces the selection without an undo step', async () => {
+    const ed = new MockEditor();
+    const a = (await ed.execute('node.create', { type: 'frame', select: false })) as { id: number };
+    const b = (await ed.execute('node.create', { type: 'frame', select: false })) as { id: number };
+    await ed.execute('select.set', { ids: [b.id, a.id] });
+    const doc = await ed.inspect({ depth: 0 });
+    expect(doc.selection).toEqual([b.id, a.id]);
+    expect(doc.history.undo).toEqual(['Create layer', 'Create layer']);
+    await ed.execute('select.set', { ids: [] });
+    expect((await ed.inspect({ depth: 0 })).selection).toEqual([]);
+    await expect(ed.execute('select.set', { ids: [99] })).rejects.toThrow('no such node 99');
+    await expect(ed.execute('select.set', { ids: [1] })).rejects.toThrow('no such node 1');
+  });
+
   it('rejects unknown commands and parameters like the editor', async () => {
     const ed = new MockEditor();
     // @ts-expect-error: not a command

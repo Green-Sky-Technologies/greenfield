@@ -147,7 +147,7 @@ await editor.execute('node.create', { type: 'frame', name: 'Card' }); // → { i
 ```
 
 An in-memory layer tree with the real editor's shapes and messages: `file.new`, `node.create`,
-`node.set` (`props` or flat; `fill`/`stroke` shorthands), `text.set`, `edit.delete`,
+`node.set` (`props` or flat; `fill`/`stroke` shorthands), `text.set`, `edit.delete`, `select.set`,
 `command.batch` (refs, field paths, rollback, `onError: 'continue'`), `document.inspect`
 (`depth`, `fields`, `outline`), `node.get`, `ui.render` (a 1×1 PNG), `engine.commands` (the full
 pinned list), `ui.key` Save. Ids are deterministic (page 1, layers from 2). Parameters are checked

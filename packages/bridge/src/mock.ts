@@ -5,7 +5,7 @@
  * shapes and error messages:
  *
  * - `file.new`, `node.create`, `node.set` (`props` or flat), `text.set`, `edit.delete`,
- *   `command.batch` (one undo step, `as` / `$ref` / `$step` with `field` paths, `onError`)
+ *   `select.set`, `command.batch` (one undo step, `as` / `$ref` / `$step` with `field` paths, `onError`)
  * - `document.inspect` (`depth`, `fields`, `outline`), `node.get`, `ui.render` (a 1×1 PNG),
  *   `engine.commands` (the pinned editor's full list), `ui.key` Save
  * - host messages: ready, dirty, save (`saveAs` as the editor decides it), open of its own saves
@@ -98,6 +98,7 @@ const SUPPORTED = new Set([
   'node.set',
   'text.set',
   'edit.delete',
+  'select.set',
   'command.batch',
 ]);
 
@@ -542,6 +543,16 @@ export class MockEditor implements Editor {
         const gone = new Set(nodes.map((n) => n.id));
         this.doc.selection = this.doc.selection.filter((id) => !gone.has(id) && this.find(id));
         return { deleted: nodes.map((n) => n.id), hidden: [] };
+      }
+      case 'select.set': {
+        if (!Array.isArray(params.ids))
+          throw fail(command, 'invalid parameters for `select.set`: `ids` must be a list');
+        for (const id of params.ids) {
+          const hit = this.find(id);
+          if (!hit || hit.node.type === 'PAGE') throw fail(command, `no such node ${String(id)}`);
+        }
+        this.doc.selection = [...new Set(params.ids as NodeId[])];
+        return { ok: true };
       }
       case 'command.batch':
         return this.runBatch(params);

@@ -49,6 +49,7 @@ export {
   type NodeProps,
 } from './generated/commands';
 export { HostChannel, type HostChannelOptions } from './host';
+export { base64ToBytes, bytesToBase64, pngSize } from './png';
 export {
   isSaveShortcut,
   platformFromUserAgent,
