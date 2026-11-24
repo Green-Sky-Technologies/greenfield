@@ -96,7 +96,13 @@ Date: 2026-11-24. Branch `story-2.9-build-budget`.
 | Clean run b, same | 25,477,866 B | 10,408,053 B | 7,365,932 B | `40d5d6902b2f2a367989a815c5134016b8ccb72fe79b592818759c6c92461eb8` | `83c20fb37db69deaa29d81995451efa2ffb14984d452fa9bf38a272cb6d7d186` | 676 s |
 | Clean run, theme patch only | 25,477,900 B | 10,406,431 B | 7,368,787 B | `46994174…526a92d0` | | 930 s |
 
-Runs a and b are byte-identical (`diff -r` of the two `dist/` trees is empty). Headroom under the
+| GitHub CI (amd64), PR #12, two runs (push and pull_request) | 25,484,827 B (24.30 MiB) | 10,409,222 B | 7,366,744 B | `085fd954635979a36fdb14458bd22741302fed89b202f67f29c1161127b21e26` | `94dd8072…1b93afb8` | ~7–9 min job |
+
+Runs a and b are byte-identical (`diff -r` of the two `dist/` trees is empty), and so are the
+two CI runs. **arm64 and amd64 differ** by 6,961 B: the image digest is a multi-arch index, so
+each host runs its own rustc/LLVM/wasm-opt binaries. Reproducibility holds per architecture; to
+reproduce CI's bytes locally, run the container with `--platform linux/amd64` (not done here:
+emulated, much slower). Headroom under the
 gate is 736,534 B (0.70 MiB). The 24.39 MiB release-equivalent build recorded below used Homebrew
 wasm-opt 133 on the Mac; the pinned binaryen 131 gives 24.30 MiB for the same inputs, which is
 why tools are now pinned. An earlier attempt was OOM-killed compiling trunk with 14 parallel
