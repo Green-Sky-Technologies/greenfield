@@ -109,7 +109,7 @@ test('editor: open from the projects list, edit, save, reopen', async ({
   await page.getByRole('link', { name: `Open ${name}` }).click();
   await page.waitForURL(new RegExp(`/p/${projectId}$`));
   await expect(page.getByText(name, { exact: true })).toBeVisible();
-  await expect(page.getByTitle('Editor')).toBeVisible();
+  await expect(page.getByTitle('Design canvas')).toBeVisible();
   await expect(status(page)).not.toHaveAttribute('data-ready-ms', '', { timeout: 120_000 });
 
   // 1. First load: nothing stored yet. Make a document and save it (Save As -> saveAs: true).

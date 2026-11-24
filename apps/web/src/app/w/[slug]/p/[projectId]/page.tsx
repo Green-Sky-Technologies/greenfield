@@ -1,15 +1,16 @@
 import { can } from '@greenfield/authz';
 import { currentUser } from '@clerk/nextjs/server';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { EditorEmbed } from '@/features/editor/editor-embed';
+import { ProjectShell } from '@/features/shell/project-shell';
 import { db, requireActor } from '@/server/context';
+import { listMentionableMembers } from '@/server/services/comments';
+import { documentName } from '@/server/services/design-files';
 import { getProject } from '@/server/services/projects';
 import { NotFoundError } from '@/server/services/types';
 
 /**
- * A project: its design file in the embedded editor (FigCraft, served from /editor/). The
- * editor shell around it (agent pane, comments, top bar) is Epic 5.
+ * A project: its design file in the embedded editor (FigCraft, served from /editor/), inside the
+ * editor shell (Epic 5: top bar and focus handling in features/shell).
  */
 export default async function ProjectPage({
   params,
@@ -27,20 +28,21 @@ export default async function ProjectPage({
   const webgl = (await searchParams).webgl !== undefined;
   const archived = !!project.archivedAt;
 
+  const people = await listMentionableMembers(db(), actor);
+
   return (
-    <div className="flex h-dvh flex-col">
-      <header className="flex items-center gap-4 border-b px-4 py-2 text-sm">
-        <Link href={`/w/${slug}`}>All projects</Link>
-        <span className="font-medium">{project.name}</span>
-        {archived && <span className="text-xs opacity-60">Archived (read-only)</span>}
-      </header>
-      <EditorEmbed
-        projectId={project.id}
-        author={author}
-        canEdit={can(actor.role, 'design:edit') && !archived}
-        webgl={webgl}
-      />
-    </div>
+    <ProjectShell
+      slug={slug}
+      project={{ id: project.id, name: project.name, archived }}
+      fileName={documentName(project.name)}
+      people={people.map((p) => ({ userId: p.userId, name: p.name ?? p.email, imageUrl: p.imageUrl }))}
+      meId={actor.userId}
+      canShare={can(actor.role, 'share:manage')}
+      canComment={can(actor.role, 'design:comment') && !archived}
+      author={author}
+      canEdit={can(actor.role, 'design:edit') && !archived}
+      webgl={webgl}
+    />
   );
 }
 

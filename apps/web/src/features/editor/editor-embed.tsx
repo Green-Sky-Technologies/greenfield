@@ -1,32 +1,49 @@
 'use client';
 
 /**
- * The embedded editor: host side of FigCraft's `?host=parent` protocol (craft-web-host v1).
+ * The embedded editor (FigCraft, served from /editor/), driven through `@greenfield/bridge`:
  *
- *   ready  (app -> host)  load the project's document from storage and send `open`
- *   open   (host -> app)  { name, bytes } (ArrayBuffer, transferred)
- *   dirty  (app -> host)  { dirty } -> the indicator in the bar
- *   save   (app -> host)  { name, bytes, saveAs, id? } -> PUT to storage; `saved { id }` back
- *   failed (app -> host)  { error }
+ *   ready  load the project's document from storage and `open` it
+ *   dirty  the indicator in the bar
+ *   save   PUT the document to storage (the bridge acks `figcraft:saved {id}` when it settles)
+ *   failed show the error
  *
- * Only messages from the iframe's own window on our own origin are accepted. Bytes are never
- * logged. The status element's data-* attributes are what the Playwright spec reads.
- *
- * Promoted from the Story 0.1 spike (Story 1.2). Story 1.3 moves the protocol into
- * `packages/bridge`; until then this is the only code that talks to the editor.
+ * Bytes are never logged. The status element's data-* attributes are what the Playwright specs
+ * read. The shell (features/shell) gets the bridge through `onEditor`.
  */
+import { createBridge, type Editor } from '@greenfield/bridge';
 import { useEffect, useRef, useState } from 'react';
 
 type Status = 'loading' | 'ready' | 'opened' | 'empty' | 'saving' | 'saved' | 'error';
+
+/** The bridge and the iframe it drives, for the shell (focus, keys, zoom). */
+export interface EditorHandle {
+  editor: Editor;
+  iframe: HTMLIFrameElement;
+}
+
+declare global {
+  interface Window {
+    /** Dev and test builds only: lets `@greenfield/bridge/playwright` drive this page's editor. */
+    __greenfieldBridge?: EditorHandle;
+  }
+}
+
+/**
+ * FigCraft's file tab strip (home, file tabs, new tab, theme) is this tall. Until the fork can hide
+ * it (Story 2.6), the iframe is pulled up under the app's top bar so the strip is covered.
+ */
+const EDITOR_TAB_STRIP_PX = 40;
 
 interface Props {
   projectId: string;
   author: string;
   canEdit: boolean;
   webgl?: boolean;
+  onEditor?: (handle: EditorHandle | null) => void;
 }
 
-export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
+export function EditorEmbed({ projectId, author, canEdit, webgl, onEditor }: Props) {
   const iframe = useRef<HTMLIFrameElement>(null);
   const [status, setStatus] = useState<Status>('loading');
   const [dirty, setDirty] = useState(false);
@@ -38,23 +55,27 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
   const [storage, setStorage] = useState<string | null>(null);
   const [lastSave, setLastSave] = useState<string>('');
   const dirtyRef = useRef(false);
-
-  const src =
-    `/editor/index.html?host=parent&control&author=${encodeURIComponent(author)}` +
-    (webgl ? '&webgl' : '');
+  const onEditorRef = useRef(onEditor);
+  useEffect(() => {
+    onEditorRef.current = onEditor;
+  });
 
   useEffect(() => {
+    const frame = iframe.current;
+    if (!frame) return;
     const started = performance.now();
     let docName: string | null = null; // the name the editor knows the document by
     const api = `/api/projects/${encodeURIComponent(projectId)}/file`;
-    const post = (msg: unknown, transfer: Transferable[] = []) =>
-      iframe.current?.contentWindow?.postMessage(msg, window.location.origin, transfer);
+    // Sets the iframe's src once it listens: `ready` is posted once and never repeated.
+    const editor = createBridge({ iframe: frame, author, query: webgl ? { webgl: true } : {} });
+    const handle = { editor, iframe: frame };
+    if (process.env.NODE_ENV !== 'production') window.__greenfieldBridge = handle;
+    onEditorRef.current?.(handle);
 
     async function openFromStorage() {
       const r = await fetch(api, { cache: 'no-store' });
       setStorage(r.headers.get('x-storage'));
       if (r.status === 204) {
-        // Nothing saved yet: start a new document so there is something to edit.
         setStatus('empty');
         return;
       }
@@ -62,39 +83,8 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
       const name = decodeURIComponent(r.headers.get('x-file-name') ?? 'Untitled.figcraft');
       const bytes = await r.arrayBuffer();
       docName = name;
-      post({ type: 'figcraft:open', name, bytes }, [bytes]);
+      editor.open(name, bytes);
       setStatus('opened');
-    }
-
-    async function store(msg: {
-      name: string;
-      bytes: ArrayBuffer;
-      saveAs?: boolean;
-      id?: unknown;
-    }) {
-      // Store the document itself; exports (images, PDF, .fig copies) are Epic 7.
-      const isDocument =
-        msg.name === docName || (msg.saveAs === true && /\.figcraft$/i.test(msg.name));
-      setLastSave(
-        `${msg.name} saveAs=${String(msg.saveAs)} id=${msg.id === undefined ? '-' : 'yes'}`,
-      );
-      if (!isDocument || !canEdit) return;
-      const t0 = performance.now();
-      setStatus('saving');
-      const r = await fetch(api, {
-        method: 'PUT',
-        headers: { 'content-type': 'application/octet-stream' },
-        body: msg.bytes,
-      });
-      if (!r.ok) throw new Error(`Save failed (${r.status})`);
-      const body = (await r.json()) as { size: number; storage: string };
-      docName = msg.name;
-      if (msg.id !== undefined) post({ type: 'figcraft:saved', id: msg.id });
-      setLastSaveMs(Math.round(performance.now() - t0));
-      setLastSize(body.size);
-      setStorage(body.storage);
-      setSaves((n) => n + 1);
-      setStatus('saved');
     }
 
     const fail = (e: unknown) => {
@@ -102,48 +92,57 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
       setStatus('error');
     };
 
-    function onMessage(event: MessageEvent) {
-      if (event.origin !== window.location.origin) return;
-      if (!iframe.current || event.source !== iframe.current.contentWindow) return;
-      const msg = event.data as { type?: unknown } | null;
-      if (!msg || typeof msg !== 'object' || typeof msg.type !== 'string') return;
-      switch (msg.type) {
-        case 'figcraft:ready':
-          setReadyMs(Math.round(performance.now() - started));
-          setStatus('ready');
-          openFromStorage().catch(fail);
-          break;
-        case 'figcraft:dirty': {
-          const d = (msg as { dirty?: unknown }).dirty === true;
-          dirtyRef.current = d;
-          setDirty(d);
-          break;
+    const offs = [
+      editor.onReady(() => {
+        setReadyMs(Math.round(performance.now() - started));
+        setStatus('ready');
+        openFromStorage().catch(fail);
+      }),
+      editor.onDirty((d) => {
+        dirtyRef.current = d;
+        setDirty(d);
+      }),
+      editor.onSave(async ({ name, bytes, saveAs, id }) => {
+        // Store the document itself; exports (images, PDF, .fig copies) are Epic 7.
+        const isDocument = name === docName || (saveAs && /\.figcraft$/i.test(name));
+        setLastSave(`${name} saveAs=${String(saveAs)} id=${id === undefined ? '-' : 'yes'}`);
+        if (!isDocument || !canEdit) return;
+        const t0 = performance.now();
+        setStatus('saving');
+        try {
+          const r = await fetch(api, {
+            method: 'PUT',
+            headers: { 'content-type': 'application/octet-stream' },
+            body: bytes as Uint8Array<ArrayBuffer>,
+          });
+          if (!r.ok) throw new Error(`Save failed (${r.status})`);
+          const body = (await r.json()) as { size: number; storage: string };
+          docName = name;
+          setLastSaveMs(Math.round(performance.now() - t0));
+          setLastSize(body.size);
+          setStorage(body.storage);
+          setSaves((n) => n + 1);
+          setStatus('saved');
+        } catch (e) {
+          fail(e);
+          throw e; // no `figcraft:saved` for a save that didn't land
         }
-        case 'figcraft:save': {
-          const m = msg as { name?: unknown; bytes?: unknown; saveAs?: unknown; id?: unknown };
-          if (typeof m.name !== 'string' || !(m.bytes instanceof ArrayBuffer)) return;
-          store({ name: m.name, bytes: m.bytes, saveAs: m.saveAs === true, id: m.id }).catch(fail);
-          break;
-        }
-        case 'figcraft:failed':
-          fail(new Error(`Editor failed: ${String((msg as { error?: unknown }).error)}`));
-          break;
-      }
-    }
+      }),
+      editor.onFailed((e) => fail(new Error(`Editor failed: ${e}`))),
+    ];
 
     function onBeforeUnload(e: BeforeUnloadEvent) {
       if (dirtyRef.current) e.preventDefault();
     }
-
-    window.addEventListener('message', onMessage);
     window.addEventListener('beforeunload', onBeforeUnload);
-    // Load the editor only once we're listening: `ready` is posted once and never repeated.
-    if (iframe.current) iframe.current.src = src;
     return () => {
-      window.removeEventListener('message', onMessage);
+      for (const off of offs) off();
       window.removeEventListener('beforeunload', onBeforeUnload);
+      onEditorRef.current?.(null);
+      if (window.__greenfieldBridge === handle) delete window.__greenfieldBridge;
+      editor.dispose();
     };
-  }, [projectId, canEdit, src]);
+  }, [projectId, canEdit, author, webgl]);
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -164,12 +163,15 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
         {storage && <span className="opacity-60">storage: {storage}</span>}
         {error && <span role="alert">{error}</span>}
       </div>
-      <iframe
-        ref={iframe}
-        title="Editor"
-        className="min-h-0 w-full flex-1 border-0"
-        allow="fullscreen; clipboard-read; clipboard-write"
-      />
+      <div className="relative min-h-0 flex-1 overflow-hidden">
+        <iframe
+          ref={iframe}
+          title="Design canvas"
+          className="absolute inset-x-0 bottom-0 w-full border-0"
+          style={{ top: -EDITOR_TAB_STRIP_PX, height: `calc(100% + ${EDITOR_TAB_STRIP_PX}px)` }}
+          allow="fullscreen; clipboard-read; clipboard-write"
+        />
+      </div>
     </div>
   );
 }

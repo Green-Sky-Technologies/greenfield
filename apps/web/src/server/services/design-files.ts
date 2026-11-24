@@ -87,7 +87,8 @@ const keyFor = (workspaceId: string, projectId: string) =>
   `design-files/${workspaceId}/${projectId}/document.figcraft`;
 
 /** The name the host gives the document when it opens it in the editor. */
-function documentName(projectName: string): string {
+/** The file name a project's document is opened and saved under. */
+export function documentName(projectName: string): string {
   const base = projectName.replace(/[\\/:*?"<>|\u0000-\u001f]/g, ' ').trim() || 'Untitled';
   return `${base.slice(0, 120)}.figcraft`;
 }
