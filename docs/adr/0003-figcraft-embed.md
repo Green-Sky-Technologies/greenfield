@@ -157,7 +157,15 @@ craft-fonts at upstream's CI ref `37827adc`, `KEEP_WINIT_FORK=1`, plus our theme
 
 So a build with fonts can't meet the AC as written. See SPEC change 1.
 
-**Inputs:** `build.sh` drops the pinned `storytold/winit` fork. It isn't used on the web.
+**Story 2.9 (2026-11-24):** the build now uses craft-fonts and the winit fork at their pins, and
+pins the image digest, wasm-bindgen 0.2.129 and binaryen 131. The size gate is 25 MiB raw (D26) and
+runs in `build.sh` on every build. Two clean container builds with fonts and our patches came out
+byte-identical: **25,477,866 B (24.30 MiB)**, sha256 `40d5d690…c92461eb8`, 0.70 MiB under the gate.
+The 24.39 MiB above used wasm-opt 133; binaryen 131 gives 24.30 MiB. Details in
+`spikes/0.2-fork-build/FINDINGS.md`.
+
+**Inputs (spike):** `build.sh` dropped the pinned `storytold/winit` fork. It isn't used on the
+web. Story 2.9 restored it.
 
 **Theme change:** the selection colour moved green → pink with an 8-line patch to
 `crates/ui-egui/src/theme.rs`. It shows standalone and embedded. `ui.render` leaves out the
