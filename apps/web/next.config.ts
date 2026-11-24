@@ -18,6 +18,7 @@ const nextConfig: NextConfig = {
     '@greenfield/sandbox-runner',
     '@greenfield/handoff',
     '@greenfield/figma-convert',
+    '@greenfield/bridge',
   ],
   serverExternalPackages: ['pg'],
   // Story 0.1 spike: the FigCraft web release in public/editor (spikes/0.1-embed/fetch-editor.mjs).
