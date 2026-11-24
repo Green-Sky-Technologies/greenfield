@@ -38,6 +38,7 @@ export default async function ProjectPage({
         projectId={project.id}
         author={author}
         canEdit={can(actor.role, 'design:edit') && !archived}
+        canExport={can(actor.role, 'export:deterministic')}
         webgl={webgl}
       />
     </div>

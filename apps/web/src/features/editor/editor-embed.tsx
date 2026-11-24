@@ -16,6 +16,8 @@
  * `packages/bridge`; until then this is the only code that talks to the editor.
  */
 import { useEffect, useRef, useState } from 'react';
+import { ExportMenu } from '@/features/export/export-menu';
+import { iframeControl } from '@/features/export/iframe-control';
 
 type Status = 'loading' | 'ready' | 'opened' | 'empty' | 'saving' | 'saved' | 'error';
 
@@ -23,11 +25,13 @@ interface Props {
   projectId: string;
   author: string;
   canEdit: boolean;
+  canExport: boolean;
   webgl?: boolean;
 }
 
-export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
+export function EditorEmbed({ projectId, author, canEdit, canExport, webgl }: Props) {
   const iframe = useRef<HTMLIFrameElement>(null);
+  const [control, setControl] = useState<ReturnType<typeof iframeControl> | null>(null);
   const [status, setStatus] = useState<Status>('loading');
   const [dirty, setDirty] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,6 +115,7 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
         case 'figcraft:ready':
           setReadyMs(Math.round(performance.now() - started));
           setStatus('ready');
+          setControl(iframeControl(iframe.current));
           openFromStorage().catch(fail);
           break;
         case 'figcraft:dirty': {
@@ -163,6 +168,11 @@ export function EditorEmbed({ projectId, author, canEdit, webgl }: Props) {
         <span className="opacity-60">{status}</span>
         {storage && <span className="opacity-60">storage: {storage}</span>}
         {error && <span role="alert">{error}</span>}
+        {canExport && control && (
+          <div className="ml-auto">
+            <ExportMenu editor={control} />
+          </div>
+        )}
       </div>
       <iframe
         ref={iframe}
