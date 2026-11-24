@@ -58,7 +58,10 @@ jobs:
       - run: pnpm --filter @greenfield/bridge exec playwright install --with-deps chromium firefox webkit
       - name: Generated command types match the pinned editor
         run: pnpm --filter @greenfield/bridge check:commands
-      - run: pnpm --filter @greenfield/bridge e2e
+      # Firefox is left out on CI: headless Firefox on GPU-less Linux runners gets no WebGL2, so
+      # the editor can't create a surface (forcing webgl prefs didn't help). Run it locally:
+      #   pnpm --filter @greenfield/bridge e2e --project firefox
+      - run: pnpm --filter @greenfield/bridge e2e --project chromium --project webkit
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
