@@ -5,6 +5,7 @@ import { NextResponse } from 'next/server';
 import { getActor } from './context';
 import {
   AgentUnavailableError,
+  ConflictError,
   NotFoundError,
   ValidationError,
   type Actor,
@@ -31,6 +32,8 @@ export function apiError(err: unknown): NextResponse {
     );
   if (err instanceof NotFoundError)
     return NextResponse.json({ error: 'not_found', message: err.message }, { status: 404 });
+  if (err instanceof ConflictError)
+    return NextResponse.json({ error: 'conflict', message: err.message }, { status: 409 });
   if (err instanceof AgentUnavailableError)
     return NextResponse.json({ error: 'agent_unavailable', message: err.message }, { status: 503 });
   if (err instanceof ValidationError)
