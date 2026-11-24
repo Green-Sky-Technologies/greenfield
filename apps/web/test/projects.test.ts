@@ -20,7 +20,6 @@ describe('projects', () => {
     const editor = await makeActor(db, 'editor');
     const p = await createProject(db, editor, { name: '  Landing page ' });
     expect(p.name).toBe('Landing page');
-    expect(p.designSystemId).toBeTruthy();
 
     await renameProject(db, editor, p.id, 'Marketing site');
     const copy = await duplicateProject(db, editor, p.id);
@@ -67,15 +66,5 @@ describe('projects', () => {
     await expect(createProject(db, editor, { name: 'x'.repeat(121) })).rejects.toBeInstanceOf(
       ValidationError,
     );
-  });
-});
-
-describe('design-system pinning (Story 4.2 integration)', () => {
-  it('new projects pin the latest published version, and duplicates keep their pin', async () => {
-    const editor = await makeActor(db, 'editor');
-    const p = await createProject(db, editor, { name: 'Pinned' });
-    expect(p.designSystemVersionId).toBeTruthy();
-    const copy = await duplicateProject(db, editor, p.id);
-    expect(copy.designSystemVersionId).toBe(p.designSystemVersionId);
   });
 });

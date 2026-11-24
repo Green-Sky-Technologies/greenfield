@@ -40,7 +40,7 @@ import { z } from 'zod';
 import { revokeJobTokens, verifyJobToken, JobTokenError } from './agent/job-tokens';
 import { settleStaleMessages } from './agent/stale';
 import { getProject } from './projects';
-import { NotFoundError, ValidationError, type Actor } from './types';
+import { AgentUnavailableError, NotFoundError, ValidationError, type Actor } from './types';
 
 export const DEFAULT_JOB_TIMEOUT_SECONDS = 30 * 60;
 export const DEFAULT_MAX_ATTEMPTS = 2;
@@ -207,15 +207,6 @@ async function transition(
   });
 }
 
-/** Whether a job's agent has already committed document changes (a retry would duplicate them). */
-export async function jobHasCommitted(db: Db, jobId: string): Promise<boolean> {
-  const rows = await db
-    .select({ n: sql<number>`coalesce(cardinality(${agentMessages.txnIds}), 0)::int` })
-    .from(agentMessages)
-    .where(eq(agentMessages.jobId, jobId));
-  return rows.some((r) => r.n > 0);
-}
-
 // ---------------------------------------------------------------------------------------------
 // Create / start / cancel
 // ---------------------------------------------------------------------------------------------
@@ -340,7 +331,7 @@ export async function startJob(db: Db, jobId: string, deps: JobDeps): Promise<Jo
     const message =
       e instanceof Error ? `${e.name}: ${e.message}`.slice(0, 300) : 'Failed to start';
     const max = deps.maxAttempts ?? DEFAULT_MAX_ATTEMPTS;
-    if (claimed.attempts < max) {
+    if (claimed.attempts < max && !(e instanceof AgentUnavailableError)) {
       await appendJobEvent(db, jobId, 'log', { text: `Start failed, will retry: ${message}` });
       return transition(db, jobId, ['provisioning'], 'queued');
     }
@@ -512,10 +503,10 @@ export async function reapJobs(db: Db, deps: JobDeps): Promise<ReapSummary> {
       if (!stale && alive) continue;
       if (alive && job.sandboxId) await deps.runner.cancel(job.id, job.sandboxId).catch(() => {});
     }
-    // Lost. Retry from scratch only if nothing was committed yet, so a retry can't duplicate
-    // frames (or the spend that produced them).
-    const committed = await jobHasCommitted(db, job.id);
-    if (job.attempts < max && !committed) {
+    // Lost: retry from scratch. (The HTML model's jobs committed straight into the live document,
+    // so a retry could duplicate frames; Story 4.5's jobs work on a copy of the file and only
+    // land as a new version, so there is nothing to duplicate.)
+    if (job.attempts < max) {
       const requeued = await transition(
         db,
         job.id,
@@ -532,9 +523,8 @@ export async function reapJobs(db: Db, deps: JobDeps): Promise<ReapSummary> {
       }
     } else {
       const failed = await transition(db, job.id, [job.status], 'failed', {
-        error: committed
-          ? 'The job stopped after making changes, so it was not retried. Revert or start it again.'
-          : job.status === 'provisioning'
+        error:
+          job.status === 'provisioning'
             ? 'The job sandbox did not start in time'
             : 'The job sandbox stopped unexpectedly',
         finishedAt: now,

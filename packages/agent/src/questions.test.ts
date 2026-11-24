@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import type Anthropic from '@anthropic-ai/sdk';
-import { sampleLandingDoc, starterDesignSystem } from '@greenfield/doc-model';
 import {
   ASK_QUESTIONS_TOOL,
   AnswerError,
@@ -8,14 +7,18 @@ import {
   askQuestionsInput,
   buildPrefix,
   formatAnswersForModel,
-  memoryHost,
+  type ToolHost,
   runAgentTurn,
   validateAnswers,
   type QuestionSet,
 } from './index';
 import { scriptedGateway, text, toolUse } from './evals/scripted';
 
-const ds = starterDesignSystem();
+// No tools are registered until Epic 4; the loop still has to handle calls to them.
+const host: ToolHost = {
+  runtime: 'interactive',
+  run: () => Promise.reject(new Error('no tools')),
+};
 
 const set: QuestionSet = {
   intro: 'A couple of things before I design it.',
@@ -95,10 +98,10 @@ describe('ask_questions input', () => {
   });
 
   it('is in the interactive prefix only, with a JSON schema', () => {
-    const tool = buildPrefix('interactive', ds).tools.find((t) => t.name === ASK_QUESTIONS_TOOL);
+    const tool = buildPrefix('interactive').tools.find((t) => t.name === ASK_QUESTIONS_TOOL);
     expect(tool?.input_schema).toMatchObject({ type: 'object', required: ['questions'] });
-    expect(buildPrefix('interactive', ds).system[0]!.text).toContain('ALWAYS ask first');
-    expect(buildPrefix('job', ds).tools.map((t) => t.name)).not.toContain(ASK_QUESTIONS_TOOL);
+    expect(buildPrefix('interactive').system[0]!.text).toContain(ASK_QUESTIONS_TOOL);
+    expect(buildPrefix('job').tools.map((t) => t.name)).not.toContain(ASK_QUESTIONS_TOOL);
   });
 });
 
@@ -166,7 +169,6 @@ describe('answers', () => {
 
 describe('ask_questions in a turn', () => {
   it('ends the turn with the question set pending (no tool_result yet)', async () => {
-    const host = memoryHost(sampleLandingDoc(), ds);
     const { gateway, requests } = scriptedGateway([
       {
         content: [
@@ -180,7 +182,7 @@ describe('ask_questions in a turn', () => {
     const res = await runAgentTurn({
       gateway,
       model: 'm',
-      prefix: buildPrefix('interactive', ds),
+      prefix: buildPrefix('interactive'),
       history: [],
       userTurn: userTurn('Design a pricing page'),
       host,
@@ -194,7 +196,6 @@ describe('ask_questions in a turn', () => {
   });
 
   it('returns an error result for invalid input and keeps going', async () => {
-    const host = memoryHost(sampleLandingDoc(), ds);
     const { gateway, requests } = scriptedGateway([
       { content: [toolUse('tu_q', ASK_QUESTIONS_TOOL, { questions: [] })] },
       { content: [text('Making it anyway.')] },
@@ -202,7 +203,7 @@ describe('ask_questions in a turn', () => {
     const res = await runAgentTurn({
       gateway,
       model: 'm',
-      prefix: buildPrefix('interactive', ds),
+      prefix: buildPrefix('interactive'),
       history: [],
       userTurn: userTurn('x'),
       host,
@@ -214,7 +215,6 @@ describe('ask_questions in a turn', () => {
   });
 
   it('refuses questions where they are not allowed (scoped edits)', async () => {
-    const host = memoryHost(sampleLandingDoc(), ds);
     const { gateway, requests } = scriptedGateway([
       { content: [toolUse('tu_q', ASK_QUESTIONS_TOOL, set)] },
       { content: [text('ok')] },
@@ -222,7 +222,7 @@ describe('ask_questions in a turn', () => {
     const res = await runAgentTurn({
       gateway,
       model: 'm',
-      prefix: buildPrefix('interactive', ds),
+      prefix: buildPrefix('interactive'),
       history: [],
       userTurn: userTurn('x'),
       host,

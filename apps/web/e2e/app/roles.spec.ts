@@ -1,78 +1,21 @@
 /**
- * Scenario 2, roles (SPEC §3): a viewer gets a read-only editor but can still run a
- * deterministic export, and is kept out of admin settings; an editor doesn't see Model access.
+ * Scenario 2, roles (SPEC §3): a viewer can open a project but the server refuses their saves,
+ * and they're kept out of admin settings; an editor doesn't see Model access.
  */
-import { readFile } from 'node:fs/promises';
-import {
-  clickNode,
-  createProject,
-  insertSample,
-  node,
-  openProject,
-  SAMPLE,
-  stableBox,
-  uniqueName,
-} from './support/app';
+import { createProject, openProject, pageFetch, uniqueName } from './support/app';
 import { expect, test } from './support/fixtures';
 
-test('a viewer sees the project read-only and can export HTML', async ({ as, run }) => {
+test('a viewer opens the project but cannot save it', async ({ as, run }) => {
   const editor = await as('editor');
   const projectId = await createProject(editor, run.org.slug, uniqueName('Roles'));
-  await insertSample(editor);
+  const file = `/api/projects/${projectId}/file`;
+  expect((await pageFetch(editor, file, { method: 'PUT', bytes: [1, 2] })).status).toBe(200);
 
   const page = await as('viewer');
   await openProject(page, run.org.slug, projectId);
-  const lock = page.getByTestId('edit-lock');
-  await expect(lock.getByText('View only')).toBeVisible();
-  // Viewers still heartbeat presence: the editor shows up in their avatar list, and nothing is
-  // reported offline.
-  await expect(lock.getByRole('listitem')).toHaveCount(2);
-  await expect(lock.getByText('· offline')).toHaveCount(0);
-  await expect(node(page, SAMPLE.headline)).toHaveText(SAMPLE.headlineText);
-  await expect(page.getByRole('button', { name: 'Insert a sample design' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: '+ Frame' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Share' })).toHaveCount(0);
-  await expect(
-    page.getByText('You have view access. Ask an editor to make changes.'),
-  ).toBeVisible();
-
-  // No Edit mode: clicking selects nothing and text can't be edited.
-  await expect(page.getByRole('radio', { name: 'Edit' })).toHaveCount(0);
-  await page.keyboard.press('e');
-  await expect(page.getByRole('radio', { name: 'View' })).toHaveAttribute('aria-checked', 'true');
-  await clickNode(page, SAMPLE.headline);
-  await expect(page.locator('[data-handle]')).toHaveCount(0);
-  const b = await stableBox(node(page, SAMPLE.headline));
-  await page.mouse.dblclick(b.x + 20, b.y + 10);
-  await expect(page.locator(`[data-cd-id="${SAMPLE.headline}"][contenteditable]`)).toHaveCount(0);
-
-  // No comment composer.
-  await page.getByRole('button', { name: /^Comments/ }).click();
-  await expect(
-    page.getByText('You have view-only access, so you can read comments but not add them.'),
-  ).toBeVisible();
-  await expect(page.getByPlaceholder('Add a comment… use @ to mention')).toHaveCount(0);
-
-  // Deterministic export is allowed for viewers.
-  await page.getByRole('button', { name: 'Export' }).click();
-  const [download] = await Promise.all([
-    page.waitForEvent('download'),
-    page.getByRole('menuitem', { name: /HTML page/ }).click(),
-  ]);
-  expect(download.suggestedFilename()).toMatch(/\.html$/);
-  const html = await readFile((await download.path())!, 'utf8');
-  expect(html).toContain(SAMPLE.headlineText);
-
-  // The server enforces the role too: a doc write from the viewer's session is forbidden.
-  const res = await page.evaluate(async (id) => {
-    const r = await fetch(`/api/projects/${id}/doc`, {
-      method: 'POST',
-      headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ baseVersion: 0, txn: { ops: [] } }),
-    });
-    return r.status;
-  }, projectId);
-  expect(res).toBe(403);
+  expect((await pageFetch(page, file)).status).toBe(200);
+  // The server enforces the role: a save from the viewer's session is forbidden.
+  expect((await pageFetch(page, file, { method: 'PUT', bytes: [9] })).status).toBe(403);
 });
 
 test('a viewer is redirected away from admin settings', async ({ as, run }) => {
@@ -92,15 +35,6 @@ test('a viewer is redirected away from admin settings', async ({ as, run }) => {
   await expect(settings.getByRole('link', { name: 'Members' })).toBeVisible();
   await expect(settings.getByRole('link', { name: 'Model access' })).toHaveCount(0);
   await expect(settings.getByRole('link', { name: 'Usage' })).toHaveCount(0);
-  await expect(settings.getByRole('link', { name: 'Figma' })).toHaveCount(0);
-  // The design-system editor is locked for viewers.
-  await page.goto(`/w/${run.org.slug}/design-systems`);
-  await expect(page.getByRole('heading', { name: 'Design systems' })).toBeVisible();
-  await page.getByRole('listitem').filter({ hasText: 'Default' }).getByRole('link').first().click();
-  await expect(page.getByRole('tab', { name: 'Tokens' })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Save draft' })).toHaveCount(0);
-  await expect(page.getByRole('button', { name: 'Publish…' })).toHaveCount(0);
-  await expect(page.getByLabel('color.text value', { exact: true })).toBeDisabled();
 });
 
 test('an editor has no Model access and is redirected from it', async ({ as, run }) => {
@@ -113,7 +47,6 @@ test('an editor has no Model access and is redirected from it', async ({ as, run
   await expect(header.getByRole('link', { name: 'Settings' })).toBeVisible();
   await page.goto(`/w/${run.org.slug}/settings/members`);
   const settings = page.getByRole('navigation', { name: 'Settings' });
-  await expect(settings.getByRole('link', { name: 'Figma' })).toBeVisible();
   await expect(settings.getByRole('link', { name: 'Model access' })).toHaveCount(0);
   await expect(settings.getByRole('link', { name: 'Usage' })).toHaveCount(0);
   await page.goto(`/w/${run.org.slug}/settings/credentials`);
@@ -123,7 +56,7 @@ test('an editor has no Model access and is redirected from it', async ({ as, run
   await admin.goto(`/w/${run.org.slug}`);
   await admin.getByRole('banner').getByRole('link', { name: 'Settings' }).click();
   const adminSettings = admin.getByRole('navigation', { name: 'Settings' });
-  for (const name of ['Members', 'Figma', 'Model access', 'Usage']) {
+  for (const name of ['Members', 'Model access', 'Usage']) {
     await expect(adminSettings.getByRole('link', { name })).toBeVisible();
   }
   await adminSettings.getByRole('link', { name: 'Model access' }).click();

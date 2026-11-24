@@ -1,7 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
 import { activity, agentConversations, eq, notifications, projects } from '@greenfield/db';
-import { newId, type DocOp } from '@greenfield/doc-model';
 import {
   createThread,
   linkAgentConversation,
@@ -13,7 +12,6 @@ import {
   setThreadStatus,
   updateThreadFallback,
 } from '@/server/services/comments';
-import { commitTransaction, getDoc } from '@/server/services/design-docs';
 import { createProject } from '@/server/services/projects';
 import { NotFoundError, ValidationError, type Actor } from '@/server/services/types';
 import { upsertMember } from '@/server/services/workspaces';
@@ -23,42 +21,17 @@ const { db, close } = testDb();
 afterAll(close);
 beforeEach(() => reset(db));
 
-const box = (id: string, parentId: string) => ({
-  id,
-  type: 'box' as const,
-  tag: 'div' as const,
-  parentId,
-  children: [],
-  positioning: 'flow' as const,
-  style: {},
-  props: {},
-});
-
-async function commit(actor: Actor, projectId: string, ops: DocOp[]) {
-  const { version } = await getDoc(db, actor, projectId);
-  return commitTransaction(db, actor, projectId, {
-    baseVersion: version,
-    txn: { id: `t_${newId('s').slice(2)}`, source: 'canvas', ops },
-  });
-}
-
 async function setup() {
   const editor = await makeActor(db, 'editor');
   await upsertMember(db, editor.workspace.id, editor.userId, 'editor');
   const viewer = await makeActor(db, 'viewer', editor.workspace);
   await upsertMember(db, editor.workspace.id, viewer.userId, 'viewer');
   const project = await createProject(db, editor, { name: 'P' });
-  const { doc } = await getDoc(db, editor, project.id);
-  const frame = doc.frames[0]!;
-  const rootId = frame.rootNodeId;
-  await commit(editor, project.id, [
-    { op: 'insertSubtree', parentId: rootId, index: 0, nodes: [box('n_cardA00001', rootId)] },
-    { op: 'insertSubtree', parentId: rootId, index: 1, nodes: [box('n_cardB00001', rootId)] },
-  ]);
-  return { editor, viewer, project, frameId: frame.id, rootId };
+  // Node and frame ids are the editor's; the server stores them as given.
+  return { editor, viewer, project, frameId: '0:1' };
 }
 
-const nodeAnchor = (frameId: string, nodeId = 'n_cardA00001') => ({
+const nodeAnchor = (frameId: string, nodeId = '0:7') => ({
   type: 'node' as const,
   frameId,
   nodeId,
@@ -75,78 +48,12 @@ describe('comment threads', () => {
     });
     expect(t.status).toBe('open');
     expect(t.kind).toBe('discussion');
-    expect(t.orphaned).toBe(false);
     expect(t.fallback).toEqual({ x: 40, y: 60 });
     expect(t.comments.map((c) => c.body)).toEqual(['Make this pop']);
 
     const list = await listThreads(db, editor, project.id);
     expect(list).toHaveLength(1);
     expect(list[0]!.id).toBe(t.id);
-  });
-
-  it('survives node moves and becomes orphaned (but visible) when the node is deleted', async () => {
-    const { editor, project, frameId, rootId } = await setup();
-    const t = await createThread(db, editor, {
-      projectId: project.id,
-      anchor: nodeAnchor(frameId),
-      body: 'Pinned',
-    });
-    // Move card A into card B: the anchor follows the stable node id.
-    await commit(editor, project.id, [
-      { op: 'moveNode', id: 'n_cardA00001', parentId: 'n_cardB00001', index: 0 },
-    ]);
-    let [after] = await listThreads(db, editor, project.id);
-    expect(after!.orphaned).toBe(false);
-    expect(after!.anchor).toEqual(nodeAnchor(frameId));
-
-    // Delete it: the thread stays, flagged orphaned, with its fallback position.
-    await commit(editor, project.id, [{ op: 'removeNode', id: 'n_cardB00001' }]);
-    [after] = await listThreads(db, editor, project.id);
-    expect(after!.id).toBe(t.id);
-    expect(after!.orphaned).toBe(true);
-    expect(after!.fallback).not.toBeNull();
-    expect(after!.comments).toHaveLength(1);
-    void rootId;
-  });
-
-  it('keeps a thread live when its node moves to another frame', async () => {
-    const { editor, project, frameId } = await setup();
-    const t = await createThread(db, editor, {
-      projectId: project.id,
-      anchor: nodeAnchor(frameId),
-      body: 'Follow me',
-    });
-    expect(t.currentFrameId).toBe(frameId);
-    const mobileRoot = 'n_mobroot0001';
-    await commit(editor, project.id, [
-      {
-        op: 'insertFrame',
-        index: 1,
-        frame: {
-          id: 'f_mobile00001',
-          name: 'Mobile',
-          rootNodeId: mobileRoot,
-          canvas: { x: 1400, y: 0 },
-          width: 390,
-          height: 800,
-          previewBreakpoints: [],
-        },
-        nodes: [{ ...box(mobileRoot, 'n_cardA00001'), parentId: null }],
-      },
-      { op: 'moveNode', id: 'n_cardA00001', parentId: mobileRoot, index: 0 },
-    ]);
-    const [after] = await listThreads(db, editor, project.id);
-    expect(after!.orphaned).toBe(false);
-    expect(after!.currentFrameId).toBe('f_mobile00001');
-
-    // A stale client frame id is corrected to the node's real frame on create.
-    const created = await createThread(db, editor, {
-      projectId: project.id,
-      anchor: nodeAnchor(frameId), // card A is no longer in this frame
-      body: 'Stale frame id',
-    });
-    expect(created.anchor).toMatchObject({ frameId: 'f_mobile00001' });
-    expect(created.orphaned).toBe(false);
   });
 
   it('supports canvas-position threads, replies, resolve and reopen', async () => {
@@ -181,12 +88,12 @@ describe('comment threads', () => {
     );
   });
 
-  it('rejects anchors to unknown nodes and empty bodies', async () => {
+  it('rejects malformed anchors and empty bodies', async () => {
     const { editor, project, frameId } = await setup();
     await expect(
       createThread(db, editor, {
         projectId: project.id,
-        anchor: nodeAnchor(frameId, 'n_missing0001'),
+        anchor: nodeAnchor(frameId, ''),
         body: 'x',
       }),
     ).rejects.toBeInstanceOf(ValidationError);

@@ -1,5 +1,5 @@
 /**
- * GET /s/:token — share viewer (Story 6.3).
+ * GET /s/:token — share viewer (Story 6.3). Valid links show a notice until Epic 3 adds a viewer.
  * Public links render without auth; workspace links require a signed-in member of the link's
  * workspace. Every failure returns the same 404 page. Rate-limited per client IP (per token
  * when no IP is available; see the deployment note in services/share-links.ts); noindex.
@@ -10,7 +10,7 @@ import { getActor } from '@/server/context';
 import { resolveShareToken, shareRateKey, shareViewLimiter } from '@/server/services/share-links';
 import type { Actor } from '@/server/services/types';
 import { NotFoundError } from '@/server/services/types';
-import { renderShareError, renderSharePage, shareHeaders } from './share-html';
+import { renderShareError, renderSharePending, shareHeaders } from './share-html';
 
 export const dynamic = 'force-dynamic';
 
@@ -31,8 +31,9 @@ export async function GET(req: NextRequest, ctx: RouteContext<'/s/[token]'>) {
   }
 
   try {
-    const shared = await resolveShareToken(getDb(), token, viewer);
-    return new Response(renderSharePage(shared.doc, shared.designSystem, shared.frameIds), {
+    await resolveShareToken(getDb(), token, viewer);
+    // The link is valid; there is no viewer for FigCraft files yet (see renderSharePending).
+    return new Response(renderSharePending(), {
       status: 200,
       headers: shareHeaders(),
     });

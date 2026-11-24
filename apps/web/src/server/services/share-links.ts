@@ -7,8 +7,9 @@
  *   once at creation.
  * - Resolving a token never reveals why it failed: unknown, revoked, expired, archived, or a
  *   workspace link opened by a non-member all look the same (NotFoundError).
- * - The resolved view contains only what's needed to render the design (frames + design system),
- *   read through a viewer-level actor scoped to the link's workspace.
+ * - Resolving returns only the link's target (project and frames), never workspace or member
+ *   data. There is no viewer to render it yet: the HTML renderer was removed in Story 1.2 and
+ *   Epic 3 rebuilds sharing on files and versions.
  */
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
 import { assertCan } from '@greenfield/authz';
@@ -24,13 +25,9 @@ import {
   type Db,
   type ShareLinkRow,
 } from '@greenfield/db';
-import type { DesignDoc, DesignSystemSpec } from '@greenfield/doc-model';
 import { z } from 'zod';
 import { recordActivity } from './activity';
-import { getDoc } from './design-docs';
-import { resolveProjectDesignSystem } from './project-design-system';
 import { getProject } from './projects';
-import { getSnapshotDoc } from './snapshots';
 import { NotFoundError, ValidationError, type Actor } from './types';
 
 export const SHARE_PATH_PREFIX = '/s/';
@@ -52,7 +49,6 @@ export interface ShareLinkView {
   projectId: string;
   visibility: ShareLinkRow['visibility'];
   frameIds: string[] | null;
-  docVersionId: string | null;
   expiresAt: Date | null;
   revokedAt: Date | null;
   viewCount: number;
@@ -69,7 +65,6 @@ function view(r: ShareLinkRow, now = new Date()): ShareLinkView {
     projectId: r.projectId,
     visibility: r.visibility,
     frameIds: r.frameIds,
-    docVersionId: r.docVersionId,
     expiresAt: r.expiresAt,
     revokedAt: r.revokedAt,
     viewCount: r.viewCount,
@@ -103,8 +98,7 @@ const createInput = z
     projectId: z.string(),
     visibility: z.enum(['workspace', 'public']).default('workspace'),
     expiresAt: expiry,
-    frameIds: z.array(z.string().max(64)).min(1).max(200).nullable().optional(),
-    docVersionId: z.uuid().nullable().optional(),
+    frameIds: z.array(z.string().min(1).max(64)).min(1).max(200).nullable().optional(),
   })
   .strict();
 
@@ -142,19 +136,8 @@ export async function createShareLink(
   const data = parse(createInput, input);
   const project = await getProject(db, actor, data.projectId);
 
-  let doc: DesignDoc;
-  if (data.docVersionId) {
-    doc = (await getSnapshotDoc(db, actor, project.id, data.docVersionId)).doc;
-  } else {
-    doc = (await getDoc(db, actor, project.id)).doc;
-  }
-  let frameIds: string[] | null = null;
-  if (data.frameIds) {
-    const known = new Set(doc.frames.map((f) => f.id));
-    frameIds = [...new Set(data.frameIds)];
-    if (frameIds.some((id) => !known.has(id)))
-      throw new ValidationError('Unknown frame', { frameIds: ['Unknown frame'] });
-  }
+  // Frame ids are editor node ids; the document lives in the editor, so they aren't checked here.
+  const frameIds = data.frameIds ? [...new Set(data.frameIds)] : null;
 
   const { token, tokenHash } = newShareToken();
   const [row] = await db
@@ -165,7 +148,6 @@ export async function createShareLink(
       tokenHash,
       visibility: data.visibility,
       frameIds,
-      docVersionId: data.docVersionId ?? null,
       expiresAt: data.expiresAt ?? null,
       createdBy: actor.userId,
     })
@@ -258,10 +240,10 @@ export async function revokeShareLink(
 // ---------------------------------------------------------------------------------------------
 
 export interface SharedDesign {
-  /** Only render inputs: no workspace, project or member data. */
-  doc: DesignDoc;
-  designSystem: DesignSystemSpec;
-  frameIds: string[];
+  /** The link's target only: no workspace or member data. */
+  projectId: string;
+  /** null = every frame. */
+  frameIds: string[] | null;
   visibility: ShareLinkRow['visibility'];
 }
 
@@ -300,31 +282,16 @@ export async function resolveShareToken(
     !timingSafeEqual(Buffer.from(row.link.tokenHash, 'hex'), Buffer.from(tokenHash, 'hex'))
   )
     throw notFound();
-  const { link, project, workspace } = row;
+  const { link, project } = row;
   if (link.expiresAt && link.expiresAt <= now) throw notFound();
   if (link.visibility !== 'public' && (!viewer || viewer.workspace.id !== link.workspaceId))
     throw notFound();
-
-  // Read the design as a viewer of the link's workspace (project:read only, workspace-scoped).
-  const reader: Actor = { userId: `share:${link.id}`, role: 'viewer', workspace };
-  let doc: DesignDoc;
-  try {
-    doc = link.docVersionId
-      ? (await getSnapshotDoc(db, reader, project.id, link.docVersionId)).doc
-      : (await getDoc(db, reader, project.id)).doc;
-  } catch (e) {
-    if (e instanceof NotFoundError) throw notFound();
-    throw e;
-  }
-  const ds = await resolveProjectDesignSystem(db, reader, project);
-  const known = new Set(doc.frames.map((f) => f.id));
-  const frameIds = (link.frameIds ?? doc.frames.map((f) => f.id)).filter((id) => known.has(id));
 
   await db
     .update(shareLinks)
     .set({ viewCount: sql`${shareLinks.viewCount} + 1`, lastViewedAt: now })
     .where(eq(shareLinks.id, link.id));
-  return { doc, designSystem: ds.spec, frameIds, visibility: link.visibility };
+  return { projectId: project.id, frameIds: link.frameIds, visibility: link.visibility };
 }
 
 // ---------------------------------------------------------------------------------------------

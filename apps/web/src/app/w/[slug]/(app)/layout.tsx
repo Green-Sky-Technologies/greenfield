@@ -25,7 +25,6 @@ export default async function WorkspaceLayout({ children, params }: LayoutProps<
           base={base}
           items={[
             { href: '', label: 'Projects' },
-            { href: '/design-systems', label: 'Design systems' },
             { href: '/settings', label: 'Settings' },
           ]}
         />

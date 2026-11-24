@@ -8,7 +8,7 @@ const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin']
 
 export const metadata: Metadata = {
   title: { default: 'Greenfield', template: '%s · Greenfield' },
-  description: 'Design with an AI agent on a live HTML canvas.',
+  description: 'Design with an AI agent in a real vector editor.',
 };
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

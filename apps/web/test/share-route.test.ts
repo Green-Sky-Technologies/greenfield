@@ -18,8 +18,6 @@ vi.mock('@greenfield/db', async (importOriginal) => ({
 const { GET } = await import('@/app/s/[token]/route');
 const { createShareLink } = await import('@/server/services/share-links');
 const { createProject } = await import('@/server/services/projects');
-const { commitTransaction, getDoc } = await import('@/server/services/design-docs');
-const { newId, replaceDocOps, sampleLandingDoc } = await import('@greenfield/doc-model');
 const { makeActor, reset, testDb } = await import('./helpers');
 
 const { db, close } = testDb();
@@ -42,15 +40,6 @@ function get(token: string, headers: Record<string, string> = { 'x-real-ip': fre
 async function setup() {
   const editor = await makeActor(db, 'editor');
   const project = await createProject(db, editor, { name: 'Route Project' });
-  const { doc, version } = await getDoc(db, editor, project.id);
-  await commitTransaction(db, editor, project.id, {
-    baseVersion: version,
-    txn: {
-      id: `t_${newId('s').slice(2)}`,
-      source: 'canvas',
-      ops: replaceDocOps(doc, sampleLandingDoc()),
-    },
-  });
   return { editor, project };
 }
 
@@ -64,7 +53,7 @@ function expectShareHeaders(res: Response) {
 }
 
 describe('GET /s/:token', () => {
-  it('renders a public link anonymously with hardened headers', async () => {
+  it('answers a valid public link anonymously (a notice until there is a viewer) with hardened headers', async () => {
     const { editor, project } = await setup();
     const { token } = await createShareLink(db, editor, {
       projectId: project.id,
@@ -74,7 +63,7 @@ describe('GET /s/:token', () => {
     expect(res.status).toBe(200);
     expectShareHeaders(res);
     const html = await res.text();
-    expect(html).toContain('Ship designs your engineers can build.');
+    expect(html).toContain('can’t be viewed yet');
     expect(html).not.toContain('Route Project');
   });
 
