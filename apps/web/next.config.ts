@@ -12,6 +12,7 @@ const nextConfig: NextConfig = {
     '@greenfield/contracts',
     '@greenfield/agent',
     '@greenfield/sandbox-runner',
+    '@greenfield/bridge',
   ],
   serverExternalPackages: ['pg'],
   // The FigCraft web release in public/editor (scripts/fetch-editor.mjs).
