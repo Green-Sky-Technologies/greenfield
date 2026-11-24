@@ -1,5 +1,5 @@
 /** Fakes for tests and local development without Vercel credentials. */
-import type { JobRunner, StartJob } from '@crunch/contracts';
+import type { JobRunner, StartJob } from '@greenfield/contracts';
 import type { CreateSandboxParams, SandboxApi, SandboxHandle } from './runner';
 
 /** A JobRunner that only records calls. `alive` controls isAlive per sandbox. */

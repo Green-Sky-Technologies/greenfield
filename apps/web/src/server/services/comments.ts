@@ -10,7 +10,7 @@
  * - Reading needs project:read; writing needs design:comment (viewers can't comment);
  *   agent_request threads also need agent:run.
  */
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import {
   agentConversations,
   and,
@@ -28,8 +28,8 @@ import {
   type CommentRow,
   type CommentThreadRow,
   type Db,
-} from '@crunch/db';
-import { id as nodeIdSchema, type DesignDoc } from '@crunch/doc-model';
+} from '@greenfield/db';
+import { id as nodeIdSchema, type DesignDoc } from '@greenfield/doc-model';
 import { z } from 'zod';
 import { frameOfNode } from '@/features/collab/anchor';
 import { recordActivity } from './activity';

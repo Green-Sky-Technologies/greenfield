@@ -4,7 +4,7 @@
  * POST   /api/projects/:id/lock/request  <- { sessionId }  -> LockState  (ask the holder)
  * DELETE /api/projects/:id/lock/request?sessionId=…        -> LockState  (holder declines)
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { apiActor, apiError, jsonBody } from '@/server/api';

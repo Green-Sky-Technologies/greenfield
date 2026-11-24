@@ -3,9 +3,9 @@
  * and named versions (Story 6.2). Restoring applies a normal transaction (source 'restore'),
  * so it's undoable, and takes an auto snapshot first. History is never destroyed.
  */
-import { assertCan } from '@crunch/authz';
-import { and, desc, docVersions, eq, type Db, type DocVersionRow } from '@crunch/db';
-import { newId, replaceDocOps, type DesignDoc } from '@crunch/doc-model';
+import { assertCan } from '@greenfield/authz';
+import { and, desc, docVersions, eq, type Db, type DocVersionRow } from '@greenfield/db';
+import { newId, replaceDocOps, type DesignDoc } from '@greenfield/doc-model';
 import { z } from 'zod';
 import { commitTransaction, getDoc, type CommitResult } from './design-docs';
 import { getProject } from './projects';

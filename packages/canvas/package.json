@@ -1,5 +1,5 @@
 {
-  "name": "@crunch/canvas",
+  "name": "@greenfield/canvas",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,9 +11,9 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@crunch/contracts": "workspace:*",
-    "@crunch/doc-model": "workspace:*",
-    "@crunch/renderer": "workspace:*"
+    "@greenfield/contracts": "workspace:*",
+    "@greenfield/doc-model": "workspace:*",
+    "@greenfield/renderer": "workspace:*"
   },
   "devDependencies": {
     "@types/react": "^19.3.0",

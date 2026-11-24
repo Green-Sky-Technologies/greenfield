@@ -1,4 +1,4 @@
-import type { ReportItem, Severity } from '@crunch/figma-convert/plugin';
+import type { ReportItem, Severity } from '@greenfield/figma-convert/plugin';
 
 /** Adds a plugin-side finding to the mapping report. */
 export type Note = (severity: Severity, message: string, subject?: string, nodeId?: string) => void;

@@ -9,7 +9,7 @@ import type {
   TokenDiffEntry,
   VariablesSnapshot,
   VariablesSpec,
-} from '@crunch/figma-convert/plugin';
+} from '@greenfield/figma-convert/plugin';
 import type { FileInfo } from '../shared/messages';
 import { h } from './dom';
 import { callMain, registerTab, render, state, task } from './main';
@@ -122,7 +122,7 @@ function entryRow(e: TokenDiffEntry): HTMLElement {
           h(
             'option',
             { value: 'ours', ...(sync.resolutions[e.key] === 'ours' ? { selected: true } : {}) },
-            'Keep CrunchDesign',
+            'Keep Greenfield',
           ),
           h(
             'option',

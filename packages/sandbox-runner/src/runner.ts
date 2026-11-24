@@ -5,7 +5,7 @@
  * allowlisted env with the LLM proxy URL and a job token. Egress is limited to the app and the
  * npm registry. Persistence of jobs and events lives in the app (services/jobs.ts).
  */
-import type { JobRunner, StartJob } from '@crunch/contracts';
+import type { JobRunner, StartJob } from '@greenfield/contracts';
 import { assertNoSecrets, buildSandboxEnv } from './env';
 import {
   ENTRYPOINT_PATH,
@@ -148,7 +148,7 @@ export class VercelSandboxRunner implements JobRunner {
         this.opts.allowHosts ?? [],
         this.opts.protectionBypassSecret,
       ),
-      tags: { crunchJob: job.jobId, workspace: job.workspaceId },
+      tags: { greenfieldJob: job.jobId, workspace: job.workspaceId },
     });
     try {
       await sandbox.writeFiles(

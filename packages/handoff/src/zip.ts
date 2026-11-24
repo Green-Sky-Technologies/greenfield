@@ -5,7 +5,7 @@
  * diffed and cached.
  */
 import { createHash } from 'node:crypto';
-import type { DesignDoc, DesignSystemSpec } from '@crunch/doc-model';
+import type { DesignDoc, DesignSystemSpec } from '@greenfield/doc-model';
 import JSZip from 'jszip';
 import {
   collectImageSources,
@@ -47,7 +47,7 @@ function readme(title: string, pages: { file: string; name: string }[], remote: 
   const lines = [
     `${title}`,
     '',
-    'Exported from CrunchDesign as standalone HTML (no JavaScript, inline CSS).',
+    'Exported from Greenfield as standalone HTML (no JavaScript, inline CSS).',
     'Open index.html in any modern browser. Pages are responsive: breakpoints follow the',
     'page width, exactly as the frame width does on the canvas.',
     '',

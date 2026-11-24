@@ -2,7 +2,7 @@
  * Shared render core: per-node CSS for RNodes, frame-level CSS, and context. The DOM renderer
  * calls these per node (incrementally); the static renderer walks the whole tree.
  */
-import type { DesignDoc, DesignSystemSpec, Frame } from '@crunch/doc-model';
+import type { DesignDoc, DesignSystemSpec, Frame } from '@greenfield/doc-model';
 import { baseCss, nodeRules, type BreakpointWidths, type ParentLayouts } from './css';
 import { classFor, type RenderOptions, type RNode } from './describe';
 import { compileTokens, tokensToCss } from './tokens';

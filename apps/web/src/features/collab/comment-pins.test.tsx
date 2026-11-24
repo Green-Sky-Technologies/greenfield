@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import type { OverlayApi, OverlayRect } from '@crunch/contracts/canvas-overlay';
-import { applyOps, sampleLandingDoc, type DesignDoc } from '@crunch/doc-model';
+import type { OverlayApi, OverlayRect } from '@greenfield/contracts/canvas-overlay';
+import { applyOps, sampleLandingDoc, type DesignDoc } from '@greenfield/doc-model';
 import { act, cleanup, render } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { frameOfNode } from './anchor';

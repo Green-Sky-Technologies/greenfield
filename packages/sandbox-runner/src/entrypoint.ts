@@ -10,7 +10,7 @@
  */
 
 export const SANDBOX_DIR = '/vercel/sandbox';
-export const ENTRYPOINT_PATH = `${SANDBOX_DIR}/crunch-job.mjs`;
+export const ENTRYPOINT_PATH = `${SANDBOX_DIR}/greenfield-job.mjs`;
 export const JOB_SPEC_PATH = `${SANDBOX_DIR}/job.json`;
 
 /** What the entrypoint reads from job.json. No secrets: the token comes from the env. */
@@ -19,7 +19,7 @@ export interface JobSpec {
   kind: string;
   prompt: string;
   systemPrompt: string;
-  /** MCP tool names (without the mcp__crunch__ prefix). */
+  /** MCP tool names (without the mcp__greenfield__ prefix). */
   tools: string[];
   maxTurns: number;
 }
@@ -28,7 +28,7 @@ export const AGENT_SDK_VERSION = '0.3.318';
 
 export const SANDBOX_PACKAGE_JSON = JSON.stringify(
   {
-    name: 'crunch-job',
+    name: 'greenfield-job',
     private: true,
     type: 'module',
     dependencies: { '@anthropic-ai/claude-agent-sdk': AGENT_SDK_VERSION },
@@ -37,11 +37,11 @@ export const SANDBOX_PACKAGE_JSON = JSON.stringify(
   2,
 );
 
-export const ENTRYPOINT_SOURCE = String.raw`// CrunchDesign job entrypoint (generated; see packages/sandbox-runner/src/entrypoint.ts)
+export const ENTRYPOINT_SOURCE = String.raw`// Greenfield job entrypoint (generated; see packages/sandbox-runner/src/entrypoint.ts)
 export async function main(deps) {
   const { query, fetch, env, readFile } = deps;
   const spec = JSON.parse(await readFile(${JSON.stringify(JOB_SPEC_PATH)}));
-  const base = env.CRUNCH_API_URL + '/api/jobs/' + encodeURIComponent(spec.jobId);
+  const base = env.GREENFIELD_API_URL + '/api/jobs/' + encodeURIComponent(spec.jobId);
   const auth = { authorization: 'Bearer ' + env.ANTHROPIC_AUTH_TOKEN };
   let failures = 0;
   const report = async (type, data) => {
@@ -69,8 +69,8 @@ export async function main(deps) {
         model: env.ANTHROPIC_MODEL,
         systemPrompt: spec.systemPrompt,
         tools: [],
-        mcpServers: { crunch: { type: 'http', url: base + '/mcp', headers: auth } },
-        allowedTools: spec.tools.map((t) => 'mcp__crunch__' + t),
+        mcpServers: { greenfield: { type: 'http', url: base + '/mcp', headers: auth } },
+        allowedTools: spec.tools.map((t) => 'mcp__greenfield__' + t),
         permissionMode: 'dontAsk',
         settingSources: [],
         maxTurns: spec.maxTurns,
@@ -82,7 +82,7 @@ export async function main(deps) {
       if (m.type === 'assistant') {
         for (const b of m.message.content) {
           if (b.type === 'text' && b.text.trim()) await report('log', { text: b.text.slice(0, 4000) });
-          else if (b.type === 'tool_use') await report('tool', { name: String(b.name).replace(/^mcp__crunch__/, '') });
+          else if (b.type === 'tool_use') await report('tool', { name: String(b.name).replace(/^mcp__greenfield__/, '') });
         }
       } else if (m.type === 'result') {
         if (m.subtype === 'success') summary = m.result || '';

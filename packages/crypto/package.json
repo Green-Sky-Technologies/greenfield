@@ -1,5 +1,5 @@
 {
-  "name": "@crunch/crypto",
+  "name": "@greenfield/crypto",
   "private": true,
   "type": "module",
   "exports": {

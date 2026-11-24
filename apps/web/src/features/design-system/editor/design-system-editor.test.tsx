@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { starterDesignSystem, type DesignSystemSpec } from '@crunch/doc-model';
+import { starterDesignSystem, type DesignSystemSpec } from '@greenfield/doc-model';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';

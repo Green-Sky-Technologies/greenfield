@@ -1,16 +1,16 @@
 // @vitest-environment happy-dom
-import { permissionsFor, type Role } from '@crunch/authz';
+import { permissionsFor, type Role } from '@greenfield/authz';
 import {
   sampleLandingDoc,
   starterDesignSystem,
   type DesignDoc,
   type Slider,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { createDocStore, EditorProvider, type DocApi } from '../doc-store';
 import { finishDrag, SliderTray } from './slider-tray';
-import { sliderOps } from '@crunch/agent/sliders';
+import { sliderOps } from '@greenfield/agent/sliders';
 
 afterEach(cleanup);
 

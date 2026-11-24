@@ -3,7 +3,7 @@
  * - chat: a compact outline of the doc plus full JSON for the selected nodes' subtrees;
  * - scoped "ask agent" (Story 5.7): only the target node's subtree and where it sits.
  */
-import type { DesignDoc } from '@crunch/doc-model';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { breadcrumb, outline, subtree } from './context';
 import { stableStringify } from './stable';
 

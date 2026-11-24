@@ -4,8 +4,8 @@
  * user turn, as on the HTML side.
  */
 import type Anthropic from '@anthropic-ai/sdk';
-import { buildPrefix, SUGGEST_JOB_TOOL } from '@crunch/agent';
-import { starterDesignSystem } from '@crunch/doc-model';
+import { buildPrefix, SUGGEST_JOB_TOOL } from '@greenfield/agent';
+import { starterDesignSystem } from '@greenfield/doc-model';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { catalog, catalogLines } from './catalog';

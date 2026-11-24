@@ -62,7 +62,7 @@ export type BindableField =
   | 'letterSpacing';
 
 interface SpecBase {
-  /** CrunchDesign NodeId, stored in plugin data under PLUGIN_DATA_KEY. */
+  /** Greenfield NodeId, stored in plugin data under PLUGIN_DATA_KEY. */
   cdId: string;
   name: string;
   visible: boolean;
@@ -179,7 +179,7 @@ export type Severity = 'info' | 'warning' | 'error';
 
 export interface ReportItem {
   severity: Severity;
-  /** CrunchDesign node id or Figma node id, when the item is about one node. */
+  /** Greenfield node id or Figma node id, when the item is about one node. */
   nodeId?: string;
   nodeName?: string;
   /** Style prop, token path, or feature name. */

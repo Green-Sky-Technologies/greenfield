@@ -20,8 +20,8 @@ import {
   type InsertTool,
   type Point,
   type Rect,
-} from '@crunch/canvas';
-import type { DesignDoc } from '@crunch/doc-model';
+} from '@greenfield/canvas';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { frameIndex } from './context';
 import { flowOf, nodeElement, type Hit } from './dom';
 import type { DragCtx } from './drag';

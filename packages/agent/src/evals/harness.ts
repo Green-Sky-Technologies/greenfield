@@ -5,14 +5,14 @@
  * scripted one in unit tests.
  */
 import type Anthropic from '@anthropic-ai/sdk';
-import type { LintDoc } from '@crunch/contracts';
+import type { LintDoc } from '@greenfield/contracts';
 import {
   sampleLandingDoc,
   starterDesignSystem,
   type DesignDoc,
   type DesignSystemSpec,
-} from '@crunch/doc-model';
-import { lintDoc } from '@crunch/ds-lint';
+} from '@greenfield/doc-model';
+import { lintDoc } from '@greenfield/ds-lint';
 import { z } from 'zod';
 import { subtreeIds } from '../context';
 import { runAgentTurn, type ModelGateway } from '../interactive';

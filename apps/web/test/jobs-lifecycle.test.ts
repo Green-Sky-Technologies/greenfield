@@ -1,9 +1,9 @@
 /** Regression tests for job lifecycle bugs found in review (reaper, heartbeats, retries, ordering). */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { parseSse } from '@crunch/agent';
-import type { JobRunner, StartJob } from '@crunch/contracts';
-import { agentConversations, agentMessages, eq, jobEvents, jobs } from '@crunch/db';
-import { MemoryJobRunner } from '@crunch/sandbox-runner';
+import { parseSse } from '@greenfield/agent';
+import type { JobRunner, StartJob } from '@greenfield/contracts';
+import { agentConversations, agentMessages, eq, jobEvents, jobs } from '@greenfield/db';
+import { MemoryJobRunner } from '@greenfield/sandbox-runner';
 import { createProject } from '@/server/services/projects';
 import { upsertMember } from '@/server/services/workspaces';
 import { issueJobToken } from '@/server/services/agent/job-tokens';

@@ -81,12 +81,12 @@ let pending: {
 export function errorText(e: unknown): string {
   if (e instanceof ApiError) {
     if (e.status === 401)
-      return 'Token rejected. Create a new one in CrunchDesign → Settings → Figma.';
+      return 'Token rejected. Create a new one in Greenfield → Settings → Figma.';
     if (e.status === 403) return "Your role doesn't allow this.";
     if (e.status === 429) return 'Rate limited; wait a minute and retry.';
     return e.message;
   }
-  if (e instanceof TypeError) return 'Could not reach CrunchDesign. Check the API URL.';
+  if (e instanceof TypeError) return 'Could not reach Greenfield. Check the API URL.';
   return e instanceof Error ? e.message : String(e);
 }
 
@@ -156,9 +156,9 @@ function connectView(): HTMLElement {
     h(
       'p',
       { class: 'muted' },
-      'Create a plugin token in CrunchDesign → Settings → Figma, then paste it here.',
+      'Create a plugin token in Greenfield → Settings → Figma, then paste it here.',
     ),
-    h('label', { for: 'api-base' }, 'CrunchDesign URL'),
+    h('label', { for: 'api-base' }, 'Greenfield URL'),
     base,
     h('label', { for: 'token' }, 'Plugin token'),
     token,
@@ -233,7 +233,7 @@ export function render() {
   const header = h(
     'header',
     { class: 'header' },
-    h('strong', {}, 'CrunchDesign'),
+    h('strong', {}, 'Greenfield'),
     state.me
       ? h(
           'span',

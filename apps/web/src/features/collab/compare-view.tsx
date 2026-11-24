@@ -4,8 +4,8 @@
  * Side-by-side visual compare of a version against the current design or another version
  * (Story 6.2). Both sides use the live FrameView renderer; a structural diff lists what changed.
  */
-import type { DesignDoc } from '@crunch/doc-model';
-import { FrameView } from '@crunch/renderer/react';
+import type { DesignDoc } from '@greenfield/doc-model';
+import { FrameView } from '@greenfield/renderer/react';
 import { useEffect, useMemo, useState } from 'react';
 import { useDocStore, useEditor } from '../doc-store';
 import { nodeLabel } from './comments-panel';

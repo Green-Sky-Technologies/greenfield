@@ -5,7 +5,7 @@ import {
   starterDesignSystem,
   type DesignDoc,
   type Node,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { parseCssColor, rgbaToCss } from './color';
 import { parseBoxShadow, parseGradient } from './css-values';
 import type { FrameSpec, NodeSpec, TextSpec } from './plan';

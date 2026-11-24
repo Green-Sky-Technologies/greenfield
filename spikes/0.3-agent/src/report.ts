@@ -16,7 +16,7 @@ const METHOD = `<details><summary>Method, adaptations and fixture gaps</summary>
 - **Cases**: \`evals/golden/interactive.json\` (6 prompts on the \`landing\` fixture), same prompt text,
   selection and scope for both arms.
 - **HTML arm**: the current interactive agent run as \`packages/agent/src/evals/harness.ts\` does
-  (prefix, turn context, memory host with scope enforcement), rendered with \`@crunch/renderer\`'s
+  (prefix, turn context, memory host with scope enforcement), rendered with \`@greenfield/renderer\`'s
   static HTML in headless Chromium at 1280 px.
 - **FigCraft arm**: headless \`figcraft-cli mcp\` (v0.18.1), fixture rebuilt with one \`batch\`
   (\`spikes/0.3-agent/src/figcraft/fixture.ts\`); each layer is named after its HTML node id. Same

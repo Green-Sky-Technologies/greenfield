@@ -2,7 +2,7 @@
  * Token sync with Figma variables (Story 8.4).
  *
  * Both sides are normalized into a TokenSet (base tokens + theme overrides, in DesignSystemSpec
- * literal form). The diff compares CrunchDesign ("ours") with Figma ("theirs"), using the state
+ * literal form). The diff compares Greenfield ("ours") with Figma ("theirs"), using the state
  * at the last sync ("base") when there is one:
  *   - only the source side changed since base   -> `changed` (safe to apply)
  *   - both sides changed, or no base exists      -> `conflict` (needs an explicit choice)
@@ -18,7 +18,7 @@ import {
   type DesignSystemSpec,
   type TokenDef,
   type TokenType,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { z } from 'zod';
 import { parseCssColor, rgbaToCss, sameColor } from './color';
 import type { VariablesSpec } from './plan';
@@ -262,7 +262,7 @@ function at(set: TokenSet, path: string, theme: string | null): unknown {
   return set.tokens[path]?.value;
 }
 
-/** Diff CrunchDesign (ours) against Figma (theirs) for one direction. */
+/** Diff Greenfield (ours) against Figma (theirs) for one direction. */
 export function diffTokenSets(
   ours: TokenSet,
   theirs: TokenSet,
@@ -513,7 +513,7 @@ export function applyTokenPatch(spec: DesignSystemSpec, patch: TokenPatch): Desi
 
 /**
  * Push: the variables to write and delete in Figma for the selected entries. Values for every mode
- * come from the merged result (Figma's current values with the selected CrunchDesign changes).
+ * come from the merged result (Figma's current values with the selected Greenfield changes).
  */
 export function buildPushVariables(
   diff: Omit<TokenDiff, 'collection'>,

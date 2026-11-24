@@ -1,5 +1,5 @@
 {
-  "name": "@crunch/handoff",
+  "name": "@greenfield/handoff",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,9 +11,9 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@crunch/contracts": "workspace:*",
-    "@crunch/doc-model": "workspace:*",
-    "@crunch/renderer": "workspace:*",
+    "@greenfield/contracts": "workspace:*",
+    "@greenfield/doc-model": "workspace:*",
+    "@greenfield/renderer": "workspace:*",
     "jszip": "^3.10.2",
     "zod": "^4.6.7"
   },

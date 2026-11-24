@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { parseDoc, starterDesignSystem, tokenCssVar } from '@crunch/doc-model';
-import { renderFrameStatic } from '@crunch/renderer';
+import { parseDoc, starterDesignSystem, tokenCssVar } from '@greenfield/doc-model';
+import { renderFrameStatic } from '@greenfield/renderer';
 import {
   buildComponentPreviewDoc,
   buildPreviewDoc,

@@ -3,7 +3,7 @@
  * POST /api/share  <- { projectId, visibility?, expiresAt?, frameIds?, docVersionId? }
  *                  -> { link, token, path }   (the token is returned only here, once)
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { createShareLink, listShareLinks } from '@/server/services/share-links';

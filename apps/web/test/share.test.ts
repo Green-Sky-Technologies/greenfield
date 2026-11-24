@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { eq, projects, shareLinks } from '@crunch/db';
-import { newId, replaceDocOps, sampleLandingDoc, type DocOp } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { eq, projects, shareLinks } from '@greenfield/db';
+import { newId, replaceDocOps, sampleLandingDoc, type DocOp } from '@greenfield/doc-model';
 import { renderShareError, renderSharePage, shareHeaders } from '@/app/s/[token]/share-html';
 import { commitTransaction, getDoc } from '@/server/services/design-docs';
 import { createProject } from '@/server/services/projects';

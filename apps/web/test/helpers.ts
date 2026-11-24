@@ -1,9 +1,11 @@
-import { createDb, sql, type Db } from '@crunch/db';
-import type { Role } from '@crunch/authz';
+import { createDb, sql, type Db } from '@greenfield/db';
+import type { Role } from '@greenfield/authz';
 import { upsertWorkspace } from '@/server/services/workspaces';
 import type { Actor } from '@/server/services/types';
 
-const url = process.env.TEST_DATABASE_URL ?? 'postgres://crunch:crunch@localhost:5433/crunch_test';
+const url =
+  process.env.TEST_DATABASE_URL ??
+  'postgres://greenfield:greenfield@localhost:5433/greenfield_test';
 
 export function testDb(): { db: Db; close: () => Promise<void> } {
   return createDb(url);

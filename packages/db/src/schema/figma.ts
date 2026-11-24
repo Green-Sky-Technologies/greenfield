@@ -11,7 +11,7 @@ import {
 } from 'drizzle-orm/pg-core';
 import { designSystems, projects, workspaces } from './core';
 
-/** Tokens the CrunchDesign Figma plugin uses to call our API (Story 8.1). Only the hash is stored. */
+/** Tokens the Greenfield Figma plugin uses to call our API (Story 8.1). Only the hash is stored. */
 export const pluginTokens = pgTable(
   'plugin_tokens',
   {
@@ -67,7 +67,7 @@ export const figmaLinks = pgTable(
     figmaFileKey: text('figma_file_key').notNull(),
     figmaFileName: text('figma_file_name'),
     figmaPageId: text('figma_page_id'),
-    /** CrunchDesign NodeId -> Figma node id (also mirrored in Figma plugin data). */
+    /** Greenfield NodeId -> Figma node id (also mirrored in Figma plugin data). */
     nodeMap: jsonb('node_map').notNull().default({}),
     lastReport: jsonb('last_report'),
     lastSyncedAt: timestamp('last_synced_at', { withTimezone: true }),

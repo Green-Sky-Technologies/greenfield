@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { llmCalls } from '@crunch/db';
+import { ForbiddenError } from '@greenfield/authz';
+import { llmCalls } from '@greenfield/db';
 import { formatUsd, usageSummary } from '@/server/services/usage';
 import { upsertUser } from '@/server/services/workspaces';
 import { makeActor, reset, testDb } from './helpers';

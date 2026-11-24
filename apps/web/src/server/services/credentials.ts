@@ -8,9 +8,9 @@
  * deployment's Vercel AI Gateway when enabled (ai-gateway.ts), then any saved credential that
  * hasn't passed a test (so its error surfaces), else none.
  */
-import { assertCan } from '@crunch/authz';
-import { decryptSecret, encryptSecret, type Keyring } from '@crunch/crypto';
-import { eq, providerCredentials, workspaceAwsExternalIds, type Db } from '@crunch/db';
+import { assertCan } from '@greenfield/authz';
+import { decryptSecret, encryptSecret, type Keyring } from '@greenfield/crypto';
+import { eq, providerCredentials, workspaceAwsExternalIds, type Db } from '@greenfield/db';
 import {
   buildClient,
   credentialInput,
@@ -25,7 +25,7 @@ import {
   type StoredConfig,
   type StoredSecret,
   type TestResult,
-} from '@crunch/providers';
+} from '@greenfield/providers';
 import { randomBytes } from 'node:crypto';
 import {
   deploymentGatewayConfig,
@@ -53,7 +53,7 @@ export async function getExternalId(db: Db, workspaceId: string): Promise<string
     .where(eq(workspaceAwsExternalIds.workspaceId, workspaceId))
     .limit(1);
   if (row) return row.externalId;
-  const externalId = `crunch-${randomBytes(16).toString('hex')}`;
+  const externalId = `greenfield-${randomBytes(16).toString('hex')}`;
   await db
     .insert(workspaceAwsExternalIds)
     .values({ workspaceId, externalId })
@@ -153,7 +153,9 @@ export async function testCredential(
   assertCan(actor.role, 'workspace:manage_credentials');
   const { config, secret } = await loadDecrypted(db, actor.workspace.id, deps.keyring);
   const tester = deps.tester ?? testConnection;
-  const result = await tester(config, secret, { sessionName: `crunch-test-${actor.workspace.id}` });
+  const result = await tester(config, secret, {
+    sessionName: `greenfield-test-${actor.workspace.id}`,
+  });
   const [row] = await db
     .update(providerCredentials)
     .set({

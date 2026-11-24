@@ -11,7 +11,7 @@
  *   read through a viewer-level actor scoped to the link's workspace.
  */
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto';
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import {
   and,
   desc,
@@ -23,8 +23,8 @@ import {
   workspaces,
   type Db,
   type ShareLinkRow,
-} from '@crunch/db';
-import type { DesignDoc, DesignSystemSpec } from '@crunch/doc-model';
+} from '@greenfield/db';
+import type { DesignDoc, DesignSystemSpec } from '@greenfield/doc-model';
 import { z } from 'zod';
 import { recordActivity } from './activity';
 import { getDoc } from './design-docs';
@@ -395,9 +395,9 @@ export class RateLimiter {
   }
 }
 
-const g = globalThis as unknown as { __crunchShareLimiter?: RateLimiter };
+const g = globalThis as unknown as { __greenfieldShareLimiter?: RateLimiter };
 /** 60 views per minute per client (per instance). */
-export const shareViewLimiter = (g.__crunchShareLimiter ??= new RateLimiter(60, 60_000));
+export const shareViewLimiter = (g.__greenfieldShareLimiter ??= new RateLimiter(60, 60_000));
 
 const IP_RE = /^[0-9a-fA-F:.]{2,45}$/;
 const validIp = (v: string | null | undefined) => {

@@ -2,8 +2,13 @@
  * Test helpers for canvas component tests (happy-dom). Not imported by app code.
  * Renders the canvas + inspector against an in-memory DocApi.
  */
-import { permissionsFor, type Role } from '@crunch/authz';
-import { applyOps, sampleLandingDoc, starterDesignSystem, type DesignDoc } from '@crunch/doc-model';
+import { permissionsFor, type Role } from '@greenfield/authz';
+import {
+  applyOps,
+  sampleLandingDoc,
+  starterDesignSystem,
+  type DesignDoc,
+} from '@greenfield/doc-model';
 import { act, render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { EditorProvider, useDocStoreApi, type DocApi, type DocStore } from '../doc-store';

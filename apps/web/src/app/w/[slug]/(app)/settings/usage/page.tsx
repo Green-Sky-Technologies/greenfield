@@ -1,4 +1,4 @@
-import { can } from '@crunch/authz';
+import { can } from '@greenfield/authz';
 import { redirect } from 'next/navigation';
 import { db, requireActor } from '@/server/context';
 import { getAgentSettings } from '@/server/services/agent/model-settings';

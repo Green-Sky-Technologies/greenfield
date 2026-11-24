@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import type Anthropic from '@anthropic-ai/sdk';
-import { sampleLandingDoc, starterDesignSystem, type DesignSystemSpec } from '@crunch/doc-model';
+import {
+  sampleLandingDoc,
+  starterDesignSystem,
+  type DesignSystemSpec,
+} from '@greenfield/doc-model';
 import {
   buildPrefix,
   buildTurnContext,

@@ -10,7 +10,7 @@ export function Logo({ compact = false }: { compact?: boolean }) {
           strokeLinecap="round"
         />
       </svg>
-      {!compact && <span>CrunchDesign</span>}
+      {!compact && <span>Greenfield</span>}
     </span>
   );
 }

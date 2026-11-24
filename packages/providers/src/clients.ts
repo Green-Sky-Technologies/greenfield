@@ -89,7 +89,7 @@ export async function buildClient(
         new AssumeRoleCommand({
           RoleArn: config.roleArn,
           ExternalId: config.externalId,
-          RoleSessionName: (opts.sessionName ?? 'crunchdesign')
+          RoleSessionName: (opts.sessionName ?? 'greenfield')
             .replace(/[^\w+=,.@-]/g, '-')
             .slice(0, 64),
           DurationSeconds: opts.sessionSeconds ?? 900,

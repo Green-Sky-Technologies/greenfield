@@ -4,8 +4,8 @@
  * Canvas toolbar: zoom controls and fit everywhere; add frame in edit mode; and the
  * empty-project sample helper for editors.
  */
-import { addFrameOps, centerOn, FRAME_PRESETS, stepZoom, zoomAt } from '@crunch/canvas';
-import { replaceDocOps, sampleLandingDoc } from '@crunch/doc-model';
+import { addFrameOps, centerOn, FRAME_PRESETS, stepZoom, zoomAt } from '@greenfield/canvas';
+import { replaceDocOps, sampleLandingDoc } from '@greenfield/doc-model';
 import { useState } from 'react';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';
 import { fitAll } from './camera-actions';

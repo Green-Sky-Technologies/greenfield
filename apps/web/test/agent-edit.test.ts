@@ -1,8 +1,8 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { agentEditResponse } from '@crunch/contracts';
-import { agentConversations, eq } from '@crunch/db';
-import type { Node } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { agentEditResponse } from '@greenfield/contracts';
+import { agentConversations, eq } from '@greenfield/db';
+import type { Node } from '@greenfield/doc-model';
 import { runAssistantMessage } from '@/server/services/agent';
 import { requestAgentEdit } from '@/server/services/agent/edit';
 import { commitTransaction, getDoc } from '@/server/services/design-docs';

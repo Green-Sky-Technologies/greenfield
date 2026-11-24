@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { starterDesignSystem } from '@crunch/doc-model';
+import { starterDesignSystem } from '@greenfield/doc-model';
 import { act, cleanup, fireEvent } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { canvasStoreFor } from './canvas-store';

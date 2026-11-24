@@ -1,4 +1,4 @@
-import { sampleLandingDoc } from '@crunch/doc-model';
+import { sampleLandingDoc } from '@greenfield/doc-model';
 import { describe, expect, it } from 'vitest';
 import { AGENT_TOOLS, agentEditRequest, jobInputs, toolsFor } from './index';
 

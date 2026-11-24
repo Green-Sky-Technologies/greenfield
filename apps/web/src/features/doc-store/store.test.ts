@@ -1,4 +1,4 @@
-import { applyOps, sampleLandingDoc, type DesignDoc, type DocOp } from '@crunch/doc-model';
+import { applyOps, sampleLandingDoc, type DesignDoc, type DocOp } from '@greenfield/doc-model';
 import { describe, expect, it, vi } from 'vitest';
 import { createDocStore, type DocApi } from './store';
 

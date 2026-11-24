@@ -1,6 +1,6 @@
 'use server';
 
-import type { PublicCredential } from '@crunch/providers';
+import type { PublicCredential } from '@greenfield/providers';
 import { revalidatePath } from 'next/cache';
 import { db, requireActor } from '../context';
 import { deleteCredential, saveCredential, testCredential } from '../services/credentials';

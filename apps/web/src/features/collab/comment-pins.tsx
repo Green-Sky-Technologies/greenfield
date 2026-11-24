@@ -6,9 +6,9 @@
  * moves, including into another frame; an orphaned thread (node deleted) or a canvas thread
  * sits at its canvas position.
  */
-import { registerOverlay, type OverlayApi } from '@crunch/contracts/canvas-overlay';
+import { registerOverlay, type OverlayApi } from '@greenfield/contracts/canvas-overlay';
 import { useEffect, useReducer, useRef } from 'react';
-import type { DesignDoc } from '@crunch/doc-model';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { frameOfNode, pinAnchorPoint } from './anchor';
 import { commentsApi, type Thread } from './api';
 import { overlayToCanvas, useCollab } from './store';

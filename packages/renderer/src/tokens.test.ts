@@ -1,4 +1,4 @@
-import { starterDesignSystem } from '@crunch/doc-model';
+import { starterDesignSystem } from '@greenfield/doc-model';
 import { describe, expect, it } from 'vitest';
 import { compileTokens, tokensToCss } from './tokens';
 

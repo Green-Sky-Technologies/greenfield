@@ -8,8 +8,8 @@
  * Enter or blur commits one op; Shift+Enter inserts a line break; Esc cancels.
  * Text inside a component instance edits the instance prop bound to that part.
  */
-import { isLocked } from '@crunch/canvas';
-import type { DesignDoc, DesignSystemSpec, DocOp, Node as DocNode } from '@crunch/doc-model';
+import { isLocked } from '@greenfield/canvas';
+import type { DesignDoc, DesignSystemSpec, DocOp, Node as DocNode } from '@greenfield/doc-model';
 import type { DocStore } from '../doc-store';
 import type { CanvasStore } from './canvas-store';
 import { frameHost, nodeElement } from './dom';

@@ -25,6 +25,7 @@ Embedding, saving and reopening work in all three engines (0.1). The fork builds
 (0.2). The browser problems are understood and have workarounds (0.4).
 
 Conditions to carry into Phase 1 (SPEC changes are listed at the end):
+
 1. Ship a save acknowledgement before real users. Today dirty clears before the upload is stored.
 2. Fix fonts deliberately: either bundle the design-system fonts or report missing fonts to the
    agent. A silent fallback was the main quality bug in 0.3.
@@ -36,6 +37,7 @@ Conditions to carry into Phase 1 (SPEC changes are listed at the end):
 ### 0.3 Can Claude draw? (the gate)
 
 Setup:
+
 - Model: `claude-sonnet-5-5` through the AI Gateway via `packages/providers`, the same model for
   both arms.
 - Prompts: the 6 golden prompts plus 2 extra build-a-screen prompts (pricing + FAQ, testimonials),
@@ -44,18 +46,19 @@ Setup:
   The landing fixture was rebuilt in FigCraft.
 - Best variant: `v2`, repeated 3 times.
 
-| | FigCraft `v2` | HTML-frame agent |
-|---|---|---|
-| Golden pass rate (3 runs) | 17/18 | 12/18 ¹ |
-| Small edit: cost / wall time | $0.006–0.012 / 3–6 s | $0.013–0.021 / 2–6 s |
-| Build pricing + FAQ: cost / turns / wall | $0.158 / 8–10 / 46–53 s | $0.124 / 3–4 / 37–48 s |
-| Build testimonials: cost / turns / wall | $0.089 / 6–10 / 34–39 s | $0.088 / 5 / 25–26 s |
-| Visual quality (judged by eye) | on par; better pricing cards | on par; stray FAQ borders |
+|                                          | FigCraft `v2`                | HTML-frame agent          |
+| ---------------------------------------- | ---------------------------- | ------------------------- |
+| Golden pass rate (3 runs)                | 17/18                        | 12/18 ¹                   |
+| Small edit: cost / wall time             | $0.006–0.012 / 3–6 s         | $0.013–0.021 / 2–6 s      |
+| Build pricing + FAQ: cost / turns / wall | $0.158 / 8–10 / 46–53 s      | $0.124 / 3–4 / 37–48 s    |
+| Build testimonials: cost / turns / wall  | $0.089 / 6–10 / 34–39 s      | $0.088 / 5 / 25–26 s      |
+| Visual quality (judged by eye)           | on par; better pricing cards | on par; stray FAQ borders |
 
 1. All 6 HTML failures are the two job hand-off cases: the HTML agent asks clarifying questions
    (`ask_questions`) instead of offering a job. That's existing behaviour, not a drawing problem.
 
 Renders side by side:
+
 - [pricing + FAQ, `v2`](../../spikes/0.3-agent/out/v2/x-build-pricing/)
 - [pricing + FAQ, `v1`](../../spikes/0.3-agent/out/v1/x-build-pricing/)
 - [testimonials, `v1`](../../spikes/0.3-agent/out/v1/x-build-testimonials/)
@@ -64,35 +67,39 @@ Renders side by side:
 
 **What we tried.** Eight variants were run on the golden set (see the table in the 0.3 findings).
 
-| Variant | Golden pass | Cost for 6 cases | Result |
-|---|---|---|---|
-| Full 645-command catalog in the prompt | 5/6 | $0.53 | about 4× the cost, no gain |
-| One command per call (no `batch`) | 6/6 | $0.14 | more turns, one undo step per command |
-| Render attached after every edit | 5/6 | $0.13 | no gain |
-| Short prompt, outline-only context | 5/6 | $0.29 | more turns spent reading |
-| `v1` | 5/6 | $0.15 | builds were clearly worse than HTML (below) |
-| **`v2`** = `v1` + craft rules | 6/6 | $0.16 | fixed it |
+| Variant                                | Golden pass | Cost for 6 cases | Result                                      |
+| -------------------------------------- | ----------- | ---------------- | ------------------------------------------- |
+| Full 645-command catalog in the prompt | 5/6         | $0.53            | about 4× the cost, no gain                  |
+| One command per call (no `batch`)      | 6/6         | $0.14            | more turns, one undo step per command       |
+| Render attached after every edit       | 5/6         | $0.13            | no gain                                     |
+| Short prompt, outline-only context     | 5/6         | $0.29            | more turns spent reading                    |
+| `v1`                                   | 5/6         | $0.15            | builds were clearly worse than HTML (below) |
+| **`v2`** = `v1` + craft rules          | 6/6         | $0.16            | fixed it                                    |
 
 `v1` built pricing cards with Regular-weight headings and ragged card heights. `v2` adds these
 rules:
+
 - Always set `fontFamily` along with `fontStyle`.
 - Copy sibling section styles.
 - Use `sizingV: fill` cards with a spacer so buttons sit at the bottom.
 - Build in one batch, render, then fix.
 
 **Best shape:**
+
 - Tools: `batch` (one undo step per edit), `get_node`, `render` (on request) and
   `suggest_generation_job`.
 - Context: the scope subtree plus the page outline.
 - Prompt: a curated command reference and the `v2` craft rules.
 
 **Failure modes to design for:**
+
 - **Silent font fallback.** `inspect` says Bold while the render is Regular, because the default
   font is Inter and Inter wasn't available.
 - **Layout idioms** need to be in the prompt.
 - **Scope.** An added control sometimes lands next to the scoped section instead of inside it.
 
 **Caveats:**
+
 - The quality judgement is mine and not blind.
 - One fixture and two build prompts.
 - FigCraft renders came from the CLI's CPU `screenshot`, not the browser.
@@ -101,17 +108,20 @@ rules:
 ### 0.1 Embed in Next.js: all four ACs pass in Chromium, WebKit and Firefox (3 runs each)
 
 **Numbers:**
+
 - Release zip: 10.5 MB (sha256 pinned). Wasm: **25,503,950 B (24.3 MiB) raw**, 10.4 MB gzip,
   7.4 MB Brotli.
 - Cold `figcraft:ready`: 0.57–0.75 s on localhost (2.3–2.7 s on a loaded machine).
 - Save → stored: 50–590 ms. Reopen: 24–380 ms.
 
 **Setup:**
+
 - Real Clerk sign-in. Authorization goes through `getProject` / `assertCan('design:edit')`.
 - Storage was the **local-filesystem fallback**: no `BLOB_READ_WRITE_TOKEN` locally, so the
   Vercel Blob path type-checks but never ran.
 
 **Findings:**
+
 - WebKit on a Mac needs Cmd+S (`ui.key {cmd:true}`), not Ctrl+S.
 - **Saves carry no `id`, so dirty clears before the host stores the bytes.** A failed upload
   looks saved.
@@ -126,10 +136,10 @@ rules:
 **Build:** v0.18.1 (`4acc293c`) with the pinned craft-libs and egui-fork revisions, trunk 0.22.2
 and rustc 1.100.
 
-| | Time | Raw wasm |
-|---|---|---|
-| Local Mac | 224 s | 23,776,058 B (22.7 MiB), 6.5 MiB Brotli |
-| Clean `rust:1.100` container | 441–517 s | 23,672,083 B |
+|                              | Time      | Raw wasm                                |
+| ---------------------------- | --------- | --------------------------------------- |
+| Local Mac                    | 224 s     | 23,776,058 B (22.7 MiB), 6.5 MiB Brotli |
+| Clean `rust:1.100` container | 441–517 s | 23,672,083 B                            |
 
 **Reproducibility:** two clean container builds came out byte-identical. Local and container
 bytes differ because they use different wasm-opt versions (133 vs 131).
@@ -154,6 +164,7 @@ so the rebrand must replace them.
 ### 0.4 Real-browser checks
 
 **(a) Pixels.**
+
 - The headless-Chromium screenshot timeout **did not reproduce**: 0 failures in 100 calls.
 - Two real hangs were reproduced and explained from the source:
   1. **Hidden tab.** Every `window.figcraft` call waits for an editor frame, and hidden tabs draw
@@ -166,6 +177,7 @@ so the rebrand must replace them.
 - **Use `ui.render` with `ids` and `scale`.** Fail fast when the tab is hidden.
 
 **(b) Change detection.**
+
 - A small `document.inspect` (depth 0, no fields) used as a gate costs about 17 ms and under
   0.5 KiB at any size.
 - A full diff with `fields` costs 45 ms and 1.4 MiB at 10k nodes. Running it every 250 ms hurts
@@ -176,6 +188,7 @@ so the rebrand must replace them.
   counter fixes it.
 
 **(c) Large files.**
+
 - 30k nodes open in 0.34–0.44 s and use 98–144 MiB of wasm memory. 10k plain nodes pan smoothly.
 - The 268-node effects-heavy dashboard example at DPR 2 doesn't: pan p95 is 92 ms in Chrome and
   350 ms in Firefox.

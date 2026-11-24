@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { permissionsFor, type Role } from '@crunch/authz';
-import { sampleLandingDoc, starterDesignSystem } from '@crunch/doc-model';
+import { permissionsFor, type Role } from '@greenfield/authz';
+import { sampleLandingDoc, starterDesignSystem } from '@greenfield/doc-model';
 import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';

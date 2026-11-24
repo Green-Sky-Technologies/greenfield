@@ -10,7 +10,7 @@ import {
   type DesignSystemSpec,
   type TokenKind,
   type TokenType,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { colorDistance, parseColor, type Rgba } from './color';
 
 export const REM_PX = 16;

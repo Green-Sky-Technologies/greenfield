@@ -2,7 +2,7 @@
  * PATCH  /api/share/:linkId  <- { visibility?, expiresAt? (ISO or null) }  -> { link }
  * DELETE /api/share/:linkId  -> { link }   (revokes; the row is kept for audit)
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { revokeShareLink, updateShareLink } from '@/server/services/share-links';

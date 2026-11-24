@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { activity, docOps, eq, sql, users } from '@crunch/db';
-import { newId, replaceDocOps, sampleLandingDoc, type DocOp } from '@crunch/doc-model';
+import { activity, docOps, eq, sql, users } from '@greenfield/db';
+import { newId, replaceDocOps, sampleLandingDoc, type DocOp } from '@greenfield/doc-model';
 import { describeEntry, type FeedItem } from '@/features/collab/activity-panel';
 import { EDIT_GROUP_WINDOW_MS, groupEdits, listActivity } from '@/server/services/activity';
 import { createThread } from '@/server/services/comments';

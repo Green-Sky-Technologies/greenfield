@@ -1,4 +1,4 @@
-import { applyOps, sampleLandingDoc } from '@crunch/doc-model';
+import { applyOps, sampleLandingDoc } from '@greenfield/doc-model';
 import { describe, expect, it } from 'vitest';
 import {
   ancestors,

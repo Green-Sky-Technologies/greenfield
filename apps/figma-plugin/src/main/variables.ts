@@ -16,7 +16,7 @@ import {
   sameVariableValue,
   type FigmaVariableValue,
   type VariablesSpec,
-} from '@crunch/figma-convert/plugin';
+} from '@greenfield/figma-convert/plugin';
 import type { Note } from './note';
 
 export const COLLECTION_KEY = 'cd:collection';

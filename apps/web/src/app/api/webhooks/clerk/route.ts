@@ -2,8 +2,8 @@
  * Clerk → Postgres sync. Configure in the Clerk Dashboard → Webhooks with the events below,
  * and set CLERK_WEBHOOK_SIGNING_SECRET. Requests are verified with Svix signatures.
  */
-import { roleFromClerk } from '@crunch/authz';
-import { getDb } from '@crunch/db';
+import { roleFromClerk } from '@greenfield/authz';
+import { getDb } from '@greenfield/db';
 import { verifyWebhook } from '@clerk/nextjs/webhooks';
 import type { NextRequest } from 'next/server';
 import {

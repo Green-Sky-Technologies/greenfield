@@ -1,5 +1,5 @@
 /** POST /api/jobs/:id/cancel: cancel the job and stop its sandbox. */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { jobRunner } from '@/server/services/agent/runner';

@@ -1,7 +1,7 @@
 'use client';
 
-import { fitCamera, frameRect, union } from '@crunch/canvas';
-import type { DesignDoc } from '@crunch/doc-model';
+import { fitCamera, frameRect, union } from '@greenfield/canvas';
+import type { DesignDoc } from '@greenfield/doc-model';
 import type { CanvasStore } from './canvas-store';
 
 /** Fit every frame in the viewport (never zooming in past 100%). */

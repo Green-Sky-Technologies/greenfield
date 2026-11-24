@@ -1,10 +1,10 @@
 /**
  * Design-system lint contract (Story 4.6).
- * Producer: stream-design-system implements `lintDoc` in @crunch/ds-lint (stub until then).
+ * Producer: stream-design-system implements `lintDoc` in @greenfield/ds-lint (stub until then).
  * Consumers: the agent's run_lint tool and self-correction loop, plus inspector warnings.
  * Must be deterministic and fast (it runs on every local edit, at zero tokens).
  */
-import type { DesignDoc, DesignSystemSpec, DocOp } from '@crunch/doc-model';
+import type { DesignDoc, DesignSystemSpec, DocOp } from '@greenfield/doc-model';
 
 export type LintSeverity = 'error' | 'warning' | 'info';
 

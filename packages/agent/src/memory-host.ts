@@ -5,8 +5,8 @@ import {
   type DesignDoc,
   type DesignSystemSpec,
   type DocOp,
-} from '@crunch/doc-model';
-import type { AgentRuntime } from '@crunch/contracts';
+} from '@greenfield/doc-model';
+import type { AgentRuntime } from '@greenfield/contracts';
 import { ToolError, type ToolHost } from './tools';
 
 export interface MemoryHost extends ToolHost {

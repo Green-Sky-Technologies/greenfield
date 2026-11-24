@@ -16,15 +16,15 @@ jobs:
       postgres:
         image: postgres:17
         env:
-          POSTGRES_USER: crunch
-          POSTGRES_PASSWORD: crunch
-          POSTGRES_DB: crunch
+          POSTGRES_USER: greenfield
+          POSTGRES_PASSWORD: greenfield
+          POSTGRES_DB: greenfield
         ports: ['5433:5432']
         options: >-
-          --health-cmd "pg_isready -U crunch" --health-interval 2s --health-retries 20
+          --health-cmd "pg_isready -U greenfield" --health-interval 2s --health-retries 20
     env:
-      TEST_DATABASE_URL: postgres://crunch:crunch@localhost:5433/crunch_test
-      DATABASE_URL: postgres://crunch:crunch@localhost:5433/crunch
+      TEST_DATABASE_URL: postgres://greenfield:greenfield@localhost:5433/greenfield_test
+      DATABASE_URL: postgres://greenfield:greenfield@localhost:5433/greenfield
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -52,9 +52,9 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @crunch/web exec playwright install --with-deps chromium firefox webkit
-      - run: pnpm --filter @crunch/web e2e:canvas
-      - run: pnpm --filter @crunch/web e2e:export
+      - run: pnpm --filter @greenfield/web exec playwright install --with-deps chromium firefox webkit
+      - run: pnpm --filter @greenfield/web e2e:canvas
+      - run: pnpm --filter @greenfield/web e2e:export
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -74,13 +74,13 @@ jobs:
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY_TEST }}
       CLERK_WEBHOOK_SIGNING_SECRET: ${{ secrets.CLERK_WEBHOOK_SIGNING_SECRET_TEST }}
       CREDENTIALS_MASTER_KEYS: ${{ secrets.CREDENTIALS_MASTER_KEYS_TEST }}
-      DATABASE_URL: postgres://crunch:crunch@localhost:5433/crunch
+      DATABASE_URL: postgres://greenfield:greenfield@localhost:5433/greenfield
     services:
       postgres:
         image: postgres:17
-        env: { POSTGRES_USER: crunch, POSTGRES_PASSWORD: crunch, POSTGRES_DB: crunch }
+        env: { POSTGRES_USER: greenfield, POSTGRES_PASSWORD: greenfield, POSTGRES_DB: greenfield }
         ports: ['5433:5432']
-        options: --health-cmd "pg_isready -U crunch" --health-interval 2s --health-retries 20
+        options: --health-cmd "pg_isready -U greenfield" --health-interval 2s --health-retries 20
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -88,10 +88,10 @@ jobs:
         with: { node-version-file: .nvmrc, cache: pnpm }
       - run: pnpm install --frozen-lockfile
       - run: pnpm db:migrate
-      - run: pnpm --filter @crunch/web exec playwright install --with-deps
-      - run: pnpm --filter @crunch/web build
-      - run: pnpm --filter @crunch/web e2e
-      - run: pnpm --filter @crunch/web e2e:app
+      - run: pnpm --filter @greenfield/web exec playwright install --with-deps
+      - run: pnpm --filter @greenfield/web build
+      - run: pnpm --filter @greenfield/web e2e
+      - run: pnpm --filter @greenfield/web e2e:app
         env:
           E2E_SKIP_BUILD: '1'
       # The teardown project normally deletes the run's Clerk users and orgs; if the run was

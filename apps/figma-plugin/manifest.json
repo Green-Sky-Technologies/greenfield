@@ -1,6 +1,6 @@
 {
-  "name": "CrunchDesign",
-  "id": "crunchdesign-dev",
+  "name": "Greenfield",
+  "id": "greenfield-dev",
   "api": "1.0.0",
   "main": "dist/code.js",
   "ui": "dist/ui.html",
@@ -10,6 +10,6 @@
   "networkAccess": {
     "allowedDomains": ["http://localhost:3000"],
     "devAllowedDomains": ["http://localhost:3000", "http://localhost:3015"],
-    "reasoning": "Talks to the CrunchDesign API to push and import designs and sync variables. Add the production CrunchDesign origin here before publishing."
+    "reasoning": "Talks to the Greenfield API to push and import designs and sync variables. Add the production Greenfield origin here before publishing."
   }
 }

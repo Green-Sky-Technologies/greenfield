@@ -7,7 +7,7 @@ import {
   type DocOp,
   type Frame,
   type Node,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import type { Rect } from './geometry';
 
 export const FRAME_GAP = 160;

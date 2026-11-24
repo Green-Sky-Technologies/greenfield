@@ -1,5 +1,5 @@
 // Builds the canvas harness with esbuild and serves it on a random local port.
-// esbuild is a devDependency of @crunch/canvas, so it's resolved from there.
+// esbuild is a devDependency of @greenfield/canvas, so it's resolved from there.
 import { createRequire } from 'node:module';
 import { createServer } from 'node:http';
 import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
@@ -11,7 +11,7 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const web = join(here, '..', '..', '..');
 // Outside the repo, so lint/format never see the bundle.
-const out = join(tmpdir(), `crunch-canvas-harness-${process.pid}`);
+const out = join(tmpdir(), `greenfield-canvas-harness-${process.pid}`);
 const require = createRequire(join(web, '..', '..', 'packages', 'canvas', 'package.json'));
 
 /** App CSS (Tailwind utilities and chrome tokens) from the last `next build`, if there is one. */

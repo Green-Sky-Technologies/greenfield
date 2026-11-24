@@ -17,8 +17,13 @@ import {
   propKeywords,
   type PropState,
   type TokenOption,
-} from '@crunch/canvas';
-import { isTokenRef, STYLE_PROPS, type Breakpoint, type StylePropName } from '@crunch/doc-model';
+} from '@greenfield/canvas';
+import {
+  isTokenRef,
+  STYLE_PROPS,
+  type Breakpoint,
+  type StylePropName,
+} from '@greenfield/doc-model';
 import { memo, useId, useState } from 'react';
 import { startGesture } from './gesture';
 import { TokenPicker } from './token-picker';

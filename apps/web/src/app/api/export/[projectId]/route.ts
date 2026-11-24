@@ -3,7 +3,7 @@
  *   -> file download (Content-Disposition: attachment)
  * Deterministic exports (Epic 7); allowed for every role with export:deterministic (incl. Viewers).
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import type { NextRequest } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import { exportDesign } from '@/server/services/export';

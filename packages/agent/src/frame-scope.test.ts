@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sampleLandingDoc, starterDesignSystem, type DocOp } from '@crunch/doc-model';
+import { sampleLandingDoc, starterDesignSystem, type DocOp } from '@greenfield/doc-model';
 import { executeTool, frameScopeViolation, memoryHost } from './index';
 
 const ds = starterDesignSystem();

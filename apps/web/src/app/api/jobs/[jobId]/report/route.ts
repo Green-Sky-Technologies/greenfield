@@ -2,7 +2,7 @@
  * POST /api/jobs/:id/report <- { type, data }: progress from the sandbox (job-token auth).
  * 401 for a bad/revoked token, 409 when the job already ended (the sandbox should stop).
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse } from 'next/server';
 import { jsonBody } from '@/server/api';
 import { JobTokenError, tokenFromHeaders } from '@/server/services/agent/job-tokens';

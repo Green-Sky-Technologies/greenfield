@@ -4,7 +4,7 @@
  * POST /api/projects/:id/doc            <- { baseVersion, txn }  -> { version, txnId, duplicate }
  *   409 conflict { version } | 423 locked | 400 invalid | 403 forbidden
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { apiActor, apiError, jsonBody } from '@/server/api';

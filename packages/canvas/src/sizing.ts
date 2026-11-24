@@ -4,7 +4,7 @@
  * (block parents). `sizingToTailwind` gives the equivalent classes for code export (7.3), so
  * hug/fill survive export with the same behaviour.
  */
-import { isTokenRef, tokenCssVar } from '@crunch/doc-model';
+import { isTokenRef, tokenCssVar } from '@greenfield/doc-model';
 import type { Rect } from './geometry';
 
 export type SizingMode = 'fixed' | 'fill' | 'hug' | 'auto';

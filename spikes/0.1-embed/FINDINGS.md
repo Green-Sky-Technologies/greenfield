@@ -1,6 +1,6 @@
 # Story 0.1 spike: embed FigCraft in Next.js (findings)
 
-Release figcraft-web v0.18.1. The spike is dev-only (`CRUNCH_FIGCRAFT_SPIKE=1` and `NODE_ENV !== 'production'`).
+Release figcraft-web v0.18.1. The spike is dev-only (`GREENFIELD_FIGCRAFT_SPIKE=1` and `NODE_ENV !== 'production'`).
 
 ## Result
 
@@ -91,8 +91,8 @@ No failures in Chromium or Firefox.
 
 ```sh
 pnpm install
-docker compose -p crunchdesign up -d db
-DATABASE_URL=postgres://crunch:crunch@localhost:5433/crunch pnpm db:migrate
+docker compose -p greenfield up -d db
+DATABASE_URL=postgres://greenfield:greenfield@localhost:5433/greenfield pnpm db:migrate
 node spikes/0.1-embed/fetch-editor.mjs
 cd apps/web
 pnpm exec vitest run test/figcraft-spike.test.ts
@@ -100,5 +100,5 @@ pnpm exec playwright test -c e2e/figcraft-spike/playwright.config.ts   # next de
 FIGCRAFT_WEBGPU=1 pnpm exec playwright test -c e2e/figcraft-spike/playwright.config.ts
 ```
 
-Manual: `CRUNCH_FIGCRAFT_SPIKE=1 pnpm exec next dev --port 3101`, then open
+Manual: `GREENFIELD_FIGCRAFT_SPIKE=1 pnpm exec next dev --port 3101`, then open
 `/w/<slug>/p/<id>/figcraft` (add `?webgl` to force WebGL2).

@@ -1,6 +1,6 @@
 /** A job can only report into an unlinked assistant message of its own project (review #6). */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { agentConversations, agentMessages, jobs } from '@crunch/db';
+import { agentConversations, agentMessages, jobs } from '@greenfield/db';
 import { createJob } from '@/server/services/jobs';
 import { createProject } from '@/server/services/projects';
 import { ValidationError, type Actor } from '@/server/services/types';

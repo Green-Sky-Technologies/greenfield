@@ -1,5 +1,5 @@
 /**
- * Story 0.1 spike (dev-only, CRUNCH_FIGCRAFT_SPIKE=1): the project's FigCraft document bytes.
+ * Story 0.1 spike (dev-only, GREENFIELD_FIGCRAFT_SPIKE=1): the project's FigCraft document bytes.
  *
  * GET /api/spike/figcraft/:projectId -> 200 application/octet-stream (x-file-name, x-storage)
  *                                       | 204 when nothing is saved yet
@@ -7,7 +7,7 @@
  *
  * 404 for everything when the flag is off. Bodies are never logged.
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError } from '@/server/api';
 import {

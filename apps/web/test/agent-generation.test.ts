@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { agentMessages, eq, jobs } from '@crunch/db';
-import { MemoryJobRunner } from '@crunch/sandbox-runner';
+import { agentMessages, eq, jobs } from '@greenfield/db';
+import { MemoryJobRunner } from '@greenfield/sandbox-runner';
 import { getDoc } from '@/server/services/design-docs';
 import { createProject } from '@/server/services/projects';
 import { upsertMember } from '@/server/services/workspaces';

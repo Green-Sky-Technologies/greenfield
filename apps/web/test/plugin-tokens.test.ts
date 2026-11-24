@@ -1,5 +1,5 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { eq, members, pluginTokens, workspaces } from '@crunch/db';
+import { eq, members, pluginTokens, workspaces } from '@greenfield/db';
 import {
   authenticatePluginToken,
   bearerFrom,

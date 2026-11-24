@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import type { Anthropic, JobSuggestion, QuestionSet } from '@crunch/agent';
-import { agentMessages, eq } from '@crunch/db';
+import { ForbiddenError } from '@greenfield/authz';
+import type { Anthropic, JobSuggestion, QuestionSet } from '@greenfield/agent';
+import { agentMessages, eq } from '@greenfield/db';
 import {
   answerQuestions,
   getProjectChat,

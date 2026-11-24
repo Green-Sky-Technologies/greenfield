@@ -5,7 +5,7 @@
  * agent continues in a new reply, followed on streamUrl (SSE). When that reply suggests a
  * generation job, the job starts right away. Requires agent:run.
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { after, NextResponse } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { answerQuestions, messageStreamUrl, runAssistantMessage } from '@/server/services/agent';

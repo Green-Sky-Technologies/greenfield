@@ -1,6 +1,6 @@
 /**
  * Deterministic design-system linter (Story 4.6). Implements the LintDoc contract from
- * @crunch/contracts: same doc + design system → same issues, in document order, with no I/O and
+ * @greenfield/contracts: same doc + design system → same issues, in document order, with no I/O and
  * no model calls. It runs on every local edit and in the agent's self-correction loop, so it is
  * a single pass over the doc with per-run caches (see the 5,000-node benchmark test).
  *
@@ -14,7 +14,7 @@
  *   font-not-in-system       font families the system doesn't define
  * Fixes are DocOps (setStyle → token) and only offered when the replacement is unambiguous.
  */
-import type { LintDoc, LintIssue, LintOptions } from '@crunch/contracts';
+import type { LintDoc, LintIssue, LintOptions } from '@greenfield/contracts';
 import {
   BREAKPOINTS,
   isTokenRef,
@@ -29,7 +29,7 @@ import {
   type ResponsiveStyle,
   type StylePropName,
   type TokenKind,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { contrast, hex, over, parseColor, type Rgba } from './color';
 import {
   lengthPx,
@@ -40,7 +40,7 @@ import {
   type IndexedToken,
 } from './tokens';
 
-export type { LintIssue, LintOptions, LintDoc } from '@crunch/contracts';
+export type { LintIssue, LintOptions, LintDoc } from '@greenfield/contracts';
 export { TokenIndex } from './tokens';
 export { contrast, parseColor } from './color';
 
@@ -376,7 +376,7 @@ const PROPS_FOR_CONTRAST: StylePropName[] = [
 
 /**
  * What contrast walks: a doc node, or a part of an expanded component instance. The expansion
- * mirrors @crunch/renderer's expandInstance (variant styles merged, the instance's style on the
+ * mirrors @greenfield/renderer's expandInstance (variant styles merged, the instance's style on the
  * root, text/hidden bindings applied, nested instances expanded), kept local so ds-lint stays a
  * leaf package.
  */

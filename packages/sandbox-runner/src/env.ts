@@ -5,7 +5,7 @@
  */
 
 export interface SandboxEnvInput {
-  /** Public base URL of the app, e.g. https://crunch.example.com (no trailing slash). */
+  /** Public base URL of the app, e.g. https://greenfield.example.com (no trailing slash). */
   appUrl: string;
   jobId: string;
   /** Job token (cjt_…), revoked when the job ends. */
@@ -24,8 +24,8 @@ export const SANDBOX_ENV_KEYS = [
   'CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC',
   'DISABLE_TELEMETRY',
   'DISABLE_AUTOUPDATER',
-  'CRUNCH_API_URL',
-  'CRUNCH_JOB_ID',
+  'GREENFIELD_API_URL',
+  'GREENFIELD_JOB_ID',
 ] as const;
 
 export function buildSandboxEnv(
@@ -40,8 +40,8 @@ export function buildSandboxEnv(
     CLAUDE_CODE_DISABLE_NONESSENTIAL_TRAFFIC: '1',
     DISABLE_TELEMETRY: '1',
     DISABLE_AUTOUPDATER: '1',
-    CRUNCH_API_URL: appUrl,
-    CRUNCH_JOB_ID: i.jobId,
+    GREENFIELD_API_URL: appUrl,
+    GREENFIELD_JOB_ID: i.jobId,
   };
 }
 

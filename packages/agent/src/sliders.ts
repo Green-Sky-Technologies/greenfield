@@ -1,6 +1,6 @@
 /**
  * Slider value → DesignDoc ops (Story 5.8). Pure and client-safe (imported by the slider tray
- * via `@crunch/agent/sliders`): moving a slider never calls the model.
+ * via `@greenfield/agent/sliders`): moving a slider never calls the model.
  */
 import {
   validateStyleValue,
@@ -8,7 +8,7 @@ import {
   type DocOp,
   type Slider,
   type SliderBinding,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 
 const round = (n: number) => Math.round(n * 1000) / 1000;
 

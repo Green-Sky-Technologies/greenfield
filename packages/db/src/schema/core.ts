@@ -76,7 +76,7 @@ export const members = pgTable(
 );
 
 /**
- * One model credential per workspace (SPEC D8). `secretEnvelope` is an @crunch/crypto
+ * One model credential per workspace (SPEC D8). `secretEnvelope` is an @greenfield/crypto
  * envelope bound to the workspace id. It never leaves the server.
  */
 export const providerCredentials = pgTable(
@@ -112,7 +112,7 @@ export const workspaceAwsExternalIds = pgTable('workspace_aws_external_ids', {
 });
 
 /**
- * A design system (Epic 4). `draft` holds the editable DesignSystemSpec (@crunch/doc-model);
+ * A design system (Epic 4). `draft` holds the editable DesignSystemSpec (@greenfield/doc-model);
  * publishing snapshots it into design_system_versions. `draft` is null until first edited
  * (the default system starts from the built-in starter spec).
  */

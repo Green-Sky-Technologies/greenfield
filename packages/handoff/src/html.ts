@@ -3,8 +3,8 @@
  * annotations stripped, frames fluid so the page responds to the viewport exactly like the
  * canvas frame responds to its width (breakpoints are container queries on the frame).
  */
-import type { DesignDoc, DesignSystemSpec } from '@crunch/doc-model';
-import { renderDocumentHtml } from '@crunch/renderer';
+import type { DesignDoc, DesignSystemSpec } from '@greenfield/doc-model';
+import { renderDocumentHtml } from '@greenfield/renderer';
 
 export interface HtmlExportOptions {
   /** Subset of frames (default: all, in document order). */

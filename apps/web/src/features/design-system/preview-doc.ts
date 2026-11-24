@@ -13,7 +13,7 @@ import {
   type ResponsiveStyle,
   type StyleProps,
   type TokenType,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 
 export const PREVIEW_FRAME_ID = 'f_dspreview0';
 /** Cap per component so a system with many variant axes stays readable (and fast). */

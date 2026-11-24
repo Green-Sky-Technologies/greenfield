@@ -9,8 +9,8 @@
  * autosave as always; Discard undoes everything done since the session started and returns to
  * view mode (the steps stay on the redo stack); Save keeps them and returns to view mode.
  */
-import type { Tool } from '@crunch/canvas';
-import { safeImageSrc, type Frame } from '@crunch/doc-model';
+import type { Tool } from '@greenfield/canvas';
+import { safeImageSrc, type Frame } from '@greenfield/doc-model';
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';
 import {

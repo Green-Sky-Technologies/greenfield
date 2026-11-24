@@ -3,7 +3,7 @@
  * screenshots and the handoff bundle 7.2). Same describe() and per-node CSS as the DOM
  * renderer, so the markup and rules are identical.
  */
-import type { DesignDoc, DesignSystemSpec } from '@crunch/doc-model';
+import type { DesignDoc, DesignSystemSpec } from '@greenfield/doc-model';
 import { rnodeCss, sharedCss, type RenderContext } from './core';
 import { layoutOf, ROOT_LAYOUT, type ParentLayouts } from './css';
 import { DEFAULT_OPTIONS, describe, rnodeFor, type RenderOptions, type RNode } from './describe';

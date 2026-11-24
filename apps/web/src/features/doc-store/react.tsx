@@ -1,8 +1,8 @@
 'use client';
 
 /** React bindings for the doc store, plus the editor context every feature slot reads. */
-import type { Permission, Role } from '@crunch/authz';
-import type { DesignSystemSpec } from '@crunch/doc-model';
+import type { Permission, Role } from '@greenfield/authz';
+import type { DesignSystemSpec } from '@greenfield/doc-model';
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { useStore } from 'zustand';
 import {
@@ -24,7 +24,7 @@ export interface EditorInfo {
   };
   workspace: { id: string; slug: string; name: string };
   user: { id: string; role: Role };
-  /** Permissions the current user has (from @crunch/authz). */
+  /** Permissions the current user has (from @greenfield/authz). */
   permissions: readonly Permission[];
   designSystem: { id: string; name: string; version: number | null; spec: DesignSystemSpec };
   /** Workspace has a working model credential (agent usable). */

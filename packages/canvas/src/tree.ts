@@ -1,5 +1,5 @@
 /** Tree navigation and layer-list helpers over a DesignDoc (Story 3.2). */
-import { LEAF_TYPES, type DesignDoc, type Node } from '@crunch/doc-model';
+import { LEAF_TYPES, type DesignDoc, type Node } from '@greenfield/doc-model';
 
 export function ancestors(doc: DesignDoc, id: string): string[] {
   const out: string[] = [];

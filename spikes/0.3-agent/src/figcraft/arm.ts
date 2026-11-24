@@ -7,7 +7,7 @@
  * ("ask agent") request is undone and reported to the model as an error.
  */
 import type Anthropic from '@anthropic-ai/sdk';
-import { SUGGEST_JOB_TOOL, suggestJobInput, type ModelGateway } from '@crunch/agent';
+import { SUGGEST_JOB_TOOL, suggestJobInput, type ModelGateway } from '@greenfield/agent';
 import {
   assistantText,
   checkExpect,

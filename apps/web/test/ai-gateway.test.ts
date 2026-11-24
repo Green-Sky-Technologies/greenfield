@@ -1,12 +1,12 @@
 /** Deployment-wide Vercel AI Gateway: config, precedence, and the proxy's real gateway path. */
-import { generateMasterKey } from '@crunch/crypto';
+import { generateMasterKey } from '@greenfield/crypto';
 // The env keyring is read lazily on first use; set it before anything decrypts.
 process.env.CREDENTIALS_MASTER_KEYS = `t1:${generateMasterKey()}`;
 
 import { afterAll, afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { encodeSse } from '@crunch/agent';
-import { eq, jobs, llmCalls, providerCredentials } from '@crunch/db';
-import { AI_GATEWAY_BASE_URL } from '@crunch/providers';
+import { encodeSse } from '@greenfield/agent';
+import { eq, jobs, llmCalls, providerCredentials } from '@greenfield/db';
+import { AI_GATEWAY_BASE_URL } from '@greenfield/providers';
 import { deploymentGatewayConfig } from '@/server/services/ai-gateway';
 import {
   hasWorkingCredential,
@@ -36,7 +36,7 @@ const WORKSPACE_KEY = 'sk-ant-api03-' + 'W'.repeat(40) + 'WSKY';
 
 /** Gateway on with a deployment API key (no AI_GATEWAY_API_KEY → OIDC). */
 function gatewayOn(auth: 'api_key' | 'oidc' = 'api_key') {
-  vi.stubEnv('CRUNCH_AI_GATEWAY', undefined);
+  vi.stubEnv('GREENFIELD_AI_GATEWAY', undefined);
   vi.stubEnv('VERCEL', auth === 'oidc' ? '1' : undefined);
   vi.stubEnv('AI_GATEWAY_API_KEY', auth === 'api_key' ? GATEWAY_KEY : undefined);
 }
@@ -48,10 +48,10 @@ describe('deploymentGatewayConfig', () => {
     [{}, false],
     [{ VERCEL: '1' }, true],
     [{ AI_GATEWAY_API_KEY: 'k' }, true],
-    [{ VERCEL: '1', CRUNCH_AI_GATEWAY: 'off' }, false],
-    [{ AI_GATEWAY_API_KEY: 'k', CRUNCH_AI_GATEWAY: 'OFF' }, false],
-    [{ CRUNCH_AI_GATEWAY: 'on' }, true],
-    [{ CRUNCH_AI_GATEWAY: 'auto', VERCEL: '1' }, true],
+    [{ VERCEL: '1', GREENFIELD_AI_GATEWAY: 'off' }, false],
+    [{ AI_GATEWAY_API_KEY: 'k', GREENFIELD_AI_GATEWAY: 'OFF' }, false],
+    [{ GREENFIELD_AI_GATEWAY: 'on' }, true],
+    [{ GREENFIELD_AI_GATEWAY: 'auto', VERCEL: '1' }, true],
   ])('%j → enabled=%s', (env, enabled) => {
     expect(deploymentGatewayConfig(env).enabled).toBe(enabled);
   });
@@ -66,7 +66,7 @@ describe('model access precedence', () => {
   it('no credential and gateway off: no model access', async () => {
     const admin = await makeActor(db, 'admin');
     vi.stubEnv('AI_GATEWAY_API_KEY', GATEWAY_KEY); // set, but explicitly disabled
-    vi.stubEnv('CRUNCH_AI_GATEWAY', 'off');
+    vi.stubEnv('GREENFIELD_AI_GATEWAY', 'off');
     await expect(loadWorkspaceClient(db, admin.workspace.id)).rejects.toBeInstanceOf(NotFoundError);
     expect(await hasWorkingCredential(db, admin.workspace.id)).toBe(false);
   });
@@ -105,7 +105,7 @@ describe('model access precedence', () => {
       .where(eq(providerCredentials.workspaceId, admin.workspace.id));
     expect((await loadWorkspaceClient(db, admin.workspace.id)).source).toBe('deployment_gateway');
     // With the gateway off, the saved credential is still used (its error surfaces as today).
-    vi.stubEnv('CRUNCH_AI_GATEWAY', 'off');
+    vi.stubEnv('GREENFIELD_AI_GATEWAY', 'off');
     expect((await loadWorkspaceClient(db, admin.workspace.id)).source).toBe('workspace');
     expect(await hasWorkingCredential(db, admin.workspace.id)).toBe(false);
   });

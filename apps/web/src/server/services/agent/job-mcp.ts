@@ -4,9 +4,9 @@
  * tool calls run here, against Postgres, with the job owner's permissions. The sandbox never
  * touches the database or any credential.
  */
-import { contractToolDefs, executeTool, type ToolHost } from '@crunch/agent';
-import type { JobInput, JobKind } from '@crunch/contracts';
-import { agentMessages, and, eq, jobEvents, type Db } from '@crunch/db';
+import { contractToolDefs, executeTool, type ToolHost } from '@greenfield/agent';
+import type { JobInput, JobKind } from '@greenfield/contracts';
+import { agentMessages, and, eq, jobEvents, type Db } from '@greenfield/db';
 import { appendJobEvent, jobActor, touchJobHeartbeat } from '../jobs';
 import { JobTokenError, tokenFromHeaders, verifyJobToken } from './job-tokens';
 import { snapshotBeforeAgentEdit } from './snapshots';
@@ -127,7 +127,7 @@ export async function handleJobMcp(db: Db, req: Request, jobId: string): Promise
                 ? r.params.protocolVersion
                 : PROTOCOL_VERSION,
             capabilities: { tools: { listChanged: false } },
-            serverInfo: { name: 'crunchdesign', version: '1.0.0' },
+            serverInfo: { name: 'greenfield', version: '1.0.0' },
           };
           break;
         case 'ping':

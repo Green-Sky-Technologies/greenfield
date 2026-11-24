@@ -2,7 +2,7 @@
  * GET  /api/comments/notifications[?unread=1]  -> { notifications }
  * POST /api/comments/notifications  <- { ids: uuid[] } | { all: true }  -> { updated }
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { apiActor, apiError, jsonBody } from '@/server/api';

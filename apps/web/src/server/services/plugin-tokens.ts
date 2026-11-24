@@ -8,7 +8,7 @@
  *   the `members` table, so demoting or removing a member takes effect immediately.
  * - Tokens are revocable by their owner, or by a workspace Admin.
  */
-import { assertCan, can, ROLES, type Role } from '@crunch/authz';
+import { assertCan, can, ROLES, type Role } from '@greenfield/authz';
 import {
   and,
   desc,
@@ -19,7 +19,7 @@ import {
   workspaces,
   type Db,
   type PluginTokenRow,
-} from '@crunch/db';
+} from '@greenfield/db';
 import { createHash, randomBytes } from 'node:crypto';
 import { z } from 'zod';
 import { NotFoundError, ValidationError, type Actor } from './types';
@@ -192,7 +192,7 @@ export function resetMembershipCache() {
 /** Default verifier: Clerk's backend API (loaded lazily so services stay framework-free). */
 export const clerkMembershipVerifier: MembershipVerifier = async (clerkOrgId, userId) => {
   const { clerkClient } = await import('@clerk/nextjs/server');
-  const { roleFromClerk } = await import('@crunch/authz');
+  const { roleFromClerk } = await import('@greenfield/authz');
   const client = await clerkClient();
   let list;
   try {

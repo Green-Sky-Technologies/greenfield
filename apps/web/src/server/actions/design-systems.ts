@@ -4,7 +4,7 @@
  * Design-system server actions (Epic 4). Thin wrappers: authorization and validation live in the
  * services, `run()` maps domain errors to an ActionResult.
  */
-import type { DesignSystemSpec } from '@crunch/doc-model';
+import type { DesignSystemSpec } from '@greenfield/doc-model';
 import { revalidatePath } from 'next/cache';
 import { db, requireActor } from '../context';
 import {

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { providerModelId } from '@crunch/providers';
+import { providerModelId } from '@greenfield/providers';
 import { describe, expect, it } from 'vitest';
 import { baseModelId, MODELS } from './models';
 

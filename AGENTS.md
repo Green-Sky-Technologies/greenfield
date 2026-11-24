@@ -1,21 +1,21 @@
-# CrunchDesign: working notes for Codex
+# Greenfield: working notes for Codex
 
 Read `SPEC.md` for product scope. Stories are referenced by number (e.g. "Story 3.4").
 
 ## Conventions
 
-- pnpm workspaces + Turborepo. Internal packages are named `@crunch/*` and consumed as TS source
+- pnpm workspaces + Turborepo. Internal packages are named `@greenfield/*` and consumed as TS source
   (add new ones to `transpilePackages` in `apps/web/next.config.ts`).
 - **Authorization lives next to the resource.** Every page, server action and route handler gets
   the caller from `requireActor()` / `getActor()` (`apps/web/src/server/context.ts`), and every
-  service function calls `assertCan(actor.role, '<permission>')` from `@crunch/authz`. Add new
+  service function calls `assertCan(actor.role, '<permission>')` from `@greenfield/authz`. Add new
   permissions to `packages/authz` and its tests. The proxy (`src/proxy.ts`) does no authorization.
 - **Services are framework-free** (`apps/web/src/server/services/*`): they take `(db, actor, input)`
   so they can be integration-tested against real Postgres (`apps/web/test`). Server actions are thin
   wrappers that use `run()` to turn domain errors into `ActionResult`.
 - Every query is scoped by `actor.workspace.id`. A resource from another workspace is reported as
   `NotFoundError`, never forbidden.
-- **Secrets:** provider credentials are encrypted with `@crunch/crypto` (AAD = workspace id).
+- **Secrets:** provider credentials are encrypted with `@greenfield/crypto` (AAD = workspace id).
   Only `loadWorkspaceClient()` sees decrypted material. Never log request bodies or credential
   objects; never send secrets to the browser or into a Vercel Sandbox (the LLM proxy, Story 5.2,
   injects them server-side).

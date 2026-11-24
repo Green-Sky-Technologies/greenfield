@@ -2,7 +2,7 @@
  * GET  /api/versions?projectId=…[&includeAuto=1]  -> { versions }
  * POST /api/versions  <- { projectId, name, description? }  -> { version }
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { apiActor, apiError, jsonBody } from '@/server/api';

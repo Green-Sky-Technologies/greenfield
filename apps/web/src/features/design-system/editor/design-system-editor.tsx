@@ -1,6 +1,6 @@
 'use client';
 
-import type { DesignSystemSpec } from '@crunch/doc-model';
+import type { DesignSystemSpec } from '@greenfield/doc-model';
 import Link from 'next/link';
 import { useMemo, useState, useTransition } from 'react';
 import {

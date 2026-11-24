@@ -5,7 +5,7 @@
  * markup and per-node rules as the canvas and HTML export). Shared token/reset CSS is omitted.
  * Editing code is out of scope: the doc tree is the source of truth (SPEC D1).
  */
-import { renderFrameStatic, renderSubtreeStatic } from '@crunch/renderer';
+import { renderFrameStatic, renderSubtreeStatic } from '@greenfield/renderer';
 import { useMemo, useState } from 'react';
 import { useDocStore, useEditor } from '../doc-store';
 

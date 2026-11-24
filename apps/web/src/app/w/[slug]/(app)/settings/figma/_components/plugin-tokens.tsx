@@ -42,9 +42,9 @@ export function PluginTokens({ initial, currentUserId }: Props) {
     <div className="card p-5">
       <h2 className="font-medium">Plugin tokens</h2>
       <p className="mt-1 text-sm text-muted">
-        Paste a token into the CrunchDesign Figma plugin. It acts as you, in this workspace only,
-        with your current role. Tokens are stored hashed; copy a new one now, because it won&apos;t
-        be shown again.
+        Paste a token into the Greenfield Figma plugin. It acts as you, in this workspace only, with
+        your current role. Tokens are stored hashed; copy a new one now, because it won&apos;t be
+        shown again.
       </p>
 
       {fresh && (

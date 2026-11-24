@@ -1,7 +1,11 @@
 /** Browser client for the agent API. Types mirror the server's MessageView (no server imports). */
-import type { AnswerQuestionsInput, QuestionAnswers, QuestionSet } from '@crunch/agent/questions';
+import type {
+  AnswerQuestionsInput,
+  QuestionAnswers,
+  QuestionSet,
+} from '@greenfield/agent/questions';
 
-export type { QuestionAnswer, QuestionAnswers, QuestionSet } from '@crunch/agent/questions';
+export type { QuestionAnswer, QuestionAnswers, QuestionSet } from '@greenfield/agent/questions';
 
 export type MessageStatus = 'pending' | 'streaming' | 'complete' | 'error' | 'cancelled';
 

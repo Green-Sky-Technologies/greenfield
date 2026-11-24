@@ -1,5 +1,5 @@
 /** Zod schemas and size limits for inbound plugin payloads (Epic 8). */
-import { variablesSnapshot } from '@crunch/figma-convert';
+import { variablesSnapshot } from '@greenfield/figma-convert';
 import { z } from 'zod';
 
 export const KB = 1024;
@@ -86,7 +86,7 @@ export const pushResultRequest = z
     fileName: z.string().max(300).optional(),
     pageId: figmaNodeId.optional(),
     docVersion: z.number().int().min(0),
-    /** CrunchDesign NodeId (or component key) -> Figma node id. */
+    /** Greenfield NodeId (or component key) -> Figma node id. */
     nodeMap: z
       .record(z.string().max(200), figmaNodeId)
       .refine((m) => Object.keys(m).length <= 25_000, 'Too many nodes'),

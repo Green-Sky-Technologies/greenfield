@@ -2,8 +2,8 @@
  * Project activity (Story 6.4). Collab/export services write rows here; the feed merges them
  * with the doc_ops log so design edits (human vs. agent) appear without extra writes.
  */
-import { assertCan } from '@crunch/authz';
-import { activity, and, desc, docOps, eq, inArray, sql, users, type Db } from '@crunch/db';
+import { assertCan } from '@greenfield/authz';
+import { activity, and, desc, docOps, eq, inArray, sql, users, type Db } from '@greenfield/db';
 import { z } from 'zod';
 import { getProject } from './projects';
 import { ValidationError, type Actor } from './types';

@@ -1,6 +1,6 @@
 'use client';
 
-import type { DesignSystemSpec, TokenType } from '@crunch/doc-model';
+import type { DesignSystemSpec, TokenType } from '@greenfield/doc-model';
 import type { SpecIssue } from '@/server/services/design-systems/spec';
 
 export type Update = (fn: (draft: DesignSystemSpec) => void) => void;

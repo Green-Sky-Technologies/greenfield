@@ -1,6 +1,6 @@
 /** User prompts for background jobs, built from the validated job input (Story 5.5). */
-import { toolsFor, type JobInput, type JobKind } from '@crunch/contracts';
-import type { DesignDoc } from '@crunch/doc-model';
+import { toolsFor, type JobInput, type JobKind } from '@greenfield/contracts';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { outline } from './context';
 import { stableStringify } from './stable';
 

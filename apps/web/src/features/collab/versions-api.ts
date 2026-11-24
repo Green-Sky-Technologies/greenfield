@@ -1,5 +1,5 @@
 /** Browser client for named versions (Story 6.2). */
-import type { DesignDoc } from '@crunch/doc-model';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { request } from './api';
 
 export interface VersionItem {

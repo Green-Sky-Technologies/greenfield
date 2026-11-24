@@ -14,7 +14,7 @@ import {
   type TokenDef,
   type TokenMap,
   type TokenType,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 
 const UNITLESS: ReadonlySet<TokenType> = new Set(['fontWeight', 'lineHeight', 'number']);
 

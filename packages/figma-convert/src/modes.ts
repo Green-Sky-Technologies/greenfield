@@ -14,7 +14,7 @@ export function themeName(mode: string): string | null {
   return /^[a-z][a-z0-9-]*$/.test(s) ? s : null;
 }
 
-/** Key used to match a mode name across Figma and CrunchDesign. */
+/** Key used to match a mode name across Figma and Greenfield. */
 export function modeKey(name: string): string {
   return themeName(name) ?? name.trim().toLowerCase();
 }

@@ -1,5 +1,5 @@
 {
-  "name": "@crunch/figma-plugin",
+  "name": "@greenfield/figma-plugin",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,7 @@
     "test": "vitest run --passWithNoTests"
   },
   "dependencies": {
-    "@crunch/figma-convert": "workspace:*"
+    "@greenfield/figma-convert": "workspace:*"
   },
   "devDependencies": {
     "@figma/plugin-typings": "^1.142.0",

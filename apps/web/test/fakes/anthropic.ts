@@ -2,7 +2,7 @@
  * Fake Anthropic message streams for tests. No network, no keys, no spend.
  * `scriptedClient` replays one scripted response per call, in order.
  */
-import type { Anthropic } from '@crunch/agent';
+import type { Anthropic } from '@greenfield/agent';
 import type { MessagesApi, ModelStream } from '@/server/services/llm-proxy';
 
 export interface ScriptedResponse {

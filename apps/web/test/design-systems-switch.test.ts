@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { sampleLandingDoc, starterDesignSystem } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { sampleLandingDoc, starterDesignSystem } from '@greenfield/doc-model';
 import { diffSystemsForDoc } from '@/server/services/design-systems/diff';
 import {
   archiveDesignSystem,

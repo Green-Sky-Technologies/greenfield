@@ -1,5 +1,5 @@
-/** CrunchDesign plugin API client (runs in the UI iframe, which has network access). */
-import type { PushPlan, ReportItem } from '@crunch/figma-convert/plugin';
+/** Greenfield plugin API client (runs in the UI iframe, which has network access). */
+import type { PushPlan, ReportItem } from '@greenfield/figma-convert/plugin';
 import type { Settings } from '../shared/messages';
 
 export class ApiError extends Error {

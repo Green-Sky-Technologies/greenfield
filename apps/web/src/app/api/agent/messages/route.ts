@@ -3,7 +3,7 @@
  *                           -> { conversationId, userMessageId, messageId, streamUrl }
  * The reply runs after the response; follow it on streamUrl (SSE). Requires agent:run.
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { after, NextResponse } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { messageStreamUrl, runAssistantMessage, sendMessage } from '@/server/services/agent';

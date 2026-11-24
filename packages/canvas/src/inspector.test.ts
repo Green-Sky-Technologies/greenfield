@@ -1,4 +1,4 @@
-import { STYLE_PROP_NAMES, starterDesignSystem, validateStyleValue } from '@crunch/doc-model';
+import { STYLE_PROP_NAMES, starterDesignSystem, validateStyleValue } from '@greenfield/doc-model';
 import { describe, expect, it } from 'vitest';
 import {
   formatStyleValue,

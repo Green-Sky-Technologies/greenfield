@@ -3,7 +3,7 @@ import { clerkMiddleware } from '@clerk/nextjs/server';
 /**
  * Clerk session handling only. Authorization happens next to each resource:
  * every page, server action and route handler calls `requireActor()` / `getActor()`
- * from `@/server/context` and checks permissions with `@crunch/authz`.
+ * from `@/server/context` and checks permissions with `@greenfield/authz`.
  * (Clerk deprecated route-matcher protection in middleware.)
  */
 export default clerkMiddleware({

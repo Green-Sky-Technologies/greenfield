@@ -9,8 +9,8 @@ import type { Actor } from '@/server/services/types';
 const h = vi.hoisted(() => ({ actor: null as Actor | null, db: null as unknown }));
 vi.mock('server-only', () => ({}));
 vi.mock('@/server/context', () => ({ getActor: async () => h.actor, db: () => h.db }));
-vi.mock('@crunch/db', async (orig) => ({
-  ...(await orig<typeof import('@crunch/db')>()),
+vi.mock('@greenfield/db', async (orig) => ({
+  ...(await orig<typeof import('@greenfield/db')>()),
   getDb: () => h.db,
 }));
 

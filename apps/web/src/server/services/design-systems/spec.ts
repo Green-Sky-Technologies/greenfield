@@ -1,5 +1,5 @@
 /**
- * Pure DesignSystemSpec validation (Story 4.1). Zod checks the shape (@crunch/doc-model's
+ * Pure DesignSystemSpec validation (Story 4.1). Zod checks the shape (@greenfield/doc-model's
  * `designSystemSpec`); this adds the cross-references Zod can't express: aliases point at real
  * tokens of a compatible type with no cycles, themes override real tokens with valid values, and
  * every component is a consistent, acyclic node tree whose bindings and variants line up.
@@ -18,7 +18,7 @@ import {
   type DesignSystemSpec,
   type ResponsiveStyle,
   type TokenType,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 
 /** Upper bound on a stored spec (JSON bytes). Specs are part of the agent's cached prefix. */
 export const MAX_SPEC_BYTES = 2 * 1024 * 1024;

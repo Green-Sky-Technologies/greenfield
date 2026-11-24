@@ -1,4 +1,4 @@
-# CrunchDesign
+# Greenfield
 
 An AI design canvas. Describe a screen, and an agent builds it as live HTML frames on an
 infinite canvas. Refine it in chat, comment on elements, or edit it directly with a
@@ -15,7 +15,7 @@ The product spec is in [`SPEC.md`](SPEC.md).
 
 ## Deploy to Vercel
 
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fcrunch-design&project-name=crunch-design&repository-name=crunch-design&env=CREDENTIALS_MASTER_KEYS%2CCRON_SECRET&envDescription=Two%20random%20secrets.%20Generate%20each%20with%3A%20openssl%20rand%20-base64%2032&envLink=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fcrunch-design%23deploy-to-vercel&integration-ids=oac_7uYNbc9CdDAZmNqbt3LEkO3a&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22public%22%7D%5D)
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield&project-name=greenfield&repository-name=greenfield&env=CREDENTIALS_MASTER_KEYS%2CCRON_SECRET&envDescription=Two%20random%20secrets.%20Generate%20each%20with%3A%20openssl%20rand%20-base64%2032&envLink=https%3A%2F%2Fgithub.com%2FGreen-Sky-Technologies%2Fgreenfield%23deploy-to-vercel&integration-ids=oac_7uYNbc9CdDAZmNqbt3LEkO3a&stores=%5B%7B%22type%22%3A%22integration%22%2C%22integrationSlug%22%3A%22neon%22%2C%22productSlug%22%3A%22neon%22%7D%2C%7B%22type%22%3A%22blob%22%2C%22access%22%3A%22public%22%7D%5D)
 
 Everything runs on Vercel. The button walks you through it:
 
@@ -56,7 +56,7 @@ The Deploy Button **clones** this repository into your account. It's a copy, not
 updates don't arrive on their own. To pull in a new release:
 
 ```bash
-git remote add upstream https://github.com/Green-Sky-Technologies/crunch-design.git  # once
+git remote add upstream https://github.com/Green-Sky-Technologies/greenfield.git  # once
 git pull upstream main
 git push                    # Vercel redeploys; migrations run in the build
 ```
@@ -74,11 +74,11 @@ Neon, Clerk and Blob integrations from the project's **Storage** tab, and set th
 | `CREDENTIALS_MASTER_KEYS`                               | yes         | `openssl rand -base64 32`. To rotate, use `newid:<key>,<old key>` and set `CREDENTIALS_ACTIVE_KEY_ID=newid`.                                       |
 | `CRON_SECRET`                                           | recommended | `openssl rand -base64 32`. Without it, the cron endpoint refuses every call.                                                                       |
 | `BLOB_READ_WRITE_TOKEN`                                 | recommended | Set by the Blob store. Without it, chat image uploads and Figma image import are off.                                                              |
-| `CRUNCH_AI_GATEWAY`                                     | no          | `on` or `off`. The default is on when running on Vercel or when `AI_GATEWAY_API_KEY` is set. With `off`, every workspace needs its own credential. |
+| `GREENFIELD_AI_GATEWAY`                                 | no          | `on` or `off`. The default is on when running on Vercel or when `AI_GATEWAY_API_KEY` is set. With `off`, every workspace needs its own credential. |
 | `AI_GATEWAY_API_KEY`                                    | no          | Use a gateway API key instead of the deployment's OIDC token (for example, when hosting outside Vercel).                                           |
 | `CLERK_WEBHOOK_SIGNING_SECRET`                          | no          | Webhook at `/api/webhooks/clerk` for `user.*`, `organization.*` and `organizationMembership.*`. Without it, members sync on each request.          |
 | `MIGRATE_ON_PREVIEW`                                    | no          | `1` to run migrations on preview deploys.                                                                                                          |
-| `CRUNCH_AWS_PRINCIPAL_ARN`                              | no          | Only for Bedrock credentials that use role assumption.                                                                                             |
+| `GREENFIELD_AWS_PRINCIPAL_ARN`                          | no          | Only for Bedrock credentials that use role assumption.                                                                                             |
 
 ## Local development
 
@@ -98,11 +98,29 @@ Then fill in `apps/web/.env.local`:
 - **Models (pick one):**
   - `vercel link && vercel env pull` gives you an OIDC token for AI Gateway.
   - Or set `AI_GATEWAY_API_KEY`.
-  - Or set `CRUNCH_AI_GATEWAY=off` and add a credential under Settings → Model access.
+  - Or set `GREENFIELD_AI_GATEWAY=off` and add a credential under Settings → Model access.
 
 ```bash
 pnpm dev                           # http://localhost:3000
 ```
+
+### Upgrading from CrunchDesign
+
+The project was renamed from CrunchDesign to Greenfield.
+
+- **Environment variables:** `CRUNCH_AI_GATEWAY`, `CRUNCH_APP_URL` and `CRUNCH_AWS_PRINCIPAL_ARN`
+  are now `GREENFIELD_*`. The old names still work for one release and log a deprecation
+  warning. Rename them in Vercel and in `.env.local`.
+- **Local database:** it is now `greenfield` (user and password `greenfield`) in a new Docker
+  Compose project, so it starts empty. Your old `crunchdesign` container and volume are left
+  alone. To switch, stop the old container, then start and migrate the new one:
+
+  ```bash
+  docker compose -p crunchdesign stop db
+  pnpm db:up && pnpm db:migrate
+  ```
+
+  Then update `DATABASE_URL` in `.env.local`.
 
 ### Commands
 
@@ -115,16 +133,16 @@ pnpm dev                           # http://localhost:3000
 | `pnpm db:migrate`                            | Apply migrations to `DATABASE_URL`                                           |
 | `pnpm setup:clerk`                           | Configure the Clerk instance in `CLERK_SECRET_KEY` (idempotent)              |
 | `pnpm keygen [id]`                           | Print a named credential master key (`id:base64`) for rotation               |
-| `pnpm --filter @crunch/web e2e:canvas`       | Canvas end-to-end tests (Playwright, no sign-in)                             |
-| `pnpm --filter @crunch/web e2e:app`          | Signed-in end-to-end suite with real Clerk users, roles and workspaces       |
+| `pnpm --filter @greenfield/web e2e:canvas`   | Canvas end-to-end tests (Playwright, no sign-in)                             |
+| `pnpm --filter @greenfield/web e2e:app`      | Signed-in end-to-end suite with real Clerk users, roles and workspaces       |
 
 Integration tests use `TEST_DATABASE_URL` (default
-`postgres://crunch:crunch@localhost:5433/crunch_test`), which is created and migrated
+`postgres://greenfield:greenfield@localhost:5433/greenfield_test`), which is created and migrated
 automatically.
 
 `e2e:app` builds the app, starts it on port 3200 and signs in real Clerk users. It needs Clerk
 **development** keys, `CREDENTIALS_MASTER_KEYS` and a migrated database of its own (for example,
-`crunch_e2e`). Each run creates and then deletes its own users and organizations. If a run dies
+`greenfield_e2e`). Each run creates and then deletes its own users and organizations. If a run dies
 first, the next run cleans up, or run `pnpm exec tsx apps/web/e2e/app/cleanup.ts`.
 
 ## Repository layout

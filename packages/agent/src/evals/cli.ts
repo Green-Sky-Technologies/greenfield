@@ -1,7 +1,7 @@
 /**
  * On-demand eval run against a live model (Story 5.13). Spends real tokens on the caller's key:
  *
- *   ANTHROPIC_API_KEY=… pnpm --filter @crunch/agent eval -- --model claude-sonnet-5-5
+ *   ANTHROPIC_API_KEY=… pnpm --filter @greenfield/agent eval -- --model claude-sonnet-5-5
  *
  * Options: --model <id> (repeatable; default MODEL_TIERS.interactive), --case <id> (repeatable),
  * --update-baseline. Writes evals/results/<model>.json, compares with evals/baselines/<model>.json,
@@ -12,7 +12,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { mkdirSync, readdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODEL_TIERS } from '@crunch/providers';
+import { MODEL_TIERS } from '@greenfield/providers';
 import type { ModelGateway } from '../interactive';
 import {
   compareToBaseline,

@@ -1,7 +1,7 @@
 /**
  * Model catalog, prices and task-based defaults (SPEC §2, Stories 5.9, 5.10).
  *
- * Server-side (imports @crunch/providers). The browser gets the catalog from /api/agent/settings.
+ * Server-side (imports @greenfield/providers). The browser gets the catalog from /api/agent/settings.
  *
  * Cache reads are 0.1× input except Opus 5.5 (0.05×, $0.20) and Fable 5.1 (0.025×, $0.25).
  * Prices are Anthropic first-party list prices in USD per million tokens, taken from
@@ -10,7 +10,7 @@
  * prices. Re-check before relying on reconciliation
  * (Story 5.10 AC: within ±5% of provider usage).
  */
-import { MODEL_TIERS, type ModelTier } from '@crunch/providers';
+import { MODEL_TIERS, type ModelTier } from '@greenfield/providers';
 
 export { MODEL_TIERS, type ModelTier };
 

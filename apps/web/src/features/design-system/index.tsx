@@ -2,7 +2,7 @@
  * Design systems (Epic 4). `DesignSystemsPage` is the server component rendered by
  * /w/[slug]/design-systems (export name and props are part of the shell contract).
  */
-import { can } from '@crunch/authz';
+import { can } from '@greenfield/authz';
 import Link from 'next/link';
 import { db, requireActor } from '@/server/context';
 import { listDesignSystems } from '@/server/services/design-systems';

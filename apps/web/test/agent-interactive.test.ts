@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { Anthropic, parseSse } from '@crunch/agent';
-import { agentMessages, eq, llmCalls, workspaceAgentSettings } from '@crunch/db';
+import { ForbiddenError } from '@greenfield/authz';
+import { Anthropic, parseSse } from '@greenfield/agent';
+import { agentMessages, eq, llmCalls, workspaceAgentSettings } from '@greenfield/db';
 import {
   cancelMessage,
   getProjectChat,

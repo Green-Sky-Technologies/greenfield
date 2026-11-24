@@ -1,4 +1,4 @@
-import { applyOps, parseDoc, sampleLandingDoc, starterDesignSystem } from '@crunch/doc-model';
+import { applyOps, parseDoc, sampleLandingDoc, starterDesignSystem } from '@greenfield/doc-model';
 import { describe, expect, it } from 'vitest';
 import { buildInsertNode, insertNodeOps, simplifyStroke, type InsertSpec } from './insert';
 

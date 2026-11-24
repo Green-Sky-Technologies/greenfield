@@ -5,13 +5,13 @@
  * another mode (light/dark). Token paths map to slash-separated variable names
  * (`color.primary` <-> `color/primary`), which is how Figma groups variables.
  */
-import type { DesignSystemSpec, TokenDef, TokenType } from '@crunch/doc-model';
+import type { DesignSystemSpec, TokenDef, TokenType } from '@greenfield/doc-model';
 import { parseCssColor } from './color';
 import type { VariableSpec, VariablesSpec, VariableType, VariableValueSpec } from './plan';
 import type { Reporter } from './report';
 import { toPx } from './units';
 
-export const DEFAULT_COLLECTION = 'CrunchDesign tokens';
+export const DEFAULT_COLLECTION = 'Greenfield tokens';
 export const BASE_MODE = 'light';
 
 export const tokenPathToVariableName = (path: string) => path.split('.').join('/');

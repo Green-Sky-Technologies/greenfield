@@ -1,12 +1,12 @@
 /**
  * Story 0.1 spike (throwaway): one FigCraft document per project, stored as bytes in Vercel Blob
  * (or a local directory when no BLOB_READ_WRITE_TOKEN is set). Dev-only, behind
- * CRUNCH_FIGCRAFT_SPIKE=1; see spikes/0.1-embed/FINDINGS.md.
+ * GREENFIELD_FIGCRAFT_SPIKE=1; see spikes/0.1-embed/FINDINGS.md.
  *
  * Framework-free like every service: `(db, actor, storage, input)`. Bytes are never logged.
  */
-import { assertCan } from '@crunch/authz';
-import type { Db } from '@crunch/db';
+import { assertCan } from '@greenfield/authz';
+import type { Db } from '@greenfield/db';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { getProject } from './projects';
@@ -14,7 +14,7 @@ import { ValidationError, type Actor } from './types';
 
 /** The spike's routes and page exist only with the flag, and never in production builds. */
 export function figcraftSpikeEnabled(): boolean {
-  return process.env.CRUNCH_FIGCRAFT_SPIKE === '1' && process.env.NODE_ENV !== 'production';
+  return process.env.GREENFIELD_FIGCRAFT_SPIKE === '1' && process.env.NODE_ENV !== 'production';
 }
 
 /** Largest document the spike accepts. (A Vercel Function body tops out at 4.5 MB: see FINDINGS.) */
@@ -81,7 +81,7 @@ export function defaultDesignFileStorage(): DesignFileStorage {
   const token = process.env.BLOB_READ_WRITE_TOKEN;
   if (token) return vercelBlobStorage(token);
   return localFsStorage(
-    process.env.CRUNCH_LOCAL_BLOB_DIR ?? path.join(process.cwd(), '.data', 'blob'),
+    process.env.GREENFIELD_LOCAL_BLOB_DIR ?? path.join(process.cwd(), '.data', 'blob'),
   );
 }
 

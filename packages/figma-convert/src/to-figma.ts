@@ -21,7 +21,7 @@ import {
   type Node,
   type ResponsiveStyle,
   type StyleProps,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { parseCssColor } from './color';
 import { parseBoxShadow, parseGradient } from './css-values';
 import type {

@@ -1,5 +1,5 @@
 {
-  "name": "@crunch/ds-lint",
+  "name": "@greenfield/ds-lint",
   "private": true,
   "type": "module",
   "exports": {
@@ -11,8 +11,8 @@
     "lint": "eslint src"
   },
   "dependencies": {
-    "@crunch/contracts": "workspace:*",
-    "@crunch/doc-model": "workspace:*",
+    "@greenfield/contracts": "workspace:*",
+    "@greenfield/doc-model": "workspace:*",
     "culori": "^4.0.2"
   },
   "devDependencies": {

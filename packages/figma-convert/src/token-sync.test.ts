@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { starterDesignSystem } from '@crunch/doc-model';
+import { starterDesignSystem } from '@greenfield/doc-model';
 import type { VariablesSpec } from './plan';
 import type { VariablesSnapshot } from './sync-types';
 import {
@@ -272,7 +272,7 @@ describe('mode names and mode values', () => {
 
   it('push writes base values into Figma modes that have no overrides', () => {
     const spec = starterDesignSystem();
-    spec.themes = {}; // no dark theme in CrunchDesign
+    spec.themes = {}; // no dark theme in Greenfield
     const vs = tokensToVariables(starterDesignSystem());
     const snap = snapshotFrom(vs, 'Light');
     // Figma's Dark mode equals the base everywhere (no overrides).

@@ -1,6 +1,6 @@
 // @vitest-environment happy-dom
-import { permissionsFor } from '@crunch/authz';
-import { applyOps, initialDoc, starterDesignSystem, type DesignDoc } from '@crunch/doc-model';
+import { permissionsFor } from '@greenfield/authz';
+import { applyOps, initialDoc, starterDesignSystem, type DesignDoc } from '@greenfield/doc-model';
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it } from 'vitest';
 import { EditorProvider, type DocApi } from '@/features/doc-store';

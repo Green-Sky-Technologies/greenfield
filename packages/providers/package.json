@@ -1,5 +1,5 @@
 {
-  "name": "@crunch/providers",
+  "name": "@greenfield/providers",
   "private": true,
   "type": "module",
   "exports": {

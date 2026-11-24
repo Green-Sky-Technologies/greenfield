@@ -1,5 +1,5 @@
 /** POST /api/jobs/:id/mcp: MCP (streamable HTTP, JSON responses) tool server for the job sandbox. */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { handleJobMcp } from '@/server/services/agent/job-mcp';
 
 export const maxDuration = 120;

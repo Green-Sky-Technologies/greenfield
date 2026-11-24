@@ -15,8 +15,8 @@ import {
   spacingGuides,
   worldRectToScreen,
   type Handle,
-} from '@crunch/canvas';
-import type { DocOp } from '@crunch/doc-model';
+} from '@greenfield/canvas';
+import type { DocOp } from '@greenfield/doc-model';
 import { useDocStore, useDocStoreApi, useEditor } from '../doc-store';
 import { gestureBreakpoint, useCanvas, useCanvasStoreApi } from './canvas-store';
 import { frameIndex, useViewportRef } from './context';

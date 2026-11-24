@@ -2,7 +2,7 @@
  * GET  /api/comments?projectId=…[&status=open|resolved]  -> { threads }
  * POST /api/comments  <- { projectId, anchor, body, mentions?, kind?, fallback? }  -> { thread }
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { createThread, listThreads } from '@/server/services/comments';

@@ -1,12 +1,12 @@
 /**
  * A user's Figma REST token for imports (Story 8.3). Per user, per workspace, encrypted at rest with
- * @crunch/crypto; the AAD binds the ciphertext to both the workspace and the user, so a row copied
+ * @greenfield/crypto; the AAD binds the ciphertext to both the workspace and the user, so a row copied
  * to another user or workspace fails to decrypt. Only `loadFigmaToken` returns plaintext, and only
  * for server-side REST calls; nothing derived from the token is ever sent to the browser.
  */
-import { assertCan } from '@crunch/authz';
-import { decryptSecret, encryptSecret, type Keyring } from '@crunch/crypto';
-import { and, eq, figmaCredentials, type Db } from '@crunch/db';
+import { assertCan } from '@greenfield/authz';
+import { decryptSecret, encryptSecret, type Keyring } from '@greenfield/crypto';
+import { and, eq, figmaCredentials, type Db } from '@greenfield/db';
 import { z } from 'zod';
 import { NotFoundError, ValidationError, type Actor } from '../types';
 import { FigmaRest, type FigmaFetch } from './rest';

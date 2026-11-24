@@ -1,19 +1,19 @@
 /**
  * Handoff bundle builder (Story 7.2). Produces exactly the `handoffBundle` contract from
- * @crunch/contracts (validated before returning), so codegen (7.3), Figma export and external
+ * @greenfield/contracts (validated before returning), so codegen (7.3), Figma export and external
  * agents can implement a design from one file: "implement handoff.json".
  *
  * Deterministic: no LLM. The intent summary is assembled from the project description,
  * named-version notes and agent conversation titles; the agent stream may enrich it later.
  */
-import { HANDOFF_SCHEMA_VERSION, handoffBundle, type HandoffBundle } from '@crunch/contracts';
+import { HANDOFF_SCHEMA_VERSION, handoffBundle, type HandoffBundle } from '@greenfield/contracts';
 import {
   isValidTokenValue,
   resolveToken,
   type DesignDoc,
   type DesignSystemSpec,
   type Node,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { z } from 'zod';
 import { exportHtml, resolveFrameIds } from './html';
 
@@ -159,7 +159,7 @@ export function handoffJsonSchema(): unknown {
 /** Human/agent instructions shipped as HANDOFF.md in the handoff ZIP. */
 export const HANDOFF_README = `# Design handoff
 
-This folder is a CrunchDesign handoff bundle. To implement the design, give your coding agent
+This folder is a Greenfield handoff bundle. To implement the design, give your coding agent
 one instruction: **"Implement handoff.json."**
 
 ## Files

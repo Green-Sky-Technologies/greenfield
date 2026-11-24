@@ -1,7 +1,7 @@
 'use client';
 
-import { nodeFrameIndex } from '@crunch/canvas';
-import type { DesignDoc } from '@crunch/doc-model';
+import { nodeFrameIndex } from '@greenfield/canvas';
+import type { DesignDoc } from '@greenfield/doc-model';
 import { createContext, useContext, type RefObject } from 'react';
 
 /** The canvas viewport element (overlay coordinates are relative to it). */

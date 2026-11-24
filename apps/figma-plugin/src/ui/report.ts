@@ -1,5 +1,5 @@
 /** Renders a mapping / fidelity report. */
-import type { ReportItem } from '@crunch/figma-convert/plugin';
+import type { ReportItem } from '@greenfield/figma-convert/plugin';
 import { h } from './dom';
 
 export function reportView(items: ReportItem[], title = 'Mapping report'): HTMLElement {

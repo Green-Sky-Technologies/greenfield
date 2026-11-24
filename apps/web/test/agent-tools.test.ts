@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { executeTool } from '@crunch/agent';
-import { agentConversations, agentMessages, docOps, eq } from '@crunch/db';
+import { ForbiddenError } from '@greenfield/authz';
+import { executeTool } from '@greenfield/agent';
+import { agentConversations, agentMessages, docOps, eq } from '@greenfield/db';
 import type { Actor } from '@/server/services/types';
 import { commitTransaction, getDoc } from '@/server/services/design-docs';
 import { createProject } from '@/server/services/projects';

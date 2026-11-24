@@ -11,7 +11,7 @@
  * - "Request control" records the request on the lock and notifies the holder, who can hand over
  *   (the lock moves to the requester) or decline. Admins can take over.
  */
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import {
   and,
   editLocks,
@@ -24,7 +24,7 @@ import {
   sql,
   users,
   type Db,
-} from '@crunch/db';
+} from '@greenfield/db';
 import { EDIT_LOCK_TTL_MS } from './design-docs';
 import { getProject } from './projects';
 import { ValidationError, type Actor } from './types';

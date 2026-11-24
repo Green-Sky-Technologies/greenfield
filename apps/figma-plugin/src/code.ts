@@ -1,8 +1,8 @@
 /**
- * CrunchDesign Figma plugin, main thread. All writes into Figma happen here (Figma's REST API
+ * Greenfield Figma plugin, main thread. All writes into Figma happen here (Figma's REST API
  * can't create nodes; SPEC D12). This file is a thin adapter: the UI fetches plans from the
- * CrunchDesign API and the main thread applies them. Mapping logic lives in
- * @crunch/figma-convert as pure, tested functions.
+ * Greenfield API and the main thread applies them. Mapping logic lives in
+ * @greenfield/figma-convert as pure, tested functions.
  */
 import { applyPushPlan } from './main/push';
 import { collector } from './main/note';
@@ -11,7 +11,7 @@ import { serializeSelection } from './main/selection';
 import { upsertVariables } from './main/variables';
 import type { FileInfo, Settings, ToMain, ToUi } from './shared/messages';
 
-const SETTINGS_KEY = 'crunchdesign.settings.v1';
+const SETTINGS_KEY = 'greenfield.settings.v1';
 const FILE_ID_KEY = 'cd:file';
 
 figma.showUI(__html__, { width: 380, height: 600, themeColors: true });

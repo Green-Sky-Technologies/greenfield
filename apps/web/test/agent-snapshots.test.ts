@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { applyOps, replaceDocOps } from '@crunch/doc-model';
-import { agentMessages, docVersions, eq } from '@crunch/db';
+import { ForbiddenError } from '@greenfield/authz';
+import { applyOps, replaceDocOps } from '@greenfield/doc-model';
+import { agentMessages, docVersions, eq } from '@greenfield/db';
 import { runAssistantMessage, sendMessage } from '@/server/services/agent';
 import { getRevertTarget } from '@/server/services/agent/snapshots';
 import { commitTransaction, getDoc } from '@/server/services/design-docs';

@@ -5,7 +5,7 @@ export default defineConfig({
   schema: './src/schema/index.ts',
   out: './migrations',
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? 'postgres://crunch:crunch@localhost:5433/crunch',
+    url: process.env.DATABASE_URL ?? 'postgres://greenfield:greenfield@localhost:5433/greenfield',
   },
   strict: true,
 });

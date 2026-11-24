@@ -12,7 +12,13 @@
  *
  * Framework-free (zustand/vanilla). React bindings are in ./react.tsx.
  */
-import { applyOps, OpError, type DesignDoc, type DocOp, type OpSource } from '@crunch/doc-model';
+import {
+  applyOps,
+  OpError,
+  type DesignDoc,
+  type DocOp,
+  type OpSource,
+} from '@greenfield/doc-model';
 import { createStore, type StoreApi } from 'zustand/vanilla';
 
 export interface DocApi {

@@ -2,7 +2,7 @@
  * Plan values -> Figma API values. Pure (no `figma` global), so they're unit-testable; binding
  * variables and loading images is done by the caller through the injected helpers.
  */
-import type { EffectSpec, PaintSpec, Rgba } from '@crunch/figma-convert/plugin';
+import type { EffectSpec, PaintSpec, Rgba } from '@greenfield/figma-convert/plugin';
 
 export const rgb = (c: Rgba): RGB => ({ r: c.r, g: c.g, b: c.b });
 

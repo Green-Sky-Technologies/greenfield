@@ -7,14 +7,14 @@
  * Query params: fixture=sample|empty|bench<N> (N frames of ~300 nodes), role=editor|viewer|admin, user=<id>, lock=other,
  * mode=edit|view|comment (default edit: the canvas only selects and edits in edit mode)
  */
-import { permissionsFor, type Role } from '@crunch/authz';
+import { permissionsFor, type Role } from '@greenfield/authz';
 import {
   applyOps,
   initialDoc,
   sampleLandingDoc,
   starterDesignSystem,
   type DesignDoc,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { useLayoutEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { canvasStoreFor } from '@/features/canvas/canvas-store';

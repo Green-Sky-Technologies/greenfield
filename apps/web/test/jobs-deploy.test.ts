@@ -2,8 +2,12 @@
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { eq, jobs } from '@crunch/db';
-import { MemoryJobRunner, recordingSandboxApi, VercelSandboxRunner } from '@crunch/sandbox-runner';
+import { eq, jobs } from '@greenfield/db';
+import {
+  MemoryJobRunner,
+  recordingSandboxApi,
+  VercelSandboxRunner,
+} from '@greenfield/sandbox-runner';
 import { cronAuthorized } from '@/server/services/agent/cron';
 import { appUrl } from '@/server/services/agent/runner';
 import { createJob, reapJobs } from '@/server/services/jobs';
@@ -52,21 +56,23 @@ describe('cron', () => {
 
 describe('sandbox callback URL', () => {
   it('previews call back to themselves, never to production', () => {
-    expect(appUrl({ CRUNCH_APP_URL: 'https://app.example.com/' })).toBe('https://app.example.com');
+    expect(appUrl({ GREENFIELD_APP_URL: 'https://app.example.com/' })).toBe(
+      'https://app.example.com',
+    );
     expect(
       appUrl({
         VERCEL_ENV: 'preview',
         VERCEL_URL: 'pr-1.vercel.app',
-        VERCEL_PROJECT_PRODUCTION_URL: 'crunch.app',
+        VERCEL_PROJECT_PRODUCTION_URL: 'greenfield.app',
       }),
     ).toBe('https://pr-1.vercel.app');
     expect(
       appUrl({
         VERCEL_ENV: 'production',
         VERCEL_URL: 'x-123.vercel.app',
-        VERCEL_PROJECT_PRODUCTION_URL: 'crunch.app',
+        VERCEL_PROJECT_PRODUCTION_URL: 'greenfield.app',
       }),
-    ).toBe('https://crunch.app');
+    ).toBe('https://greenfield.app');
     expect(appUrl({ PORT: '3012' })).toBe('http://localhost:3012');
   });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import { AGENT_TOOLS, toolsFor } from '@crunch/contracts';
-import { sampleLandingDoc, starterDesignSystem, type DocOp } from '@crunch/doc-model';
+import { AGENT_TOOLS, toolsFor } from '@greenfield/contracts';
+import { sampleLandingDoc, starterDesignSystem, type DocOp } from '@greenfield/doc-model';
 import {
   contractToolDefs,
   executeTool,

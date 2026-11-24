@@ -1,4 +1,4 @@
-import { applyOps, checkInvariants, sampleLandingDoc } from '@crunch/doc-model';
+import { applyOps, checkInvariants, sampleLandingDoc } from '@greenfield/doc-model';
 import { describe, expect, it } from 'vitest';
 import {
   absolutePlacementOps,

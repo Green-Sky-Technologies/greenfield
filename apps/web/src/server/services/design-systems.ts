@@ -7,7 +7,7 @@
  *   publish    snapshot the draft into design_system_versions(version = latestVersion + 1)
  *   projects   pin a version (see project-design-system.ts)
  */
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import {
   and,
   asc,
@@ -21,7 +21,7 @@ import {
   sql,
   type Db,
   type DesignSystem,
-} from '@crunch/db';
+} from '@greenfield/db';
 import {
   componentDef,
   designSystemSpec,
@@ -30,7 +30,7 @@ import {
   type ComponentDef,
   type DesignSystemSpec,
   type TokenDef,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 import { z } from 'zod';
 import { safeParseSpec, specsEqual, type SpecIssue } from './design-systems/spec';
 import { NotFoundError, ValidationError, type Actor } from './types';

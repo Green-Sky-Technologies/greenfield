@@ -5,7 +5,7 @@
  * coordinates after layout settles, then projected with the camera on every render, so outlines
  * stay correct at any zoom and at every breakpoint without re-measuring during pan/zoom.
  */
-import { nodeLabel, worldRectToScreen, type Rect } from '@crunch/canvas';
+import { nodeLabel, worldRectToScreen, type Rect } from '@greenfield/canvas';
 import { useLayoutEffect, useState, type ReactNode } from 'react';
 import { useDocStore } from '../doc-store';
 import { useCanvas, useCanvasStoreApi } from './canvas-store';

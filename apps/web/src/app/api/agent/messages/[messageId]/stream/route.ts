@@ -3,8 +3,8 @@
  * Events: `message` (full MessageView on every change), then `done`. Reconnects get the current
  * state first, so no Last-Event-ID bookkeeping is needed here (job streams do use it).
  */
-import { getDb } from '@crunch/db';
-import { sseStream, SSE_HEADERS } from '@crunch/agent';
+import { getDb } from '@greenfield/db';
+import { sseStream, SSE_HEADERS } from '@greenfield/agent';
 import { apiActor, apiError } from '@/server/api';
 import { getMessageView, messageEvents } from '@/server/services/agent';
 

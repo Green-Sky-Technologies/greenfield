@@ -1,7 +1,7 @@
 /**
  * Agent tool handlers (Story 5.3), shared by the interactive path and sandbox jobs.
  *
- * Every handler validates its input with the Zod schema from @crunch/contracts (AGENT_TOOLS).
+ * Every handler validates its input with the Zod schema from @greenfield/contracts (AGENT_TOOLS).
  * Edits become DesignDoc ops, committed through the host as one transaction per call; the host
  * attributes the transaction to the agent message (server-side, never from the browser).
  */
@@ -12,7 +12,7 @@ import {
   type AgentToolName,
   type LintDoc,
   type LintIssue,
-} from '@crunch/contracts';
+} from '@greenfield/contracts';
 import {
   isStyleProp,
   touchedNodeIds,
@@ -20,8 +20,8 @@ import {
   type DesignSystemSpec,
   type DocOp,
   type Frame,
-} from '@crunch/doc-model';
-import { lintDoc } from '@crunch/ds-lint';
+} from '@greenfield/doc-model';
+import { lintDoc } from '@greenfield/ds-lint';
 import { z } from 'zod';
 import { outline, subtree, subtreeIds } from './context';
 import { stableStringify } from './stable';
@@ -41,7 +41,7 @@ export interface ToolHost {
    * insert_frame. Token overrides affect every frame, so they're rejected under a frame scope.
    */
   frameScope?: { frameIds: string[]; createdFrameIds?: string[]; allowNewFrames: boolean };
-  /** Linter (defaults to @crunch/ds-lint). */
+  /** Linter (defaults to @greenfield/ds-lint). */
   lint?: LintDoc;
   /** Max ops per patch_nodes call (the interactive path keeps patches small). */
   maxOpsPerPatch?: number;

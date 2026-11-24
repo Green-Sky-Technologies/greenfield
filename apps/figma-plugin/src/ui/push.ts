@@ -1,5 +1,5 @@
 /** Push tab (Story 8.2): pick frames and a width, push, then show the mapping report. */
-import type { ReportItem } from '@crunch/figma-convert/plugin';
+import type { ReportItem } from '@greenfield/figma-convert/plugin';
 import { h } from './dom';
 import { callMain, framesView, loadFrames, registerTab, render, state, task } from './main';
 import { reportView } from './report';

@@ -6,8 +6,8 @@ import {
   mergeUsage,
   type ModelGateway,
   type UsageTotals,
-} from '@crunch/agent';
-// The eval harness isn't exported from @crunch/agent's entry; reuse its case schema and loader.
+} from '@greenfield/agent';
+// The eval harness isn't exported from @greenfield/agent's entry; reuse its case schema and loader.
 import { loadGoldenCases } from '../../../packages/agent/src/evals/cli';
 import { goldenCase, type GoldenCase } from '../../../packages/agent/src/evals/harness';
 import { readFileSync } from 'node:fs';

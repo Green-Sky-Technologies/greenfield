@@ -1,6 +1,6 @@
 'use client';
 
-import type { ReportItem } from '@crunch/figma-convert';
+import type { ReportItem } from '@greenfield/figma-convert';
 import Link from 'next/link';
 import { useState, useTransition } from 'react';
 import {

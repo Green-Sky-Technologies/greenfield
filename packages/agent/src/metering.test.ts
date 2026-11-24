@@ -15,7 +15,7 @@ import {
   usageFromEvent,
   type WorkspaceModelSettings,
 } from './index';
-import { MODEL_TIERS } from '@crunch/providers';
+import { MODEL_TIERS } from '@greenfield/providers';
 
 describe('cost estimation', () => {
   it('prices input, output, cache reads and both write TTLs', () => {

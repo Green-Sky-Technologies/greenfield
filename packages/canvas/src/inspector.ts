@@ -15,7 +15,7 @@ import {
   type StyleGroup,
   type StylePropName,
   type TokenType,
-} from '@crunch/doc-model';
+} from '@greenfield/doc-model';
 
 export const GROUP_LABELS: Record<StyleGroup, string> = {
   layout: 'Layout',

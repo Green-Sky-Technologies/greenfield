@@ -7,7 +7,7 @@ import {
   minimapLayout,
   minimapToWorld,
   viewportWorldRect,
-} from '@crunch/canvas';
+} from '@greenfield/canvas';
 import { useDocStore } from '../doc-store';
 import { useCanvas, useCanvasStoreApi } from './canvas-store';
 import { startGesture } from './gesture';

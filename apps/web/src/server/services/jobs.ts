@@ -6,8 +6,8 @@
  * client that closes the tab can come back and replay from Last-Event-ID. The runner (Vercel
  * Sandbox) is injected, so tests and local dev use a fake.
  */
-import { assertCan } from '@crunch/authz';
-import { encodeSse, SSE_KEEPALIVE } from '@crunch/agent';
+import { assertCan } from '@greenfield/authz';
+import { encodeSse, SSE_KEEPALIVE } from '@greenfield/agent';
 import {
   jobInputs,
   TERMINAL_STATUSES,
@@ -16,7 +16,7 @@ import {
   type JobKind,
   type JobRunner,
   type JobStatus,
-} from '@crunch/contracts';
+} from '@greenfield/contracts';
 import {
   agentConversations,
   agentMessages,
@@ -35,7 +35,7 @@ import {
   workspaces,
   type Db,
   type JobRow,
-} from '@crunch/db';
+} from '@greenfield/db';
 import { z } from 'zod';
 import { revokeJobTokens, verifyJobToken, JobTokenError } from './agent/job-tokens';
 import { settleStaleMessages } from './agent/stale';

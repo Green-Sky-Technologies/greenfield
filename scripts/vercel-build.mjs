@@ -36,7 +36,7 @@ if (!env.CRON_SECRET)
 
 if (isProd || env.MIGRATE_ON_PREVIEW === '1') {
   console.log('▸ Applying database migrations');
-  run('pnpm --filter @crunch/db migrate', root);
+  run('pnpm --filter @greenfield/db migrate', root);
 } else {
   console.log('▸ Skipping migrations on this preview (set MIGRATE_ON_PREVIEW=1 to run them)');
 }

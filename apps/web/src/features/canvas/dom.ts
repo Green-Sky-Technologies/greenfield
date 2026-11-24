@@ -5,7 +5,7 @@
  * Rendered nodes carry `data-cd-id` (instance parts also carry `data-cd-part` but share their
  * instance's id, so an instance is always one selectable node).
  */
-import type { Camera, Rect } from '@crunch/canvas';
+import type { Camera, Rect } from '@greenfield/canvas';
 
 export interface Hit {
   frameId: string;

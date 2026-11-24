@@ -5,7 +5,7 @@ prefix, per-turn document context, tool handlers, scope enforcement) against a f
 in memory, then asserts:
 
 - **patch scope**: which nodes the agent touched (`touchWithin`, `mustTouch`, `maxTouched`, `noEdits`);
-- **lint-clean**: no `@crunch/ds-lint` errors on the touched nodes (`lintClean`);
+- **lint-clean**: no `@greenfield/ds-lint` errors on the touched nodes (`lintClean`);
 - **job hand-off**: too-big requests offer a generation job (`jobSuggestion`);
 - **token budget**: input and output tokens for the whole turn (`maxInputTokens`, `maxOutputTokens`).
 
@@ -18,10 +18,10 @@ This makes real, billed model calls on the key in `ANTHROPIC_API_KEY`. It calls 
 directly, not the app's LLM proxy.
 
 ```sh
-ANTHROPIC_API_KEY=sk-ant-… pnpm --filter @crunch/agent eval -- --model claude-sonnet-5-5
+ANTHROPIC_API_KEY=sk-ant-… pnpm --filter @greenfield/agent eval -- --model claude-sonnet-5-5
 # several models, one case, refresh the baseline:
-ANTHROPIC_API_KEY=… pnpm --filter @crunch/agent eval -- --model claude-sonnet-5-5 --model claude-haiku-5-5 --case headline-copy
-ANTHROPIC_API_KEY=… pnpm --filter @crunch/agent eval -- --model claude-sonnet-5-5 --update-baseline
+ANTHROPIC_API_KEY=… pnpm --filter @greenfield/agent eval -- --model claude-sonnet-5-5 --model claude-haiku-5-5 --case headline-copy
+ANTHROPIC_API_KEY=… pnpm --filter @greenfield/agent eval -- --model claude-sonnet-5-5 --update-baseline
 ```
 
 Results go to `results/<model>.json` (gitignore-worthy). Commit `baselines/<model>.json` to
@@ -51,7 +51,7 @@ jobs:
       - uses: actions/setup-node@v4
         with: { node-version: 22, cache: pnpm }
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @crunch/agent eval -- $(for m in ${{ inputs.models }}; do echo --model $m; done)
+      - run: pnpm --filter @greenfield/agent eval -- $(for m in ${{ inputs.models }}; do echo --model $m; done)
         env: { ANTHROPIC_API_KEY: '${{ secrets.EVALS_ANTHROPIC_API_KEY }}' }
       - uses: actions/upload-artifact@v4
         with: { name: eval-results, path: evals/results }

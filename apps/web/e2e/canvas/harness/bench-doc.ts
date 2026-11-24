@@ -1,5 +1,5 @@
 /** Benchmark document (Story 3.0/3.10 size): N frames of ~300 nodes each. */
-import { SCHEMA_VERSION, type DesignDoc, type Node } from '@crunch/doc-model';
+import { SCHEMA_VERSION, type DesignDoc, type Node } from '@greenfield/doc-model';
 
 export function benchDoc(frames = 10, sections = 13): DesignDoc {
   const nodes: Record<string, Node> = {};

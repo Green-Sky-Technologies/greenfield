@@ -1,16 +1,16 @@
 'use client';
 
 /**
- * Implementation of the canvas-overlay contract (@crunch/contracts/canvas-overlay): the OverlayApi
+ * Implementation of the canvas-overlay contract (@greenfield/contracts/canvas-overlay): the OverlayApi
  * handed to every registered overlay (comment pins, lint badges, agent markers), and the layer
  * that renders them above the frames.
  */
-import { frameOfNode, worldToScreen } from '@crunch/canvas';
+import { frameOfNode, worldToScreen } from '@greenfield/canvas';
 import {
   useCanvasOverlays,
   type OverlayApi,
   type OverlayRect,
-} from '@crunch/contracts/canvas-overlay';
+} from '@greenfield/contracts/canvas-overlay';
 import { useMemo } from 'react';
 import { useDocStoreApi, useEditor, type DocStore } from '../doc-store';
 import { useCanvasStoreApi, type CanvasStore } from './canvas-store';

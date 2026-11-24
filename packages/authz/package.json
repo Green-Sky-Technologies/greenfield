@@ -1,5 +1,5 @@
 {
-  "name": "@crunch/authz",
+  "name": "@greenfield/authz",
   "private": true,
   "type": "module",
   "exports": {

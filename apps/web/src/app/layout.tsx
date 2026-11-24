@@ -7,7 +7,7 @@ const geistSans = Geist({ variable: '--font-geist-sans', subsets: ['latin'] });
 const geistMono = Geist_Mono({ variable: '--font-geist-mono', subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: { default: 'CrunchDesign', template: '%s · CrunchDesign' },
+  title: { default: 'Greenfield', template: '%s · Greenfield' },
   description: 'Design with an AI agent on a live HTML canvas.',
 };
 

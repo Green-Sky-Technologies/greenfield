@@ -5,7 +5,7 @@
  *   <- { url }   a figma.com file or frame link; uses the caller's stored Figma token
  *   -> { version, frames, report, stats, preview? }
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { apiActor, apiError, jsonBody } from '@/server/api';
 import { importFigmaUrl } from '@/server/services/figma';

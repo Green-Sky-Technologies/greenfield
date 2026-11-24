@@ -1,5 +1,5 @@
 /** Structural diff of two DesignDocs, per frame, for the side-by-side version compare (Story 6.2). */
-import type { DesignDoc, Node } from '@crunch/doc-model';
+import type { DesignDoc, Node } from '@greenfield/doc-model';
 
 export interface FrameDiff {
   frameId: string;

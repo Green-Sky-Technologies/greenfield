@@ -2,7 +2,7 @@
  * POST /api/versions/:versionId/restore  <- { projectId }  -> { version, txnId, backupId }
  *   423 locked (someone else holds the edit lock) | 403 forbidden | 404 not found
  */
-import { getDb } from '@crunch/db';
+import { getDb } from '@greenfield/db';
 import { NextResponse, type NextRequest } from 'next/server';
 import { z } from 'zod';
 import { apiActor, apiError, jsonBody } from '@/server/api';

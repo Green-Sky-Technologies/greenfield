@@ -1,5 +1,5 @@
 {
-  "name": "@crunch/db",
+  "name": "@greenfield/db",
   "private": true,
   "type": "module",
   "exports": {

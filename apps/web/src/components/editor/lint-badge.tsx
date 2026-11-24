@@ -4,7 +4,7 @@
  * Editor top-bar lint badge (Story 4.6): design-system checks on the live doc, run locally on
  * every edit at zero tokens. Clicking an issue selects its node.
  */
-import { lintDoc, type LintIssue } from '@crunch/ds-lint';
+import { lintDoc, type LintIssue } from '@greenfield/ds-lint';
 import { useDeferredValue, useMemo, useState } from 'react';
 import { useDocStore, useEditor } from '@/features/doc-store';
 

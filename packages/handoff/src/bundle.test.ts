@@ -1,5 +1,5 @@
-import { HANDOFF_SCHEMA_VERSION, handoffBundle } from '@crunch/contracts';
-import { sampleLandingDoc, starterDesignSystem } from '@crunch/doc-model';
+import { HANDOFF_SCHEMA_VERSION, handoffBundle } from '@greenfield/contracts';
+import { sampleLandingDoc, starterDesignSystem } from '@greenfield/doc-model';
 import { describe, expect, it } from 'vitest';
 import {
   buildHandoffBundle,

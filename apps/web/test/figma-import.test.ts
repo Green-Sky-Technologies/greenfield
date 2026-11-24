@@ -4,10 +4,10 @@
  * No real Figma calls: `fetch` is injected.
  */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import { ForbiddenError } from '@crunch/authz';
-import { generateMasterKey, parseKeyring } from '@crunch/crypto';
-import { docOps, eq, figmaCredentials, figmaLinks } from '@crunch/db';
-import { parseDoc } from '@crunch/doc-model';
+import { ForbiddenError } from '@greenfield/authz';
+import { generateMasterKey, parseKeyring } from '@greenfield/crypto';
+import { docOps, eq, figmaCredentials, figmaLinks } from '@greenfield/db';
+import { parseDoc } from '@greenfield/doc-model';
 import { getDoc } from '@/server/services/design-docs';
 import { importFigmaNodes, importFigmaUrl } from '@/server/services/figma';
 import {

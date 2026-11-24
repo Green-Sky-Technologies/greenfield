@@ -3,7 +3,7 @@
  * Called from the Clerk webhook and lazily on each request, so local dev works
  * without a webhook tunnel.
  */
-import type { Role } from '@crunch/authz';
+import type { Role } from '@greenfield/authz';
 import {
   and,
   designSystems,
@@ -13,7 +13,7 @@ import {
   workspaces,
   type Db,
   type Workspace,
-} from '@crunch/db';
+} from '@greenfield/db';
 
 export interface OrgInfo {
   clerkOrgId: string;

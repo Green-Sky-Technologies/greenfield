@@ -7,7 +7,7 @@
  * another function instance all see the same state, and closing the tab doesn't stop the run.
  * Cancel flips the row's status; the running turn notices and aborts its model call.
  */
-import { assertCan } from '@crunch/authz';
+import { assertCan } from '@greenfield/authz';
 import {
   AnswerError,
   answerQuestionsInput,
@@ -30,7 +30,7 @@ import {
   type QuestionSet,
   type ToolActivity,
   type TurnUpdate,
-} from '@crunch/agent';
+} from '@greenfield/agent';
 import {
   agentConversations,
   agentMessages,
@@ -43,7 +43,7 @@ import {
   sql,
   type AgentMessageRow,
   type Db,
-} from '@crunch/db';
+} from '@greenfield/db';
 import { z } from 'zod';
 import { getDoc, LockedError } from './design-docs';
 import { resolveProjectDesignSystem } from './project-design-system';
