@@ -35,7 +35,11 @@ export default async function ProjectPage({
       slug={slug}
       project={{ id: project.id, name: project.name, archived }}
       fileName={documentName(project.name)}
-      people={people.map((p) => ({ userId: p.userId, name: p.name ?? p.email, imageUrl: p.imageUrl }))}
+      people={people.map((p) => ({
+        userId: p.userId,
+        name: p.name ?? p.email,
+        imageUrl: p.imageUrl,
+      }))}
       meId={actor.userId}
       canShare={can(actor.role, 'share:manage')}
       canComment={can(actor.role, 'design:comment') && !archived}
