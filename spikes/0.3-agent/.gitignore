@@ -1,0 +1,7 @@
+/figcraft/
+/target/
+/build.log
+# The root .gitignore ignores out/; keep results here (PNGs, metrics, report), not transcripts.
+!out/
+out/**/transcript.json
+out-scripted/**/transcript.json

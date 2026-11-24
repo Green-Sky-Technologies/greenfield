@@ -1,0 +1,43 @@
+{
+  "arm": "html",
+  "variant": "html-frame",
+  "caseId": "density-slider",
+  "model": "claude-sonnet-5-5",
+  "route": "scripted",
+  "passed": true,
+  "failures": [],
+  "touched": [
+    "n_features01"
+  ],
+  "transactions": 1,
+  "turns": 2,
+  "toolCalls": 1,
+  "jobSuggestion": null,
+  "stopReason": "end_turn",
+  "usage": {
+    "inputTokens": 2400,
+    "outputTokens": 300,
+    "cacheReadTokens": 8000,
+    "cacheWriteTokens": 0,
+    "cacheWrite1hTokens": 0,
+    "estCostMicros": 9400
+  },
+  "wallMs": 1,
+  "finalText": "Tightened the grid gap.",
+  "commands": [
+    {
+      "ops": [
+        {
+          "op": "setStyle",
+          "id": "n_features01",
+          "breakpoint": "base",
+          "prop": "gap",
+          "value": {
+            "token": "space.3"
+          }
+        }
+      ],
+      "label": "tighten"
+    }
+  ]
+}

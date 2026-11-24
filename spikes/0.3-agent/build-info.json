@@ -1,0 +1,9 @@
+{
+  "figcraft": "v0.18.1 (4acc293c2ec941ac1400837ee7e3ab51780399f8), shallow clone of storytold/figcraft",
+  "command": "cargo build --release -p figcraft-cli",
+  "toolchain": "rustc 1.100.0 (Homebrew), macOS arm64",
+  "coldBuild": { "wallSeconds": 99.3, "userCpuSeconds": 513.7, "cratesCompiled": 253 },
+  "binary": { "path": "figcraft/target/release/figcraft-cli", "bytes": 46687296 },
+  "mcp": { "tools": 19, "commands": 645, "commandCatalogBytes": 119429 },
+  "fixtureBuild": "one batch of 21 node.create steps, 34-65 ms headless"
+}
