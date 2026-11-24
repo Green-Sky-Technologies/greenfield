@@ -1,0 +1,28 @@
+<!doctype html>
+<!-- Minimal same-origin host for the Story 0.2 check: the editor in an iframe in host mode. -->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Fork build host</title>
+  <style>
+    html, body { margin: 0; height: 100%; font: 13px system-ui, sans-serif; background: #ddd; }
+    header { height: 32px; display: flex; align-items: center; padding: 0 12px; background: #222; color: #fff; }
+    iframe { display: block; width: 100%; height: calc(100% - 32px); border: 0; }
+  </style>
+</head>
+<body>
+  <header>Host page (parent) &middot; <span id="status">waiting for figcraft:ready</span></header>
+  <iframe id="editor"></iframe>
+  <script>
+    // ?webgl on the host page is passed through (headless Chromium has no WebGPU).
+    document.getElementById('editor').src = './editor/index.html?host=parent&control&author=spike' +
+      (new URLSearchParams(location.search).has('webgl') ? '&webgl' : '');
+    window.hostEvents = [];
+    window.addEventListener('message', (e) => {
+      if (e.origin !== location.origin || !e.data || typeof e.data.type !== 'string') return;
+      window.hostEvents.push(e.data.type);
+      if (e.data.type === 'figcraft:ready') document.getElementById('status').textContent = 'figcraft:ready ' + (e.data.appVersion || '');
+    });
+  </script>
+</body>
+</html>

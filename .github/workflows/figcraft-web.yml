@@ -1,0 +1,96 @@
+# Story 0.2 spike: build the FigCraft web editor from source (pinned tag + our patches) on a clean
+# runner and publish the static site as an artifact. The build runs in the same container image as
+# the local reproducibility check (spikes/0.2-fork-build/FINDINGS.md).
+name: figcraft-web
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - 'spikes/0.2-fork-build/**'
+      - '.github/workflows/figcraft-web.yml'
+  pull_request:
+    paths:
+      - 'spikes/0.2-fork-build/**'
+      - '.github/workflows/figcraft-web.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: figcraft-web-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  TRUNK_VERSION: 0.22.2
+  # Must match wasm-bindgen in FigCraft's Cargo.lock at the pinned tag (trunk runs --offline).
+  WASM_BINDGEN_VERSION: 0.2.129
+  WASM_MAX_BYTES: '25165824' # 24 MiB (SPEC.md Story 0.2)
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    # rustc 1.100.0 on Debian trixie: the same image as spikes/0.2-fork-build/verify/docker-build.sh.
+    container: rust:1.100-trixie
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: System packages (binaryen/wasm-opt, brotli)
+        run: |
+          # trixie's binaryen 120 lacks --enable-bulk-memory-opt (FigCraft's index.html passes it):
+          # take binaryen alone from sid (131 at the time of the spike), everything else from trixie.
+          echo "deb http://deb.debian.org/debian sid main" > /etc/apt/sources.list.d/sid.list
+          printf 'Package: *\nPin: release a=unstable\nPin-Priority: 100\n' > /etc/apt/preferences.d/sid
+          apt-get update -qq
+          apt-get install -y -qq --no-install-recommends brotli
+          apt-get install -y -qq --no-install-recommends -t unstable binaryen
+          wasm-opt --version
+
+      - name: wasm32 target
+        run: rustup target add wasm32-unknown-unknown
+
+      - name: Cache cargo registry, git deps, tools and target dir
+        uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/cargo/registry
+            /usr/local/cargo/git
+            /usr/local/cargo/bin/trunk
+            /usr/local/cargo/bin/wasm-bindgen
+            spikes/0.2-fork-build/figcraft/target
+          key: figcraft-web-${{ hashFiles('spikes/0.2-fork-build/build.sh', 'spikes/0.2-fork-build/patches/**') }}-trunk${{ env.TRUNK_VERSION }}-wb${{ env.WASM_BINDGEN_VERSION }}
+          restore-keys: figcraft-web-
+
+      - name: trunk and wasm-bindgen-cli
+        run: |
+          if ! trunk --version 2>/dev/null | grep -q "$TRUNK_VERSION"; then
+            cargo install trunk --version "$TRUNK_VERSION" --locked
+          fi
+          if ! wasm-bindgen --version 2>/dev/null | grep -q "$WASM_BINDGEN_VERSION"; then
+            cargo install wasm-bindgen-cli --version "$WASM_BINDGEN_VERSION" --locked
+          fi
+          trunk --version
+          wasm-bindgen --version
+
+      - name: Build (clone pinned tag, apply patches, trunk build --release)
+        run: spikes/0.2-fork-build/build.sh
+
+      - name: Assert wasm is under 24 MiB
+        run: |
+          for f in spikes/0.2-fork-build/dist/*.wasm; do
+            size=$(stat -c %s "$f")
+            echo "$f: $size bytes"
+            test "$size" -lt "$WASM_MAX_BYTES"
+          done
+
+      - name: Upload static site
+        uses: actions/upload-artifact@v4
+        with:
+          name: figcraft-web-dist
+          path: spikes/0.2-fork-build/dist/
+          if-no-files-found: error
+          retention-days: 14
