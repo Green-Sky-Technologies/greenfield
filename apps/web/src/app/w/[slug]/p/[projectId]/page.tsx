@@ -2,7 +2,7 @@ import { can } from '@greenfield/authz';
 import { currentUser } from '@clerk/nextjs/server';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { EditorEmbed } from '@/features/editor/editor-embed';
+import { AgentWorkspace } from '@/features/agent/agent-workspace';
 import { db, requireActor } from '@/server/context';
 import { getProject } from '@/server/services/projects';
 import { NotFoundError } from '@/server/services/types';
@@ -34,10 +34,11 @@ export default async function ProjectPage({
         <span className="font-medium">{project.name}</span>
         {archived && <span className="text-xs opacity-60">Archived (read-only)</span>}
       </header>
-      <EditorEmbed
+      <AgentWorkspace
         projectId={project.id}
         author={author}
         canEdit={can(actor.role, 'design:edit') && !archived}
+        canRunAgent={can(actor.role, 'agent:run') && !archived}
         webgl={webgl}
       />
     </div>
