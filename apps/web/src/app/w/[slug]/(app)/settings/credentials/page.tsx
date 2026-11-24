@@ -4,7 +4,6 @@ import { CredentialManager } from '@/components/credential-manager';
 import { db, requireActor } from '@/server/context';
 import { deploymentGatewayConfig } from '@/server/services/ai-gateway';
 import { getExternalId, getPublicCredential } from '@/server/services/credentials';
-import { readEnv } from '@/server/env';
 
 export const metadata = { title: 'Model access' };
 
@@ -31,7 +30,7 @@ export default async function CredentialsPage({
         deploymentGateway={deploymentGateway}
         initial={credential}
         externalId={externalId}
-        awsPrincipalArn={readEnv('GREENFIELD_AWS_PRINCIPAL_ARN') ?? null}
+        awsPrincipalArn={process.env.GREENFIELD_AWS_PRINCIPAL_ARN || null}
       />
     </main>
   );

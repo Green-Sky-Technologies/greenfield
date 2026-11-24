@@ -17,8 +17,13 @@ interface (`src/types.ts`):
 | `MockEditor`                    | `@greenfield/bridge/mock`       | unit tests (in memory)                   |
 | `RemoteEditor` / `test` fixture | `@greenfield/bridge/playwright` | Playwright tests against the real editor |
 
-Pinned editor: **figcraft-web 0.18.1** (`EDITOR_VERSION`, `EDITOR_RELEASE_SHA256`), the release
-`node spikes/0.1-embed/fetch-editor.mjs` puts in `apps/web/public/editor`.
+Pinned editor: **figcraft-web 0.18.1**, set once in [`editor-release.json`](editor-release.json).
+`node apps/web/scripts/fetch-editor.mjs` downloads that release into `apps/web/public/editor`; the
+generated `EDITOR_VERSION` and `EDITOR_RELEASE_SHA256` must match it (`test/csp.test.ts` fails
+otherwise). To upgrade, change the pin, fetch, then `generate`.
+
+`@greenfield/bridge/csp` holds the content security policies for `/editor/` and the pages that
+embed it (Story 8.1); `next.config.ts` and the test server send the same ones.
 
 ## Using it
 

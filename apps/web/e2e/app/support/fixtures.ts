@@ -70,6 +70,10 @@ export const test = base.extend<AppFixtures, { clerkToken: void }>({
 
 function watch(context: BrowserContext, who: string, baseURL: string, problems: string[]) {
   context.on('weberror', (e) => problems.push(`[${who}] page error: ${e.error().message}`));
+  // Story 8.1: the editor and the pages that embed it run under a CSP; any violation fails.
+  context.on('console', (m) => {
+    if (/content.security.policy/i.test(m.text())) problems.push(`[${who}] CSP: ${m.text()}`);
+  });
   context.on('response', (r) => {
     if (r.status() >= 500 && r.url().startsWith(baseURL))
       problems.push(`[${who}] ${r.status()} ${r.request().method()} ${new URL(r.url()).pathname}`);
