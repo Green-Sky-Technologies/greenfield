@@ -4,16 +4,7 @@
  * without a webhook tunnel.
  */
 import type { Role } from '@greenfield/authz';
-import {
-  and,
-  designSystems,
-  eq,
-  members,
-  users,
-  workspaces,
-  type Db,
-  type Workspace,
-} from '@greenfield/db';
+import { and, eq, members, users, workspaces, type Db, type Workspace } from '@greenfield/db';
 
 export interface OrgInfo {
   clerkOrgId: string;
@@ -22,7 +13,7 @@ export interface OrgInfo {
   imageUrl?: string | null;
 }
 
-/** Create or update the workspace and make sure it has a default design system. */
+/** Create or update the workspace. */
 export async function upsertWorkspace(db: Db, org: OrgInfo): Promise<Workspace> {
   return db.transaction(async (tx) => {
     const [ws] = await tx
@@ -38,10 +29,6 @@ export async function upsertWorkspace(db: Db, org: OrgInfo): Promise<Workspace> 
         set: { name: org.name, slug: org.slug, imageUrl: org.imageUrl ?? null, deletedAt: null },
       })
       .returning();
-    await tx
-      .insert(designSystems)
-      .values({ workspaceId: ws!.id, name: 'Default', isDefault: true })
-      .onConflictDoNothing();
     return ws!;
   });
 }

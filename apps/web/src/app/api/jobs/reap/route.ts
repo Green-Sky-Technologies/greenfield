@@ -17,5 +17,5 @@ export const maxDuration = 300;
 export async function GET(req: Request) {
   if (!cronAuthorized(req.headers.get('authorization')))
     return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
-  return NextResponse.json(await reapJobs(getDb(), { runner: jobRunner(getDb()) }));
+  return NextResponse.json(await reapJobs(getDb(), { runner: jobRunner() }));
 }

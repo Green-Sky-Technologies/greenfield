@@ -1,51 +1,46 @@
-import { permissionsForProject } from '@greenfield/authz';
+import { can } from '@greenfield/authz';
+import { currentUser } from '@clerk/nextjs/server';
+import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { EditorShell } from '@/components/editor/editor-shell';
-import { EditorProvider } from '@/features/doc-store';
+import { EditorEmbed } from '@/features/editor/editor-embed';
 import { db, requireActor } from '@/server/context';
-import { hasWorkingCredential } from '@/server/services/credentials';
-import { getDoc } from '@/server/services/design-docs';
-import { resolveProjectDesignSystem } from '@/server/services/project-design-system';
 import { getProject } from '@/server/services/projects';
 import { NotFoundError } from '@/server/services/types';
 
-export default async function ProjectPage({ params }: PageProps<'/w/[slug]/p/[projectId]'>) {
+/**
+ * A project: its design file in the embedded editor (FigCraft, served from /editor/). The
+ * editor shell around it (agent pane, comments, top bar) is Epic 5.
+ */
+export default async function ProjectPage({
+  params,
+  searchParams,
+}: PageProps<'/w/[slug]/p/[projectId]'>) {
   const { slug, projectId } = await params;
   const actor = await requireActor(slug);
   const project = await getProject(db(), actor, projectId).catch((e) => {
     if (e instanceof NotFoundError) notFound();
     throw e;
   });
-  const [state, ds, agentAvailable] = await Promise.all([
-    getDoc(db(), actor, project.id),
-    resolveProjectDesignSystem(db(), actor, project),
-    hasWorkingCredential(db(), actor.workspace.id),
-  ]);
+  const user = await currentUser();
+  const author = user?.fullName || user?.username || 'Someone';
+  // `?webgl` forces the editor's WebGL2 backend (headless browsers have no usable WebGPU adapter).
+  const webgl = (await searchParams).webgl !== undefined;
+  const archived = !!project.archivedAt;
 
   return (
-    <EditorProvider
-      info={{
-        project: {
-          id: project.id,
-          name: project.name,
-          description: project.description,
-          archived: !!project.archivedAt,
-        },
-        workspace: {
-          id: actor.workspace.id,
-          slug: actor.workspace.slug,
-          name: actor.workspace.name,
-        },
-        user: { id: actor.userId, role: actor.role },
-        // Archived projects open read-only (the server refuses edits and comments too).
-        permissions: permissionsForProject(actor.role, { archived: !!project.archivedAt }),
-        designSystem: ds,
-        agentAvailable,
-      }}
-      initial={{ version: state.version, doc: state.doc }}
-    >
-      <EditorShell />
-    </EditorProvider>
+    <div className="flex h-dvh flex-col">
+      <header className="flex items-center gap-4 border-b px-4 py-2 text-sm">
+        <Link href={`/w/${slug}`}>All projects</Link>
+        <span className="font-medium">{project.name}</span>
+        {archived && <span className="text-xs opacity-60">Archived (read-only)</span>}
+      </header>
+      <EditorEmbed
+        projectId={project.id}
+        author={author}
+        canEdit={can(actor.role, 'design:edit') && !archived}
+        webgl={webgl}
+      />
+    </div>
   );
 }
 

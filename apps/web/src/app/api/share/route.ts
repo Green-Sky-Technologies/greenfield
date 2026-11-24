@@ -1,6 +1,6 @@
 /**
  * GET  /api/share?projectId=…  -> { links }
- * POST /api/share  <- { projectId, visibility?, expiresAt?, frameIds?, docVersionId? }
+ * POST /api/share  <- { projectId, visibility?, expiresAt?, frameIds? }
  *                  -> { link, token, path }   (the token is returned only here, once)
  */
 import { getDb } from '@greenfield/db';

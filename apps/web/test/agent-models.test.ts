@@ -1,11 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
-import { agentMessages, eq } from '@greenfield/db';
 import { MODEL_TIERS } from '@greenfield/providers';
-import { sendMessage } from '@/server/services/agent';
-import { startGenerationJob } from '@/server/services/agent/generation';
 import { getAgentSettings, updateModelSettings } from '@/server/services/agent/model-settings';
-import { createProject } from '@/server/services/projects';
 import { ValidationError } from '@/server/services/types';
 import { makeActor, reset, testDb } from './helpers';
 
@@ -59,28 +55,5 @@ describe('model picker settings', () => {
       generation: 'claude-opus-5-5',
     });
     expect(s.models.find((m) => m.id === 'claude-sonnet-5-5')!.allowed).toBe(false);
-
-    const project = await createProject(db, editor, { name: 'P' });
-    const chat = await sendMessage(db, editor, { projectId: project.id, prompt: 'hi' });
-    const picked = await sendMessage(db, editor, {
-      projectId: project.id,
-      conversationId: chat.conversationId,
-      prompt: 'hi',
-      model: 'claude-opus-5-5',
-    });
-    const model = async (id: string) =>
-      (await db.select().from(agentMessages).where(eq(agentMessages.id, id)))[0]!.model;
-    expect(await model(chat.messageId)).toBe('claude-haiku-5-5');
-    expect(await model(picked.messageId)).toBe('claude-opus-5-5');
-    await expect(
-      sendMessage(db, editor, { projectId: project.id, prompt: 'x', model: 'claude-sonnet-5-5' }),
-    ).rejects.toBeInstanceOf(ValidationError);
-
-    const job = await startGenerationJob(db, editor, {
-      projectId: project.id,
-      kind: 'generate',
-      prompt: 'A page',
-    });
-    expect(job.message.model).toBe('claude-opus-5-5');
   });
 });

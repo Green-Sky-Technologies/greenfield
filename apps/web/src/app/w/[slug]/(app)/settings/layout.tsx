@@ -10,7 +10,6 @@ export default async function SettingsLayout({
   const actor = await requireActor((await params).slug);
   const items = [
     { href: '/members', label: 'Members' },
-    ...(can(actor.role, 'design:edit') ? [{ href: '/figma', label: 'Figma' }] : []),
     ...(can(actor.role, 'workspace:manage_credentials')
       ? [
           { href: '/credentials', label: 'Model access' },

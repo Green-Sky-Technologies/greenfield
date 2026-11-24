@@ -1,47 +1,15 @@
 /** Interactive turns never stay "streaming" forever (review #8). */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
-import type { Anthropic } from '@greenfield/agent';
 import { agentConversations, agentMessages, eq } from '@greenfield/db';
 import { MemoryJobRunner } from '@greenfield/sandbox-runner';
-import { getProjectChat, runAssistantMessage, sendMessage } from '@/server/services/agent';
+import { getProjectChat } from '@/server/services/agent';
 import { reapJobs } from '@/server/services/jobs';
 import { createProject } from '@/server/services/projects';
-import type { MessagesApi } from '@/server/services/llm-proxy';
 import { makeActor, reset, testDb } from './helpers';
 
 const { db, close } = testDb();
 afterAll(close);
 beforeEach(() => reset(db));
-
-const hanging: MessagesApi = {
-  stream: (_b, opts) => ({
-    async *[Symbol.asyncIterator]() {
-      await new Promise((_r, reject) =>
-        opts?.signal?.addEventListener('abort', () => {
-          const e = new Error('aborted');
-          e.name = 'AbortError';
-          reject(e);
-        }),
-      );
-    },
-    finalMessage: () => new Promise(() => {}),
-  }),
-  countTokens: async () => ({ input_tokens: 0 }) as Anthropic.MessageTokensCount,
-};
-
-describe('turn deadline', () => {
-  it('stops a turn that runs past its deadline and settles it as an error', async () => {
-    const editor = await makeActor(db, 'editor');
-    const project = await createProject(db, editor, { name: 'P' });
-    const sent = await sendMessage(db, editor, { projectId: project.id, prompt: 'slow' });
-    const view = await runAssistantMessage(db, editor, sent.messageId, {
-      proxy: { loadClient: async () => ({ messages: hanging, provider: 'anthropic' }) },
-      deadlineMs: 50,
-    });
-    expect(view.status).toBe('error');
-    expect(view.error).toMatch(/too long/);
-  });
-});
 
 describe('staleness sweep', () => {
   it('settles abandoned interactive replies on read and from the reaper, not job messages', async () => {

@@ -1,7 +1,7 @@
 /**
  * Interactive agent turn (Story 5.4): Messages API + tool use, streamed. A manual loop (not the
- * SDK tool runner) because every call must go through the metered LLM proxy, tools run against
- * the server-side ToolHost, and partial output is persisted for SSE as it streams.
+ * SDK tool runner) because every call must go through the metered LLM proxy, tools run through
+ * a ToolHost (Epic 4: the browser bridge or figcraft-cli), and partial output is persisted for SSE.
  */
 import type Anthropic from '@anthropic-ai/sdk';
 import { executeTool, type ToolHost } from './tools';
@@ -64,7 +64,6 @@ export interface PendingQuestions {
 export interface TurnResult {
   turns: Anthropic.MessageParam[];
   touched: string[];
-  txnIds: string[];
   jobSuggestion: JobSuggestion | null;
   /** Set when the turn ended by asking the user questions. */
   questions: PendingQuestions | null;
@@ -99,7 +98,6 @@ export async function runAgentTurn(o: RunTurnOptions): Promise<TurnResult> {
   const maxIterations = o.maxIterations ?? 10;
   const turns: Anthropic.MessageParam[] = [];
   const touched = new Set<string>();
-  const txnIds: string[] = [];
   const activity: ToolActivity[] = [];
   let jobSuggestion: JobSuggestion | null = null;
   let questions: PendingQuestions | null = null;
@@ -205,7 +203,6 @@ export async function runAgentTurn(o: RunTurnOptions): Promise<TurnResult> {
       const r = await executeTool(o.host, tu.name, tu.input);
       act.status = r.isError ? 'error' : 'done';
       for (const id of r.touched) touched.add(id);
-      if (r.txnId) txnIds.push(r.txnId);
       results.push({
         type: 'tool_result',
         tool_use_id: tu.id,
@@ -227,7 +224,6 @@ export async function runAgentTurn(o: RunTurnOptions): Promise<TurnResult> {
   return {
     turns,
     touched: [...touched],
-    txnIds,
     jobSuggestion: questions ? null : jobSuggestion,
     questions,
     stopReason,

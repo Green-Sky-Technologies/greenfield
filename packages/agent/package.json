@@ -4,20 +4,16 @@
   "type": "module",
   "exports": {
     ".": "./src/index.ts",
-    "./sliders": "./src/sliders.ts",
     "./questions": "./src/questions.ts"
   },
   "scripts": {
     "typecheck": "tsc -p .",
     "test": "vitest run --passWithNoTests",
-    "lint": "eslint src",
-    "eval": "tsx src/evals/cli.ts"
+    "lint": "eslint src"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.4.0",
     "@greenfield/contracts": "workspace:*",
-    "@greenfield/doc-model": "workspace:*",
-    "@greenfield/ds-lint": "workspace:*",
     "@greenfield/providers": "workspace:*",
     "zod": "^4.6.7"
   }

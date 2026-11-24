@@ -3,8 +3,12 @@ import 'server-only';
 import { ForbiddenError } from '@greenfield/authz';
 import { NextResponse } from 'next/server';
 import { getActor } from './context';
-import { ConflictError, LockedError } from './services/design-docs';
-import { NotFoundError, ValidationError, type Actor } from './services/types';
+import {
+  AgentUnavailableError,
+  NotFoundError,
+  ValidationError,
+  type Actor,
+} from './services/types';
 
 export class UnauthorizedError extends Error {
   override name = 'UnauthorizedError';
@@ -27,16 +31,8 @@ export function apiError(err: unknown): NextResponse {
     );
   if (err instanceof NotFoundError)
     return NextResponse.json({ error: 'not_found', message: err.message }, { status: 404 });
-  if (err instanceof ConflictError)
-    return NextResponse.json(
-      { error: 'conflict', message: err.message, version: err.currentVersion },
-      { status: 409 },
-    );
-  if (err instanceof LockedError)
-    return NextResponse.json(
-      { error: 'locked', message: err.message, holder: err.holderUserId },
-      { status: 423 },
-    );
+  if (err instanceof AgentUnavailableError)
+    return NextResponse.json({ error: 'agent_unavailable', message: err.message }, { status: 503 });
   if (err instanceof ValidationError)
     return NextResponse.json(
       { error: 'invalid', message: err.message, fieldErrors: err.fieldErrors },
@@ -49,7 +45,7 @@ export function apiError(err: unknown): NextResponse {
   return NextResponse.json({ error: 'internal', message: 'Something went wrong' }, { status: 500 });
 }
 
-/** Parse a JSON body with a size cap (doc transactions can be large, but not unbounded). */
+/** Parse a JSON body with a size cap. */
 export async function jsonBody(req: Request, maxBytes = 4 * 1024 * 1024): Promise<unknown> {
   const len = Number(req.headers.get('content-length') ?? 0);
   if (len > maxBytes) throw new ValidationError('Request body too large');

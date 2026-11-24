@@ -9,9 +9,7 @@ export async function POST(_req: Request, ctx: RouteContext<'/api/jobs/[jobId]/c
   try {
     const actor = await apiActor();
     const { jobId } = await ctx.params;
-    return NextResponse.json(
-      await cancelJob(getDb(), actor, jobId, { runner: jobRunner(getDb()) }),
-    );
+    return NextResponse.json(await cancelJob(getDb(), actor, jobId, { runner: jobRunner() }));
   } catch (e) {
     return apiError(e);
   }

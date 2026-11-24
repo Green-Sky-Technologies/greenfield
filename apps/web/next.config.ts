@@ -9,18 +9,12 @@ const nextConfig: NextConfig = {
     '@greenfield/crypto',
     '@greenfield/authz',
     '@greenfield/providers',
-    '@greenfield/doc-model',
-    '@greenfield/renderer',
     '@greenfield/contracts',
-    '@greenfield/ds-lint',
-    '@greenfield/canvas',
     '@greenfield/agent',
     '@greenfield/sandbox-runner',
-    '@greenfield/handoff',
-    '@greenfield/figma-convert',
   ],
   serverExternalPackages: ['pg'],
-  // Story 0.1 spike: the FigCraft web release in public/editor (spikes/0.1-embed/fetch-editor.mjs).
+  // The FigCraft web release in public/editor (scripts/fetch-editor.mjs).
   // Hashed .wasm/.js names make them immutable; index.html must revalidate. Next already serves
   // .wasm as application/wasm. No COOP/COEP: the build doesn't use SharedArrayBuffer.
   async headers() {

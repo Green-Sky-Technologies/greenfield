@@ -1,23 +1,18 @@
 /**
  * POST /api/jobs <- { kind, input, projectId?, conversationId?, messageId?, timeoutSeconds? }
- *                -> JobView (queued). The sandbox is provisioned after the response.
- * Follow progress at /api/jobs/:id/events (SSE, resume with Last-Event-ID).
+ *
+ * Answers 503 `agent_unavailable` until Story 4.5: every job kind ran the HTML model's agent
+ * tools, removed in Story 1.2. The rest of the job API (events, cancel, report, reap) stays.
  */
-import { getDb } from '@greenfield/db';
-import { jobEventsUrl } from '@greenfield/contracts';
-import { after, NextResponse } from 'next/server';
-import { apiActor, apiError, jsonBody } from '@/server/api';
-import { jobRunner } from '@/server/services/agent/runner';
-import { createJob, startJob, toJobView } from '@/server/services/jobs';
+import { assertCan } from '@greenfield/authz';
+import { apiActor, apiError } from '@/server/api';
+import { AgentUnavailableError } from '@/server/services/types';
 
-export const maxDuration = 120;
-
-export async function POST(req: Request) {
+export async function POST() {
   try {
     const actor = await apiActor();
-    const job = await createJob(getDb(), actor, await jsonBody(req, 256 * 1024));
-    after(() => startJob(getDb(), job.id, { runner: jobRunner(getDb()) }).then(() => undefined));
-    return NextResponse.json({ ...toJobView(job), eventsUrl: jobEventsUrl(job.id) });
+    assertCan(actor.role, 'agent:run');
+    throw new AgentUnavailableError('Agent jobs are not available yet. They return in Epic 4.');
   } catch (e) {
     return apiError(e);
   }
