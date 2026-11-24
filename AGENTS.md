@@ -32,9 +32,10 @@ Read `SPEC.md` for product scope. Stories are referenced by number (e.g. "Story 
 - **The editor** is FigCraft, served from `/editor/` (downloaded by `apps/web/scripts/fetch-editor.mjs`,
   pinned by sha256, gitignored) and embedded on the project page. App code talks to it only
   through `packages/bridge` (Story 1.3). A project's file goes through `services/design-files`.
-- **The agent is off until Epic 4.** Story 1.2 removed its HTML-model tools: running a turn or a
-  job throws `AgentUnavailableError` (503). The loop, prefix, metering and SSE in
-  `@greenfield/agent` stay for Epic 4 to wire to the FigCraft tools.
+- **The agent** runs interactive turns (Stories 4.1, 4.2): the server runs the model one step at
+  a time (`services/agent/turn.ts`); tool calls go to the sender's editor tab over SSE and run
+  there through `ToolRunner` (`features/agent`) and `executeTool` in `@greenfield/contracts`.
+  Answering follow-up questions (4.4) and jobs (4.5) still throw `AgentUnavailableError` (503).
 
 ## Before finishing a change
 

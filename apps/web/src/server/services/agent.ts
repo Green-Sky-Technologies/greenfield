@@ -1,17 +1,17 @@
 /**
- * Interactive agent (Stories 5.4, 5.6 of CrunchDesign): conversations, messages and the
- * per-message SSE stream.
+ * Interactive agent: conversations, messages and the per-message SSE stream.
  *
- * Running turns is switched off until Epic 4: the tools edited the HTML model's DesignDoc,
- * which Story 1.2 removed. `sendMessage` and `answerQuestions` throw AgentUnavailableError
- * (routes answer 503). The loop itself (`runAgentTurn`), the prompt prefix, metering and SSE
- * stay in `@greenfield/agent`; Epic 4 wires them to the FigCraft tools run through the bridge.
- * Reading, streaming and cancelling stored messages still work.
+ * Story 4.2 turns the agent back on for interactive turns: `sendMessage` stores the request
+ * with its document context (Story 4.1, built in the browser) and `runTurn` drives the loop in
+ * `agent/turn.ts`, whose tools run in the user's editor tab. Answering follow-up questions
+ * (Story 4.4) still throws AgentUnavailableError (503), and so do jobs (Story 4.5).
  */
 import { assertCan } from '@greenfield/authz';
 import {
   answerQuestionsInput,
   encodeSse,
+  ModelNotAllowedError,
+  resolveModel,
   SSE_KEEPALIVE,
   type Anthropic,
   type JobSuggestion,
@@ -35,7 +35,16 @@ import {
 } from '@greenfield/db';
 import { z } from 'zod';
 import { getProject } from './projects';
+import { getModelSettings } from './agent/model-settings';
 import { settleStaleMessages } from './agent/stale';
+import {
+  advanceTurn,
+  historyBefore,
+  markSeen,
+  type LoadTurnInputs,
+  type RunContent,
+  type TurnDeps,
+} from './agent/turn';
 import { AgentUnavailableError, NotFoundError, ValidationError, type Actor } from './types';
 
 // ---------------------------------------------------------------------------------------------
@@ -46,6 +55,8 @@ export interface TurnContextRef {
   selection?: string[];
   frameId?: string | null;
   scopeNodeId?: string;
+  /** Layer ids the turn may change (the selection it was sent with); null = whole page. */
+  scope?: number[] | null;
 }
 
 /** User message: what they typed, and the exact API turn sent (context + prompt). */
@@ -72,6 +83,16 @@ export interface StoredAssistantContent {
   answers?: QuestionAnswers | null;
   /** The job this reply started on its own (a new design after answered questions). */
   startedJob?: { jobId: string; messageId: string } | null;
+  /** Story 4.2: the turn in progress (tool calls out to the tab). Dropped when it ends. */
+  run?: RunContent['run'];
+}
+
+/** A tool call the tab should run (or is running) for a streaming reply. */
+export interface ToolCallView {
+  id: string;
+  name: string;
+  input: unknown;
+  state: 'queued' | 'claimed' | 'done';
 }
 
 export type Attachment =
@@ -108,6 +129,9 @@ export interface MessageView {
   startedJobMessageId: string | null;
   /** User messages: the selection/frame the prompt was sent with (retry reuses it). */
   context: TurnContextRef | null;
+  /** Streaming replies: the calls of the current step, and the scope the tab enforces. */
+  toolCalls: ToolCallView[];
+  scope: number[] | null;
   jobId: string | null;
   attachments: Attachment[];
   error: string | null;
@@ -146,9 +170,13 @@ export function toMessageView(row: AgentMessageRow): MessageView {
       answersFor: c.answersFor ?? null,
       startedJobMessageId: null,
       context: c.context ?? null,
+      toolCalls: [],
+      scope: null,
     };
   }
   const c = (row.content ?? { v: 1, turns: [] }) as StoredAssistantContent;
+  const run = row.status === 'streaming' ? c.run : null;
+  const calls = run?.phase === 'tools' || run?.phase === 'ready' ? (run.pending?.calls ?? []) : [];
   const texts = (c.turns ?? [])
     .filter((t) => t.role === 'assistant')
     .flatMap((t) => blocksText(typeof t.content === 'string' ? [t.content] : t.content));
@@ -156,7 +184,13 @@ export function toMessageView(row: AgentMessageRow): MessageView {
   return {
     ...base,
     text: texts.filter(Boolean).join('\n\n'),
-    activity: c.activity ?? [],
+    activity: calls.length
+      ? calls.map((x) => ({
+          id: x.id,
+          name: x.name,
+          status: x.state !== 'done' ? 'running' : x.result?.is_error ? 'error' : 'done',
+        }))
+      : (c.activity ?? []),
     touched: c.touched ?? [],
     jobSuggestion: c.startedJob ? null : (c.jobSuggestion ?? null),
     questions: c.questions?.set ?? null,
@@ -164,6 +198,8 @@ export function toMessageView(row: AgentMessageRow): MessageView {
     answersFor: null,
     startedJobMessageId: c.startedJob?.messageId ?? null,
     context: null,
+    toolCalls: calls.map(({ id, name, input, state }) => ({ id, name, input, state })),
+    scope: run?.scope ?? null,
   };
 }
 
@@ -240,6 +276,9 @@ export async function listMessages(
   return rows.map(toMessageView);
 }
 
+/** Upper bound on the context a turn may carry (~20k tokens). */
+export const MAX_CONTEXT_CHARS = 60_000;
+
 export const sendMessageInput = z
   .object({
     projectId: z.uuid(),
@@ -249,6 +288,16 @@ export const sendMessageInput = z
     selection: z.array(z.string().max(64)).max(50).optional(),
     frameId: z.string().max(64).nullish(),
     attachments: z.array(attachmentSchema).max(10).optional(),
+    /** The `<document>` block from `buildTurnContext` (Story 4.1), built next to the editor. */
+    context: z
+      .string()
+      .max(MAX_CONTEXT_CHARS)
+      .refine((s) => s.startsWith('<document>') && s.endsWith('</document>'), {
+        message: 'context must be a <document> block',
+      })
+      .optional(),
+    /** The layers the turn may change (the selection); omitted = the whole page. */
+    scope: z.array(z.number().int().nonnegative()).max(50).nullish(),
   })
   .strict();
 export type SendMessageInput = z.infer<typeof sendMessageInput>;
@@ -261,22 +310,168 @@ export interface SentMessage {
   needsRun: boolean;
 }
 
+function userTurnFor(prompt: string, context: string | undefined, attachments: Attachment[]) {
+  const content: Anthropic.ContentBlockParam[] = [];
+  if (context) content.push({ type: 'text', text: context });
+  for (const a of attachments) {
+    if (a.type === 'image') content.push({ type: 'image', source: { type: 'url', url: a.url } });
+    else if (a.type === 'url')
+      content.push({ type: 'text', text: `Attached web page (reference): ${a.url}` });
+    else
+      content.push({
+        type: 'text',
+        text: `Attached Figma frame: file ${a.fileKey}, node ${a.nodeId}`,
+      });
+  }
+  content.push({ type: 'text', text: prompt });
+  return { role: 'user', content } satisfies Anthropic.MessageParam;
+}
+
 /**
- * Send a chat message. Not available until Epic 4: the agent's tools edited the HTML model's
- * DesignDoc, which Story 1.2 removed, and the FigCraft tools (run in the browser through
- * `packages/bridge`) aren't built yet. The input is still validated and authorized first, so
- * callers see the same errors they will later.
+ * Send a chat message: the user message (with its document context) and a pending reply in one
+ * transaction. The caller runs the reply with `runTurn` after the response; its tool calls go
+ * to the sender's editor tab (Story 4.2).
  */
 export async function sendMessage(db: Db, actor: Actor, raw: unknown): Promise<SentMessage> {
   assertCan(actor.role, 'agent:run');
   const parsed = sendMessageInput.safeParse(raw);
   if (!parsed.success)
     throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid message');
-  await getProject(db, actor, parsed.data.projectId);
-  throw new AgentUnavailableError();
+  const input = parsed.data;
+  const project = await getProject(db, actor, input.projectId);
+  if (project.archivedAt) throw new ValidationError('This project is archived');
+
+  let model: string;
+  try {
+    model = resolveModel(
+      await getModelSettings(db, actor.workspace.id),
+      'interactive',
+      input.model,
+    );
+  } catch (e) {
+    if (e instanceof ModelNotAllowedError) throw new ValidationError(e.message);
+    throw e;
+  }
+  const attachments = input.attachments ?? [];
+  const userContent: StoredUserContent = {
+    v: 1,
+    prompt: input.prompt,
+    context: {
+      selection: input.selection,
+      frameId: input.frameId ?? null,
+      scope: input.scope?.length ? input.scope : null,
+    },
+    turns: [userTurnFor(input.prompt, input.context, attachments)],
+  };
+
+  return db.transaction(async (tx) => {
+    let conversationId = input.conversationId;
+    if (conversationId) {
+      const [conv] = await tx
+        .select()
+        .from(agentConversations)
+        .where(
+          and(
+            eq(agentConversations.id, conversationId),
+            eq(agentConversations.workspaceId, actor.workspace.id),
+            eq(agentConversations.projectId, input.projectId),
+          ),
+        )
+        .for('update')
+        .limit(1);
+      if (!conv) throw new NotFoundError('Conversation not found');
+    } else {
+      const [conv] = await tx
+        .insert(agentConversations)
+        .values({
+          workspaceId: actor.workspace.id,
+          projectId: input.projectId,
+          title: input.prompt.slice(0, 80),
+          createdBy: actor.userId,
+        })
+        .returning();
+      conversationId = conv!.id;
+    }
+    const [{ max }] = (await tx
+      .select({ max: sql<number>`coalesce(max(${agentMessages.seq}), 0)::int` })
+      .from(agentMessages)
+      .where(eq(agentMessages.conversationId, conversationId))) as [{ max: number }];
+    const [user] = await tx
+      .insert(agentMessages)
+      .values({
+        conversationId,
+        workspaceId: actor.workspace.id,
+        seq: max + 1,
+        role: 'user',
+        content: userContent,
+        attachments,
+        status: 'complete',
+        createdBy: actor.userId,
+      })
+      .returning();
+    const [assistant] = await tx
+      .insert(agentMessages)
+      .values({
+        conversationId,
+        workspaceId: actor.workspace.id,
+        seq: max + 2,
+        role: 'assistant',
+        content: { v: 1, turns: [] } satisfies StoredAssistantContent,
+        status: 'pending',
+        model,
+        createdBy: actor.userId,
+      })
+      .returning();
+    await tx
+      .update(agentConversations)
+      .set({ updatedAt: new Date() })
+      .where(eq(agentConversations.id, conversationId));
+    return {
+      conversationId,
+      userMessageId: user!.id,
+      messageId: assistant!.id,
+      needsRun: true,
+    };
+  });
 }
 
-/** Answer an assistant message's follow-up questions. Not available until Epic 4 (see sendMessage). */
+/** What `advanceTurn` needs from a reply: its model, the history and the user turn. */
+function turnInputs(db: Db, actor: Actor): LoadTurnInputs {
+  return async (row) => {
+    const conv = await loadConversation(db, actor, row.conversationId);
+    const [userRow] = await db
+      .select()
+      .from(agentMessages)
+      .where(and(eq(agentMessages.conversationId, conv.id), eq(agentMessages.seq, row.seq - 1)));
+    if (!userRow || userRow.role !== 'user') throw new ValidationError('Missing user message');
+    const stored = userRow.content as StoredUserContent;
+    const history = await historyBefore(db, conv.id, userRow.seq);
+    return {
+      model:
+        row.model ?? resolveModel(await getModelSettings(db, actor.workspace.id), 'interactive'),
+      projectId: conv.projectId,
+      conversationId: conv.id,
+      scope: stored.context?.scope ?? null,
+      messages: [...history, ...stored.turns],
+    };
+  };
+}
+
+/**
+ * Run a reply's next model step(s) (Story 4.2): after `sendMessage`, and after the tab posts
+ * the last tool result of a step. Never throws; a no-op when no step is due.
+ */
+export async function runTurn(
+  db: Db,
+  actor: Actor,
+  messageId: string,
+  deps: TurnDeps = {},
+): Promise<MessageView> {
+  await advanceTurn(db, actor, messageId, turnInputs(db, actor), deps);
+  return toMessageView(await loadMessage(db, actor, messageId));
+}
+
+/** Answer an assistant message's follow-up questions. Not available until Story 4.4. */
 export async function answerQuestions(
   db: Db,
   actor: Actor,
@@ -338,6 +533,8 @@ export async function* messageEvents(
     let row = await loadMessage(db, actor, messageId);
     if (!TERMINAL.has(row.status) && (await settleStaleMessages(db, { messageId })))
       row = await loadMessage(db, actor, messageId);
+    // The sender's open stream keeps a turn that waits on its tab alive (Story 4.2).
+    if (!TERMINAL.has(row.status)) await markSeen(db, actor, row);
     const view = toMessageView(row);
     const json = JSON.stringify(view);
     if (json !== last) {

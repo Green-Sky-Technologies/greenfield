@@ -50,9 +50,17 @@ export type ToolContent =
  * - `hidden`: the editor tab is hidden (`EditorHiddenError`); nothing ran, retry when visible.
  * - `timeout`: no answer in time; a mutation may still have applied.
  * - `unavailable`: the editor isn't ready, has no document, or failed to start.
+ * - `scope`: `run_batch` changed layers outside `ToolContext.scope`; the batch was undone.
  */
 export type ToolErrorKind =
-  'unknown_tool' | 'validation' | 'not_found' | 'command' | 'hidden' | 'timeout' | 'unavailable';
+  | 'unknown_tool'
+  | 'validation'
+  | 'not_found'
+  | 'command'
+  | 'hidden'
+  | 'timeout'
+  | 'unavailable'
+  | 'scope';
 
 export interface ToolError {
   kind: ToolErrorKind;
@@ -98,9 +106,22 @@ export interface ToolContext {
   maxTextChars?: number;
   /** Passed to every bridge call (timeouts). */
   call?: CallOptions;
+  /**
+   * Layers a scoped request may change, with their descendants (Story 4.2). A `run_batch` that
+   * adds, removes or changes anything else is undone (`edit.undo`) and fails with `scope`.
+   */
+  scope?: readonly NodeId[] | null;
 }
 
 const DEFAULT_MAX_TEXT = 40_000;
+/** Fields auto layout recomputes on layers the batch didn't edit (Story 4.2 scope check). */
+const LAYOUT_DERIVED: ReadonlySet<string> = new Set([
+  'x',
+  'y',
+  'width',
+  'height',
+  'absoluteBounds',
+]);
 /** `document.inspect`'s maximum depth: the whole page for the change set. */
 const FULL_DEPTH = 64;
 
@@ -299,6 +320,26 @@ async function run<N extends AgentToolName>(
       // A command that set a value to what it already was still targeted that layer.
       for (const s of i.commands)
         for (const id of targetIds(s.params)) if (before.has(id) || after?.has(id)) touched.add(id);
+      if (ctx.scope?.length) {
+        // Auto layout moves and resizes ancestors and siblings of whatever changed: those are
+        // not edits. What counts is what the batch added, removed or set, and what it targeted.
+        const edited = new Set<NodeId>(
+          changes
+            ? [
+                ...changes.added,
+                ...changes.removed,
+                ...changes.changed
+                  .filter((c) => c.fields.some((f) => !LAYOUT_DERIVED.has(f)))
+                  .map((c) => c.id),
+              ]
+            : [],
+        );
+        for (const s of i.commands)
+          for (const id of targetIds(s.params))
+            if (before.has(id) || after?.has(id)) edited.add(id);
+        const outside = outOfScope(edited, ctx.scope, before, after);
+        if (outside.length) await undoOutOfScope(editor, i.label, outside, ctx.scope, call);
+      }
       return {
         output: { label: i.label, results, changes } satisfies ToolOutput<'run_batch'>,
         touched: [...touched].sort((a, b) => a - b),
@@ -363,6 +404,57 @@ async function run<N extends AgentToolName>(
       };
   }
   throw new Error(`No executor for ${String(name)}`);
+}
+
+/**
+ * Touched layers that are not a scope layer or inside one, before or after the batch (a layer
+ * moved out of the scope counts, as does one created next to it).
+ */
+export function outOfScope(
+  touched: Iterable<NodeId>,
+  scope: readonly NodeId[],
+  before: Map<NodeId, NodeRecord>,
+  after: Map<NodeId, NodeRecord> | null,
+): NodeId[] {
+  const roots = new Set(scope);
+  const inside = (records: Map<NodeId, NodeRecord>, id: NodeId) => {
+    for (let cur: NodeId | null | undefined = id, n = 0; cur != null && n < 256; n++) {
+      if (roots.has(cur)) return true;
+      cur = records.get(cur)?.parent as NodeId | null | undefined;
+    }
+    return false;
+  };
+  const out: NodeId[] = [];
+  for (const id of touched) {
+    const okBefore = !before.has(id) || inside(before, id);
+    const okAfter = !after?.has(id) || inside(after, id);
+    if (!okBefore || !okAfter) out.push(id);
+  }
+  return out.sort((a, b) => a - b);
+}
+
+/** Undo the batch just applied (only if it is still the newest undo step) and fail with `scope`. */
+async function undoOutOfScope(
+  editor: Editor,
+  label: string,
+  outside: NodeId[],
+  scope: readonly NodeId[],
+  call: CallOptions | undefined,
+): Promise<never> {
+  const where = `layers ${scope.join(', ')} and their descendants`;
+  const doc = await editor.inspect({ depth: 0, fields: [] }, call).catch(() => null);
+  const undone =
+    doc?.history.undo[0] === label &&
+    (await editor
+      .execute('edit.undo', {}, call)
+      .then((r) => (r as { undone?: unknown } | null)?.undone !== false)
+      .catch(() => false));
+  throw new ToolFailure(
+    'scope',
+    undone
+      ? `This batch changed layers outside the scope (${outside.join(', ')}), so it was undone: nothing changed. Only change ${where}.`
+      : `This batch changed layers outside the scope (${outside.join(', ')}) and could not be undone. Read those layers and restore them; only change ${where}.`,
+  );
 }
 
 function pageRecords(doc: DocumentInfo): Map<NodeId, NodeRecord> {

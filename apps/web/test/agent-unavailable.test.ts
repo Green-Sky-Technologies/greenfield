@@ -1,6 +1,7 @@
 /**
- * Story 1.2: the agent's tools and jobs were built on the HTML model, so running the agent fails
- * clearly (AgentUnavailableError, 503) until Epic 4. Stored conversations stay readable.
+ * Story 1.2 switched the agent off (AgentUnavailableError, 503). Story 4.2 turns interactive turns
+ * back on (agent-interactive.test.ts); answering follow-up questions (4.4) and jobs (4.5) stay
+ * off until their stories. Stored conversations stay readable.
  */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
@@ -45,15 +46,12 @@ async function storedReply(editor: Awaited<ReturnType<typeof makeActor>>, projec
 }
 
 describe('agent while unavailable', () => {
-  it('sendMessage authorizes and validates, then reports the agent as unavailable', async () => {
+  it('sendMessage authorizes and validates', async () => {
     const editor = await makeActor(db, 'editor');
     const viewer = await makeActor(db, 'viewer', editor.workspace);
     const outsider = await makeActor(db, 'editor');
     const project = await createProject(db, editor, { name: 'P' });
 
-    await expect(
-      sendMessage(db, editor, { projectId: project.id, prompt: 'hi' }),
-    ).rejects.toBeInstanceOf(AgentUnavailableError);
     await expect(
       sendMessage(db, viewer, { projectId: project.id, prompt: 'hi' }),
     ).rejects.toBeInstanceOf(ForbiddenError);
@@ -64,6 +62,15 @@ describe('agent while unavailable', () => {
       ValidationError,
     );
     expect(await db.select().from(agentMessages)).toEqual([]);
+    await expect(
+      sendMessage(db, editor, { projectId: project.id, prompt: 'hi', context: 'not a document' }),
+    ).rejects.toBeInstanceOf(ValidationError);
+    const sent = await sendMessage(db, editor, { projectId: project.id, prompt: 'hi' });
+    expect(sent.needsRun).toBe(true);
+    expect((await db.select().from(agentMessages)).map((m) => m.status).sort()).toEqual([
+      'complete',
+      'pending',
+    ]);
 
     const res = apiError(new AgentUnavailableError());
     expect(res.status).toBe(503);

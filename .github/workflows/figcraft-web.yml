@@ -1,6 +1,8 @@
-# Story 0.2 spike: build the FigCraft web editor from source (pinned tag + our patches) on a clean
-# runner and publish the static site as an artifact. The build runs in the same container image as
-# the local reproducibility check (spikes/0.2-fork-build/FINDINGS.md).
+# Build the FigCraft web editor from source (pinned tag, craft-fonts, tools and our patches) on a
+# clean runner and publish the static site as an artifact. Pins are in
+# spikes/0.2-fork-build/versions.env; the build runs in the same image as the local
+# reproducibility check (spikes/0.2-fork-build/verify/docker-build.sh). build.sh fails any .wasm
+# over 25 MiB raw (SPEC.md D26) on every build.
 name: figcraft-web
 
 on:
@@ -21,37 +23,22 @@ concurrency:
   group: figcraft-web-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  TRUNK_VERSION: 0.22.2
-  # Must match wasm-bindgen in FigCraft's Cargo.lock at the pinned tag (trunk runs --offline).
-  WASM_BINDGEN_VERSION: 0.2.129
-  WASM_MAX_BYTES: '25165824' # 24 MiB (SPEC.md Story 0.2)
-
 jobs:
   build:
     runs-on: ubuntu-24.04
     timeout-minutes: 90
-    # rustc 1.100.0 on Debian trixie: the same image as spikes/0.2-fork-build/verify/docker-build.sh.
-    container: rust:1.100-trixie
+    # Must equal BUILD_IMAGE in versions.env (checked in the first step).
+    container: rust:1.100-trixie@sha256:223cc32ddca8f3ee90c436dbc94b6b5f052ea7f9653c5201e9612f08ad7d21b8
     defaults:
       run:
         shell: bash
     steps:
       - uses: actions/checkout@v4
 
-      - name: System packages (binaryen/wasm-opt, brotli)
+      - name: Check the image pin
         run: |
-          # trixie's binaryen 120 lacks --enable-bulk-memory-opt (FigCraft's index.html passes it):
-          # take binaryen alone from sid (131 at the time of the spike), everything else from trixie.
-          echo "deb http://deb.debian.org/debian sid main" > /etc/apt/sources.list.d/sid.list
-          printf 'Package: *\nPin: release a=unstable\nPin-Priority: 100\n' > /etc/apt/preferences.d/sid
-          apt-get update -qq
-          apt-get install -y -qq --no-install-recommends brotli
-          apt-get install -y -qq --no-install-recommends -t unstable binaryen
-          wasm-opt --version
-
-      - name: wasm32 target
-        run: rustup target add wasm32-unknown-unknown
+          grep -qx 'BUILD_IMAGE=rust:1.100-trixie@sha256:223cc32ddca8f3ee90c436dbc94b6b5f052ea7f9653c5201e9612f08ad7d21b8' \
+            spikes/0.2-fork-build/versions.env
 
       - name: Cache cargo registry, git deps, tools and target dir
         uses: actions/cache@v4
@@ -62,30 +49,14 @@ jobs:
             /usr/local/cargo/bin/trunk
             /usr/local/cargo/bin/wasm-bindgen
             spikes/0.2-fork-build/figcraft/target
-          key: figcraft-web-${{ hashFiles('spikes/0.2-fork-build/build.sh', 'spikes/0.2-fork-build/patches/**') }}-trunk${{ env.TRUNK_VERSION }}-wb${{ env.WASM_BINDGEN_VERSION }}
+          key: figcraft-web-${{ hashFiles('spikes/0.2-fork-build/*.sh', 'spikes/0.2-fork-build/versions.env', 'spikes/0.2-fork-build/patches/**') }}
           restore-keys: figcraft-web-
 
-      - name: trunk and wasm-bindgen-cli
-        run: |
-          if ! trunk --version 2>/dev/null | grep -q "$TRUNK_VERSION"; then
-            cargo install trunk --version "$TRUNK_VERSION" --locked
-          fi
-          if ! wasm-bindgen --version 2>/dev/null | grep -q "$WASM_BINDGEN_VERSION"; then
-            cargo install wasm-bindgen-cli --version "$WASM_BINDGEN_VERSION" --locked
-          fi
-          trunk --version
-          wasm-bindgen --version
+      - name: Pinned toolchain (binaryen, brotli, wasm32 target, trunk, wasm-bindgen)
+        run: spikes/0.2-fork-build/toolchain.sh
 
-      - name: Build (clone pinned tag, apply patches, trunk build --release)
+      - name: Build (pinned sources and fonts, patches, trunk build --release, size gate)
         run: spikes/0.2-fork-build/build.sh
-
-      - name: Assert wasm is under 24 MiB
-        run: |
-          for f in spikes/0.2-fork-build/dist/*.wasm; do
-            size=$(stat -c %s "$f")
-            echo "$f: $size bytes"
-            test "$size" -lt "$WASM_MAX_BYTES"
-          done
 
       - name: Upload static site
         uses: actions/upload-artifact@v4
