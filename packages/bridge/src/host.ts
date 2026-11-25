@@ -6,12 +6,14 @@
  *   figcraft:dirty  editor → host  {dirty}
  *   figcraft:save   editor → host  {name, saveAs, bytes, id?}   (`figcraft:saved {id}` back)
  *   figcraft:failed editor → host  {error}
+ *   figcraft:event  editor → host  {name, data}   (`EditorEvent`, src/events.ts)
  *
  * A message is accepted only when `event.origin` is the host's own origin and `event.source` is
  * the editor iframe's window. Attach (`listen()`) before setting the iframe's `src`: ready is
  * posted once and never repeated. Bytes are never logged.
  */
 import { EditorFailedError, EditorNotReadyError } from './errors';
+import { editorEvent, type EditorEvent } from './events';
 import type { ReadyInfo, SaveEvent, Unsubscribe } from './types';
 
 /** The parts of the host `window` the channel uses. */
@@ -75,6 +77,7 @@ export class HostChannel {
   private readonly dirtyListeners = new Listeners<[boolean]>();
   private readonly saveListeners = new Listeners<[SaveEvent]>();
   private readonly failedListeners = new Listeners<[string]>();
+  private readonly eventListeners = new Listeners<[EditorEvent]>();
   private readyWaiters: { resolve(i: ReadyInfo): void; reject(e: Error): void }[] = [];
 
   constructor(private readonly opts: HostChannelOptions) {}
@@ -106,6 +109,7 @@ export class HostChannel {
     this.readyInfo = null;
     for (const l of [this.readyListeners, this.dirtyListeners, this.saveListeners]) l.clear();
     this.failedListeners.clear();
+    this.eventListeners.clear();
     const waiters = this.readyWaiters;
     this.readyWaiters = [];
     for (const w of waiters) w.reject(new EditorNotReadyError('ready', 'the bridge was disposed'));
@@ -137,6 +141,9 @@ export class HostChannel {
   }
   onFailed(cb: (error: string) => void): Unsubscribe {
     return this.failedListeners.add(cb);
+  }
+  onEvent(cb: (e: EditorEvent) => void): Unsubscribe {
+    return this.eventListeners.add(cb);
   }
 
   /** Send a document. The bytes are copied (the copy is transferred), never detached. */
@@ -196,6 +203,11 @@ export class HostChannel {
         } else {
           for (const r of results) if (r instanceof Promise) r.catch(report);
         }
+        return;
+      }
+      case 'figcraft:event': {
+        const e = editorEvent(m.name, m.data);
+        if (e) this.eventListeners.emit(e);
         return;
       }
       case 'figcraft:failed': {

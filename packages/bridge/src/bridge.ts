@@ -94,6 +94,7 @@ export function createBridge(opts: BridgeOptions): Editor {
     onDirty: (cb) => host.onDirty(cb),
     onSave: (cb) => host.onSave(cb),
     onFailed: (cb) => host.onFailed(cb),
+    onEvent: (cb) => host.onEvent(cb),
     open: (name, bytes) => host.open(name, bytes),
     save: (o) => control.save(o),
     execute: (command, params, o) => control.execute(command, params, o),

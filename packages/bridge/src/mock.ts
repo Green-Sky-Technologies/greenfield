@@ -28,6 +28,7 @@ import {
   EditorNotReadyError,
   NoDocumentError,
 } from './errors';
+import type { EditorEvent } from './events';
 import { COMMANDS, EDITOR_VERSION, NODE_FIELDS, NODE_SET_PROPS } from './generated/commands';
 import { saveKey, type KeyPlatform } from './platform';
 import { base64ToBytes, TINY_PNG_BASE64 } from './png';
@@ -138,6 +139,7 @@ export class MockEditor implements Editor {
   private readonly dirtyCbs = new Emitter<boolean>();
   private readonly saveCbs = new Emitter<SaveEvent>();
   private readonly failedCbs = new Emitter<string>();
+  private readonly eventCbs = new Emitter<EditorEvent>();
   private readonly visibilityCbs = new Set<() => void>();
   private readyWaiters: { resolve(i: ReadyInfo): void; reject(e: Error): void }[] = [];
   private readonly detector: ChangeDetector;
@@ -181,6 +183,11 @@ export class MockEditor implements Editor {
     this.failure = error;
     for (const w of this.readyWaiters.splice(0)) w.reject(new EditorFailedError(error));
     this.failedCbs.emit(error);
+  }
+
+  /** Post a `figcraft:event` (the mock never posts one on its own). */
+  emitEvent(e: EditorEvent): void {
+    this.eventCbs.emit(e);
   }
 
   /** Pretend the tab was hidden or shown (`visibilitychange`). */
@@ -229,6 +236,9 @@ export class MockEditor implements Editor {
   }
   onFailed(cb: (error: string) => void): Unsubscribe {
     return this.failedCbs.add(cb);
+  }
+  onEvent(cb: (e: EditorEvent) => void): Unsubscribe {
+    return this.eventCbs.add(cb);
   }
 
   /**

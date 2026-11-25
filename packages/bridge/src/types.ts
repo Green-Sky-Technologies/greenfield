@@ -4,6 +4,7 @@
  * all implement `Editor`.
  */
 import type { BatchStep, CommandId, CommandParams } from './commands';
+import type { EditorEvent } from './events';
 import type { NodeField } from './generated/commands';
 
 /** A layer or page id. Ids are numbers, unique within a document. */
@@ -165,6 +166,11 @@ export interface Editor {
   onSave(cb: (e: SaveEvent) => void | Promise<void>): Unsubscribe;
   /** The editor couldn't start. */
   onFailed(cb: (error: string) => void): Unsubscribe;
+  /**
+   * The editor's events (`figcraft:event`): selection, document patches, tool, text editing,
+   * viewport, interaction, presence, canvas mode and `ui.request`. Narrow on `e.name`.
+   */
+  onEvent(cb: (e: EditorEvent) => void): Unsubscribe;
   /** Open a document (`figcraft:open`). The bytes are copied, never transferred away. */
   open(name: string, bytes: Uint8Array | ArrayBuffer): void;
   /** Press Save (Cmd+S on a Mac, Ctrl+S elsewhere); the file arrives through `onSave`. */
