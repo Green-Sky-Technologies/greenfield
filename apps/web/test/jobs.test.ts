@@ -11,7 +11,12 @@ import {
 import { saveCredential } from '@/server/services/credentials';
 import { createProject } from '@/server/services/projects';
 import { upsertMember } from '@/server/services/workspaces';
+import { mkdtempSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { prepareAgentJob } from '@/server/services/agent/agent-jobs';
 import { JobTokenError, verifyJobToken, issueJobToken } from '@/server/services/agent/job-tokens';
+import { localFsStorage } from '@/server/services/design-files';
 import {
   cancelJob,
   createJob,
@@ -201,16 +206,15 @@ describe('sandbox credential isolation (Story 5.2 AC)', () => {
     try {
       const api = recordingSandboxApi();
       const job = await createJob(db, editor, generate(project.id, messageId));
-      // The app's own job spec returns with Story 4.5; the sandbox env and token are the runner's.
+      // The app's own job spec (Story 4.5, 4.6): job token, prompt, tools, CLI pin, file copy.
       const runner = new VercelSandboxRunner({
         appUrl: 'http://localhost:3000',
         api,
-        prepare: async (j) => ({
-          jobToken: (await issueJobToken(db, j.jobId, 600)).token,
-          model: 'claude-opus-5-5',
-          smallModel: 'claude-haiku-5-5',
-          spec: { prompt: 'Design a pricing page', systemPrompt: 's', tools: [], maxTurns: 1 },
-        }),
+        prepare: (j) =>
+          prepareAgentJob(db, localFsStorage(mkdtempSync(join(tmpdir(), 'gf-blob-'))), j, {
+            GREENFIELD_FIGCRAFT_CLI_URL: 'https://example.com/figcraft-cli',
+            GREENFIELD_FIGCRAFT_CLI_SHA256: 'a'.repeat(64),
+          }),
       });
       await startJob(db, job.id, { runner });
       const [rec] = [...api.sandboxes.values()];
