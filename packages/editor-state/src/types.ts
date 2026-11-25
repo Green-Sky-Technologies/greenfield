@@ -59,6 +59,14 @@ export interface PageSummary {
   current: boolean;
 }
 
+/** A prototype flow: where presenting starts (`proto.flow.*`, Story 5.12). */
+export interface Flow {
+  /** The top-level frame it starts on. */
+  start: NodeId;
+  name: string;
+  description: string;
+}
+
 export interface DocumentState {
   /** The open document's id (not a layer id); changes when another file opens. */
   id: number;
@@ -108,6 +116,8 @@ export interface EditorState {
   document: DocumentState | null;
   pages: readonly PageSummary[];
   tree: PageTree;
+  /** The current page's prototype flows (the page's `flows` field). */
+  flows: readonly Flow[];
   selection: readonly NodeId[];
   /** Full fields for the selected layers only. */
   nodes: ReadonlyMap<NodeId, NodeFields>;
@@ -179,6 +189,7 @@ export type EditorAction =
       pages: PageSummary[];
       /** The current page's top-level layers, back to front. */
       layers: RawNode[];
+      flows?: Flow[];
       selection: NodeId[];
     }
   | SelectionChanged

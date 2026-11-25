@@ -60,6 +60,8 @@ export const usePageTree = () => useEditorState((s) => s.tree);
 /** One layer of the tree (a layers row). */
 export const useTreeNode = (id: NodeId) => useEditorState((s) => s.tree.nodes.get(id));
 export const usePages = () => useEditorState((s) => s.pages);
+/** The current page's prototype flows. */
+export const useFlows = () => useEditorState((s) => s.flows);
 export const useTool = () => useEditorState((s) => s.tool);
 export const useViewport = () => useEditorState((s) => s.viewport);
 export const useTextEditing = () => useEditorState((s) => s.textEditing);

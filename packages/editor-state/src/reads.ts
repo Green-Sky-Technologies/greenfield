@@ -5,10 +5,16 @@
  * editor's events. Latest-wins: one read in flight, and a request during it runs one more after.
  */
 import { BridgeError, type Editor, type NodeField } from '@greenfield/bridge';
-import type { EditorAction, EditorState, NodeFields, PageSummary, RawNode } from './types';
+import type { EditorAction, EditorState, Flow, NodeFields, PageSummary, RawNode } from './types';
 
-/** What a layers row needs. */
-const TREE_FIELDS = ['name', 'type', 'visible', 'locked'] as const satisfies readonly NodeField[];
+/** What a layers row needs, and the page's prototype flows. */
+const TREE_FIELDS = [
+  'name',
+  'type',
+  'visible',
+  'locked',
+  'flows',
+] as const satisfies readonly NodeField[];
 /** `document.inspect`'s maximum depth. */
 const MAX_DEPTH = 64;
 /** Selected layers read on open; the editor's next `selection.changed` carries them all. */
@@ -80,6 +86,7 @@ export class EditorReads {
       },
       pages,
       layers: (current?.children ?? []) as RawNode[],
+      flows: Array.isArray(current?.flows) ? (current.flows as Flow[]) : [],
       selection: info.selection,
     });
     const selected = await Promise.all(
