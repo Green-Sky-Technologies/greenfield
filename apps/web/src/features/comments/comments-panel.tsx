@@ -53,7 +53,10 @@ export function CommentsPanel() {
             key={id}
             type="button"
             aria-pressed={filter === id}
-            onClick={() => setFilter(id)}
+            onClick={() => {
+              setFilter(id);
+              setChosen(null);
+            }}
             className={`shell-focus h-6 px-2.5 ${
               filter === id
                 ? 'bg-text font-medium text-bg'

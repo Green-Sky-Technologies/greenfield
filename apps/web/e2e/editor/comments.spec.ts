@@ -173,6 +173,7 @@ test('comment or ask on an element, and the comments list', async ({
   const onCard = await pagePoint(page, editor, 40, 40);
   await page.mouse.click(onCard.x, onCard.y);
   await expect(composer).toContainText('On Card');
+  await expect(draft).toBeFocused();
   await page.keyboard.press('Escape');
   await expect(composer).toBeHidden();
   expect(await threads(editor)).toHaveLength(2);
