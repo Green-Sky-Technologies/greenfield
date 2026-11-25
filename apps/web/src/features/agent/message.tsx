@@ -137,6 +137,8 @@ export function ClaudeMessage({ message: m, asked, chat, editor }: ClaudeProps) 
       )}
       {m.jobId && <JobCard jobId={m.jobId} suggestion={m.jobSuggestion} editor={editor} />}
       {!running && m.changes.length > 0 && <ChangeList reply={m} onUndo={() => chat.revert(m)} />}
+      {/* Mount point (Story 10.5, lane W2-H): render W2-H's DesignCheckCard here when the reply
+          has `designCheck`; wired at integration, since that field isn't on this base. */}
     </li>
   );
 }
