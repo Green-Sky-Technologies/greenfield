@@ -85,19 +85,28 @@ export function TopBar({
 
       <div className="flex items-center gap-2">
         <ToolRow />
+        <span aria-hidden className="h-5 w-px bg-border" />
         <button
           type="button"
           onClick={() => toggle('comment')}
           aria-expanded={menu === 'comment'}
           aria-keyshortcuts="C"
           aria-label="Comment or ask Claude"
-          className="shell-focus group flex h-8 w-[min(22rem,40vw)] items-center gap-2 border border-border bg-bg px-2.5 text-left text-muted hover:border-muted aria-expanded:border-user"
+          className="shell-focus group flex h-8 items-center gap-2 px-2.5 text-agent hover:bg-surface-2 aria-expanded:bg-agent aria-expanded:text-ember-ink"
         >
-          <span aria-hidden className="size-1.5 shrink-0 bg-agent" />
-          <span className="flex-1 truncate">Comment or ask</span>
-          <kbd className="border border-border px-1 font-sans text-[11px] leading-4 text-muted">
-            C
-          </kbd>
+          <svg
+            aria-hidden
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.25"
+          >
+            <path d="M2 2.5h12v8.5H7l-3 2.5V11H2z" />
+          </svg>
+          <span className="whitespace-nowrap">Comment or ask</span>
+          <kbd className="font-sans text-[11px] leading-4 opacity-70">C</kbd>
         </button>
       </div>
 

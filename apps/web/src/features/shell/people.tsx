@@ -19,11 +19,11 @@ export function People({ people, meId }: { people: Person[]; meId: string }) {
   const more = sorted.length - shown.length;
   const names = sorted.map((p) => (p.userId === meId ? 'You' : (p.name ?? 'Unnamed member')));
   return (
-    <div className="flex items-center gap-1">
+    <div className="flex items-center">
       <ul
         aria-label={`People with access: ${names.join(', ')}`}
         title={names.join(', ')}
-        className="flex items-center gap-1"
+        className="flex items-center"
       >
         {shown.map((p) => (
           <li key={p.userId} aria-hidden>
