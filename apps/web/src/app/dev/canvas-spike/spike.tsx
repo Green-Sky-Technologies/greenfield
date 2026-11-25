@@ -14,7 +14,7 @@
  *   ?canvas=flag|toggle|off     how the editor is reduced to the canvas
  *   ?theme=light                the canvas follows the app (default dark)
  */
-import { createBridge, type Editor } from '@greenfield/bridge';
+import { createBridge, type Editor, type EditorEventMap } from '@greenfield/bridge';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import { Scrub } from './gesture';
 import { afterPaint, perf, watchEditorFrames, watchEditorInput } from './perf';
@@ -205,9 +205,10 @@ function SpikeBody() {
           const d = m.data as { active?: boolean } | undefined;
           if (typeof d?.active === 'boolean') store_.set({ agentActive: d.active });
         } else if (mode === 'events' && m.name === 'selection.changed') {
-          syncer?.onSelectionEvent((m.data as { ids?: number[] }).ids ?? []);
+          const d = m.data as EditorEventMap['selection.changed'];
+          syncer?.onSelectionEvent(d.ids ?? [], d.nodes);
         } else if (mode === 'events' && m.name === 'document.changed') {
-          syncer?.onDocumentEvent();
+          syncer?.onDocumentEvent(m.data as EditorEventMap['document.changed']);
         }
       };
       window.addEventListener('message', onMsg);
