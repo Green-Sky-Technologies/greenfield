@@ -27,6 +27,7 @@ import {
   type AgentStep,
   type Anthropic,
 } from '@greenfield/agent';
+import { layerChange, mergeLayerChanges, type LayerChange } from '@greenfield/contracts';
 import { agentMessages, and, asc, eq, sql, type AgentMessageRow, type Db } from '@greenfield/db';
 import { z } from 'zod';
 import { ProviderError, streamModel, type LlmProxyDeps } from '../llm-proxy';
@@ -40,6 +41,19 @@ export const TOOL_LEASE_MS = 45_000;
 export const SEEN_THROTTLE_MS = 5_000;
 /** One `advanceTurn` stops starting model calls after this (route maxDuration is 300 s). */
 const ADVANCE_DEADLINE_MS = 200_000;
+/** Self-check rounds per turn (Story 4.3): render, look, fix at most this many times. */
+export const MAX_SELF_CHECKS = 2;
+/** Self-check renders are half size: enough to judge a frame, a quarter of the image tokens. */
+export const SELF_CHECK_SCALE = 0.5;
+/** Frames one self-check renders at most (the render tool's limit is 20 ids). */
+const MAX_CHECK_FRAMES = 4;
+/** Tool_use ids of self-check renders: never the model's (theirs start with `toolu_`). */
+const SELF_CHECK_ID = 'selfcheck_';
+export const SELF_CHECK_PROMPT =
+  'Self-check: this is a render of the frame you just changed. Compare it with the request. ' +
+  'If anything is off (a font that fell back to Regular, clipped or overlapping text, ragged card ' +
+  "heights, changes the user didn't ask for), fix it with one run_batch. If it looks right, reply " +
+  'with one short sentence and no tool calls.';
 
 export interface ToolCallState {
   id: string;
@@ -50,6 +64,10 @@ export interface ToolCallState {
   claimedBy?: string;
   result?: Anthropic.ToolResultBlockParam;
   touched?: number[];
+  /** `run_batch`: what changed, from the tab (Story 4.7). */
+  changes?: LayerChange[];
+  /** `run_batch`: the top-level frames the changes are in. */
+  frames?: number[];
 }
 
 /** An interactive turn in progress (`StoredAssistantContent.run`). */
@@ -59,8 +77,13 @@ export interface TurnRun {
   step: number;
   /** Layers the tab may change (the selection the request was sent with); null = whole page. */
   scope: number[] | null;
-  /** The step whose tool calls are out (phases `tools` and `ready`). */
-  pending: { step: AgentStep; calls: ToolCallState[] } | null;
+  /**
+   * The calls out to the tab (phases `tools` and `ready`): a model step's, or (`step` null) the
+   * self-check render the server asked for (Story 4.3).
+   */
+  pending: { step: AgentStep | null; calls: ToolCallState[] } | null;
+  /** Frames changed since the last render, and self-checks done so far (Story 4.3). */
+  check?: { frames: number[]; rounds: number };
   /** Last phase change (ISO). */
   at: string;
   /** Last sign of the requesting tab (ISO): its stream, a claim or a result. */
@@ -76,6 +99,10 @@ export interface RunContent {
   jobSuggestion?: unknown;
   stopReason?: string | null;
   run?: TurnRun | null;
+  /** What the turn changed, one record per layer (Story 4.7). */
+  changes?: LayerChange[];
+  /** The turn's undo steps (its run_batch labels), in the order they ran. */
+  undoLabels?: string[];
   [k: string]: unknown;
 }
 
@@ -85,6 +112,8 @@ export interface TurnDeps {
   flushMs?: number;
   /** How often to check for cancellation while the model streams (ms). */
   cancelPollMs?: number;
+  /** Self-check rounds per turn (default MAX_SELF_CHECKS; 0 turns self-checks off). */
+  maxSelfChecks?: number;
   now?: () => Date;
 }
 
@@ -123,12 +152,64 @@ function userFacingError(e: unknown): string {
   return 'Something went wrong running the agent.';
 }
 
-/** The content a finished turn keeps (no run state, no partial). */
+const RENDER_DROPPED = 'A render was shown here during the turn; it is not kept.';
+
+const isImage = (b: unknown) =>
+  typeof b === 'object' && b !== null && (b as { type?: string }).type === 'image';
+
+/** The turns without their renders (Story 4.3 AC: renders are not stored beyond the turn). */
+export function withoutRenders(turns: Anthropic.MessageParam[]): Anthropic.MessageParam[] {
+  const strip = <T>(blocks: T[]): T[] =>
+    blocks.some(isImage)
+      ? [
+          ...blocks.filter((b) => !isImage(b)),
+          { type: 'text', text: RENDER_DROPPED } as unknown as T,
+        ]
+      : blocks;
+  return turns.map((t) => {
+    if (t.role !== 'user' || typeof t.content === 'string') return t;
+    return {
+      ...t,
+      content: strip(
+        t.content.map((b) =>
+          b.type === 'tool_result' && Array.isArray(b.content)
+            ? { ...b, content: strip(b.content) }
+            : b,
+        ),
+      ),
+    };
+  });
+}
+
+/** The content a finished turn keeps (no run state, no partial, no renders). */
 function finished(c: RunContent, extra: Partial<RunContent> = {}): RunContent {
-  const rest: RunContent = { ...c };
+  const rest: RunContent = { ...c, ...extra };
   delete rest.run;
   delete rest.partial;
-  return { ...rest, activity: [], ...extra };
+  return { ...rest, turns: withoutRenders(rest.turns ?? []), activity: [] };
+}
+
+/** Image blocks of a tool result (a render). */
+function images(r: Anthropic.ToolResultBlockParam | undefined): Anthropic.ImageBlockParam[] {
+  if (!r || r.is_error || !Array.isArray(r.content)) return [];
+  return r.content.filter((b): b is Anthropic.ImageBlockParam => b.type === 'image');
+}
+
+/** Fold a step's results into the turn's change records, undo labels and self-check state. */
+function recordStep(c: RunContent, calls: ToolCallState[]) {
+  let changes = c.changes ?? [];
+  const undoLabels = [...(c.undoLabels ?? [])];
+  const check = { frames: [...(c.run?.check?.frames ?? [])], rounds: c.run?.check?.rounds ?? 0 };
+  for (const x of calls) {
+    if (!x.result || x.result.is_error) continue;
+    if (x.name === 'render') check.frames = [];
+    if (x.name !== 'run_batch' || !x.touched?.length) continue;
+    undoLabels.push(String((x.input as { label?: unknown }).label ?? ''));
+    if (x.changes?.length) changes = mergeLayerChanges([changes, x.changes]);
+    const frames = x.frames?.length ? x.frames : x.touched;
+    check.frames = [...new Set([...check.frames, ...frames])];
+  }
+  return { changes, undoLabels, check };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -159,14 +240,36 @@ async function claimStep(
     if (row.status === 'pending') {
       step = 1;
       inputs = await load(row);
-    } else if (row.status === 'streaming' && c.run?.phase === 'ready' && c.run.pending) {
+    } else if (
+      row.status === 'streaming' &&
+      c.run?.phase === 'ready' &&
+      c.run.pending?.step === null
+    ) {
+      // The self-check render came back: show it to the model (Story 4.3).
+      const shown = images(c.run.pending.calls[0]?.result);
+      if (!shown.length) {
+        await tx
+          .update(agentMessages)
+          .set({ status: 'complete', content: finished(c) })
+          .where(eq(agentMessages.id, row.id));
+        return { kind: 'none' };
+      }
+      turns.push({ role: 'user', content: [{ type: 'text', text: SELF_CHECK_PROMPT }, ...shown] });
+      step = c.run.step + 1;
+      inputs = await load(row);
+    } else if (row.status === 'streaming' && c.run?.phase === 'ready' && c.run.pending?.step) {
       const { pending } = c.run;
+      const pendingStep = pending.step!;
       const results = Object.fromEntries(
         pending.calls.filter((x) => x.result).map((x) => [x.id, x.result!]),
       );
       for (const x of pending.calls) for (const id of x.touched ?? []) touched.add(String(id));
-      const blocks = stepResults(pending.step, results);
-      if (pending.step.questions) {
+      const recorded = recordStep(c, pending.calls);
+      c.changes = recorded.changes;
+      c.undoLabels = recorded.undoLabels;
+      c.run = { ...c.run, check: recorded.check };
+      const blocks = stepResults(pendingStep, results);
+      if (pendingStep.questions) {
         // ask_followup ends the turn (Story 4.4): its result is the user's answers, sent later.
         await tx
           .update(agentMessages)
@@ -174,7 +277,7 @@ async function claimStep(
             status: 'complete',
             content: finished(c, {
               touched: [...touched],
-              questions: { ...pending.step.questions, results: blocks },
+              questions: { ...pendingStep.questions, results: blocks },
             }),
           })
           .where(eq(agentMessages.id, row.id));
@@ -206,6 +309,7 @@ async function claimStep(
         step,
         scope: inputs.scope,
         pending: null,
+        check: c.run?.check ?? { frames: [], rounds: 0 },
         at: iso(now),
         seenAt: c.run?.seenAt ?? iso(now),
       },
@@ -300,6 +404,40 @@ async function runStep(
       jobSuggestion: step.jobSuggestion ?? content.jobSuggestion ?? null,
       stopReason: step.stopReason,
     };
+    const check = run.check ?? { frames: [], rounds: 0 };
+    if (
+      step.kind === 'final' &&
+      step.stopReason === 'end_turn' &&
+      check.frames.length &&
+      check.rounds < (deps.maxSelfChecks ?? MAX_SELF_CHECKS) &&
+      run.step < MAX_STEPS
+    ) {
+      // The turn changed a frame and nobody looked at it since: the tab renders it (Story 4.3).
+      const rounds = check.rounds + 1;
+      content = {
+        ...base,
+        run: {
+          ...run,
+          phase: 'tools',
+          check: { frames: [], rounds },
+          pending: {
+            step: null,
+            calls: [
+              {
+                id: `${SELF_CHECK_ID}${rounds}`,
+                name: 'render',
+                input: { ids: check.frames.slice(0, MAX_CHECK_FRAMES), scale: SELF_CHECK_SCALE },
+                state: 'queued',
+              },
+            ],
+          },
+          at: iso(now()),
+          seenAt: iso(now()),
+        },
+      };
+      await writeIfStreaming(db, row.id, { content });
+      return false;
+    }
     if (step.kind === 'final') {
       await writeIfStreaming(db, row.id, {
         status: 'complete',
@@ -415,6 +553,8 @@ export const toolCallBody = z.discriminatedUnion('action', [
       content: toolResultContent,
       isError: z.boolean(),
       touched: z.array(z.number().int().nonnegative()).max(10_000).default([]),
+      changes: z.array(layerChange).max(2_000).optional(),
+      frames: z.array(z.number().int().nonnegative()).max(200).optional(),
     })
     .strict(),
 ]);
@@ -497,7 +637,16 @@ export async function toolCallAction(
       ...(body.isError ? { is_error: true } : {}),
     };
     const next = calls.map((x) =>
-      x.id === callId ? { ...x, state: 'done' as const, result, touched: body.touched } : x,
+      x.id === callId
+        ? {
+            ...x,
+            state: 'done' as const,
+            result,
+            touched: body.touched,
+            ...(body.changes ? { changes: body.changes } : {}),
+            ...(body.frames ? { frames: body.frames } : {}),
+          }
+        : x,
     );
     const ready = next.every((x) => x.state === 'done');
     await save(next, ready ? 'ready' : 'tools');

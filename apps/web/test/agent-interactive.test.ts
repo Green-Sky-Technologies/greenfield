@@ -44,6 +44,8 @@ async function setup(script: ScriptedResponse[]) {
     proxy: { loadClient: async () => ({ messages: client.messages, provider: 'anthropic' }) },
     flushMs: 0,
     cancelPollMs: 20,
+    // Self-checks (Story 4.3) have their own tests (agent-self-check.test.ts).
+    maxSelfChecks: 0,
   };
   return { actor, project, editor, fx, client, deps, base: editor.calls.length };
 }

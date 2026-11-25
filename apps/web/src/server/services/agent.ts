@@ -38,6 +38,7 @@ import {
   type AgentMessageRow,
   type Db,
 } from '@greenfield/db';
+import { showOnCanvasIds, type LayerChange } from '@greenfield/contracts';
 import { z } from 'zod';
 import { getProject } from './projects';
 import { getModelSettings } from './agent/model-settings';
@@ -90,6 +91,18 @@ export interface StoredAssistantContent {
   startedJob?: { jobId: string; messageId: string } | null;
   /** Story 4.2: the turn in progress (tool calls out to the tab). Dropped when it ends. */
   run?: RunContent['run'];
+  /** Story 4.7: what the turn changed, one record per layer, and its undo steps. */
+  changes?: LayerChange[];
+  undoLabels?: string[];
+  /** Set once the user reverted the turn ("Undo all"). */
+  reverted?: TurnRevert | null;
+}
+
+export interface TurnRevert {
+  /** `undo`: the turn's undo steps were undone; `batch`: its old values were written back. */
+  how: 'undo' | 'batch';
+  by: string;
+  at: string;
 }
 
 /** A tool call the tab should run (or is running) for a streaming reply. */
@@ -137,6 +150,17 @@ export interface MessageView {
   /** Streaming replies: the calls of the current step, and the scope the tab enforces. */
   toolCalls: ToolCallView[];
   scope: number[] | null;
+  /** The pending call is the server's self-check render of what the turn changed (Story 4.3). */
+  checking: boolean;
+  /**
+   * Story 4.7: the layers this reply changed, property by property (before → after); the ids
+   * "Show on canvas" selects; the reply's undo steps (run_batch labels, oldest first) that
+   * "Undo all" reverts with `planRevert`; and whether it was reverted.
+   */
+  changes: LayerChange[];
+  showOnCanvas: number[];
+  undoLabels: string[];
+  reverted: TurnRevert | null;
   jobId: string | null;
   attachments: Attachment[];
   error: string | null;
@@ -177,6 +201,11 @@ export function toMessageView(row: AgentMessageRow): MessageView {
       context: c.context ?? null,
       toolCalls: [],
       scope: null,
+      checking: false,
+      changes: [],
+      showOnCanvas: [],
+      undoLabels: [],
+      reverted: null,
     };
   }
   const c = (row.content ?? { v: 1, turns: [] }) as StoredAssistantContent;
@@ -205,6 +234,11 @@ export function toMessageView(row: AgentMessageRow): MessageView {
     context: null,
     toolCalls: calls.map(({ id, name, input, state }) => ({ id, name, input, state })),
     scope: run?.scope ?? null,
+    checking: !!calls.length && run?.pending?.step === null,
+    changes: c.changes ?? [],
+    showOnCanvas: showOnCanvasIds(c.changes ?? []),
+    undoLabels: c.undoLabels ?? [],
+    reverted: c.reverted ?? null,
   };
 }
 
@@ -655,6 +689,51 @@ export async function answerQuestions(
     };
     const ids = await insertExchange(tx, actor, conv.id, { content: userContent }, model);
     return { conversationId: conv.id, ...ids, needsRun: true };
+  });
+}
+
+export const revertTurnInput = z.object({ how: z.enum(['undo', 'batch']) }).strict();
+
+/**
+ * Record that the user reverted a reply's changes ("Undo all", Story 4.7). The revert itself
+ * runs in the tab, next to the document (`planRevert`); this marks the change list so every
+ * view shows it as reverted. A reply that is still running, changed nothing, or was already
+ * reverted is refused.
+ */
+export async function revertTurn(
+  db: Db,
+  actor: Actor,
+  messageId: string,
+  raw: unknown,
+): Promise<MessageView> {
+  assertCan(actor.role, 'agent:run');
+  const parsed = revertTurnInput.safeParse(raw);
+  if (!parsed.success) throw new ValidationError('Invalid revert');
+  await loadMessage(db, actor, messageId);
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(agentMessages)
+      .where(eq(agentMessages.id, messageId))
+      .for('update')
+      .limit(1);
+    const c = row!.content as StoredAssistantContent;
+    if (row!.role !== 'assistant' || !TERMINAL.has(row!.status))
+      throw new ValidationError('Only a finished reply can be reverted');
+    if (!c.changes?.length && !c.undoLabels?.length)
+      throw new ValidationError('This reply changed nothing');
+    if (c.reverted) throw new ValidationError('This reply was already reverted');
+    const reverted: TurnRevert = {
+      how: parsed.data.how,
+      by: actor.userId,
+      at: new Date().toISOString(),
+    };
+    const [updated] = await tx
+      .update(agentMessages)
+      .set({ content: { ...c, reverted } satisfies StoredAssistantContent })
+      .where(eq(agentMessages.id, messageId))
+      .returning();
+    return toMessageView(updated!);
   });
 }
 
