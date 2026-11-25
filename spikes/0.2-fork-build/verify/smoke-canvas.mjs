@@ -68,6 +68,13 @@ try {
     await page.mouse.click(640, 416, { button: 'right' });
     await frames(4);
     s.rightClick = (await messages()).filter((m) => m.name === 'ui.request');
+    // Keys keep working on the canvas: R picks the rectangle tool, V the move tool again.
+    await page.keyboard.press('r');
+    await frames(3);
+    s.toolAfterR = (await ui()).tool?.tool ?? (await ui()).tool;
+    await page.keyboard.press('v');
+    await frames(3);
+    s.toolAfterV = (await ui()).tool?.tool ?? (await ui()).tool;
     // The Comment tool's click goes to the host too (control calls never open dialogs, so a menu
     // command's dialog is not checked here; the Rust tests cover it).
     await run('tool.comment');
@@ -129,6 +136,26 @@ try {
     await new Promise((r) => setTimeout(r, 9000));
     await frames(4);
     s.afterLinger = (await messages()).filter((m) => m.name === 'agent.presence').map((m) => m.data);
+  }
+  // 2.3 ------------------------------------------------------------------------------------------
+  if (results.canvasMode && (await frame.evaluate(() => window.figcraft.commands())).some((c) => c.id === 'node.set')) {
+    const s = (results.events = {});
+    const rect = results.canvasMode.rect;
+    const changed = async () => (await messages()).filter((m) => m.name.endsWith('.changed')).map((m) => ({ name: m.name, data: m.data }));
+    await frames(4);
+    await messages();
+    await run('select.none');
+    await frames(3);
+    await messages();
+    await run('select.set', { ids: [rect] });
+    await frames(3);
+    s.select = await changed();
+    await run('node.set', { id: rect, x: 5 });
+    await frames(3);
+    s.edit = await changed();
+    await run('view.zoomIn');
+    await frames(3);
+    s.zoom = await changed();
   }
   results.errors = logs.filter((l) => /^(error|warning): /.test(l) && !/WebGL|GPU|swiftshader/i.test(l)).slice(0, 10);
 } finally {
