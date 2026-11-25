@@ -7,7 +7,7 @@
  * - The Comments tab lists it; choosing it selects its layer; Reply and Resolve write to the file.
  * - C with a layer selected opens the composer on it; Ask Claude leaves the thread and hands the
  *   agent pane a turn scoped to that layer with the thread as context, in one action: the
- *   `greenfield:ask-claude` event (lane W2-F's pane runs it; checked at integration).
+ *   `greenfield:ask-claude` event (the agent pane runs it: agent-pane.spec.ts).
  * - Our context menu's `comment.new` with layer ids and `ask: true` (lane W2-D).
  */
 import type { CommentThread } from '@greenfield/bridge';

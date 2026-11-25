@@ -3,17 +3,11 @@
 /**
  * Ask Claude from a comment (Story 6.2): one action from a note to an agent turn scoped to the
  * element it's on. The thread goes along as context (`comment.prompt`), and the agent pane runs
- * the turn: it listens for `greenfield:ask-claude` (`features/agent/ask.ts`) and sends it like a
- * typed message, scoped to `scope`.
+ * the turn (`features/agent/ask.ts`) like a typed message, scoped to the thread's layers.
  */
 import type { NodeId } from '@greenfield/bridge';
 import type { EditorStore } from '@greenfield/editor-state';
-
-export interface AskClaudeDetail {
-  prompt: string;
-  /** The layers the turn may change; empty: the whole page. */
-  scope: NodeId[];
-}
+import { askClaude as askAgent } from '@/features/agent/ask';
 
 export interface AskInput {
   threadId: number;
@@ -35,9 +29,8 @@ export function askPrompt(threadId: number, brief: string, request?: string): st
 
 export async function askClaude(store: EditorStore, input: AskInput): Promise<void> {
   const brief = (await store.run('comment.prompt', { ids: [input.threadId] })) as { text: string };
-  const detail: AskClaudeDetail = {
+  askAgent({
     prompt: askPrompt(input.threadId, brief.text, input.request),
-    scope: [...input.nodeIds],
-  };
-  window.dispatchEvent(new CustomEvent('greenfield:ask-claude', { detail }));
+    scope: input.nodeIds.length ? [...input.nodeIds] : null,
+  });
 }

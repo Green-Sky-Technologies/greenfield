@@ -213,6 +213,44 @@ test('a turn on the selection: its changes listed, shown on the canvas and undon
   problems.splice(0, problems.length, ...problems.filter((p) => !NOISE.test(p)));
 });
 
+test("a comment's Ask Claude starts a turn scoped to its layer (6.2 → 5.2)", async ({
+  as,
+  run,
+  problems,
+}) => {
+  await connectModel(await as('admin'), run.org.slug);
+  const page = await as('editor');
+  const { editor, pane } = await openProject(page, run.org.slug, 'Ask');
+  const card = await addCard(editor);
+  await editor.execute('view.zoomFit', {});
+
+  // C on the selection opens the composer; Ask Claude leaves the note and starts the turn.
+  await page.getByTitle('Design canvas').focus();
+  await page.keyboard.press('c');
+  const composer = page.getByRole('dialog', { name: 'Comment or ask' });
+  await expect(composer).toContainText('On Card');
+  await page.keyboard.type('Make the card ember');
+  await composer.getByRole('button', { name: 'Ask Claude' }).click();
+  await expect(composer).toBeHidden();
+
+  const user = pane.getByTestId('agent-message').and(page.locator('[data-role="user"]'));
+  await expect(user.last()).toContainText('Make the card ember');
+  await expect(user.last()).toContainText('This came from comment thread');
+  await expect(user.last().getByTestId('selection-chip')).toHaveText(/^Card/);
+  const reply = replies(page).last();
+  await expect(reply).toHaveAttribute('data-status', 'complete', { timeout: 60_000 });
+  await expect(reply).toContainText('Done: the card is ember.');
+  const node = (await editor.getNode(card, { fields: ['name'] })) as unknown as { name: string };
+  expect(node.name).toBe('Card (ember)');
+  const threads = (await editor.execute('comment.list', { page: 'all' })) as {
+    comments: { text: string; anchor: number }[];
+  };
+  expect(threads.comments).toEqual([
+    expect.objectContaining({ text: 'Make the card ember', anchor: card }),
+  ]);
+  problems.splice(0, problems.length, ...problems.filter((p) => !NOISE.test(p)));
+});
+
 test('questions, stop, retry and a queued message', async ({ as, run, problems }, testInfo) => {
   await connectModel(await as('admin'), run.org.slug);
   const page = await as('editor');
