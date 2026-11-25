@@ -12,6 +12,7 @@
 import { blurEditor, focusEditor, type NodeId } from '@greenfield/bridge';
 import { useEditorState, useEditorStore, useUiRequest } from '@greenfield/editor-state/react';
 import { useEffect, useRef, useState } from 'react';
+import { ImageIcon, Mic, NotYet } from '@/components/icons';
 import { askClaude } from './ask-claude';
 
 /**
@@ -135,7 +136,14 @@ export function ComposerCard({ target, at, canComment = true, ask, onClose }: Ca
     >
       <div className="mb-2 flex items-center justify-between text-muted">
         <span className="truncate">On {target ? on : '…'}</span>
-        <span className="font-mono">Esc to cancel</span>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-keyshortcuts="Escape"
+          className="shell-focus font-mono hover:text-text"
+        >
+          Esc to cancel
+        </button>
       </div>
       <label htmlFor="comment-or-ask" className="sr-only">
         Comment or ask Claude
@@ -152,14 +160,14 @@ export function ComposerCard({ target, at, canComment = true, ask, onClose }: Ca
         className="input resize-none text-sm"
       />
       <div className="mt-2 flex items-center justify-end gap-2">
-        <button
-          type="button"
-          onClick={onClose}
-          className="shell-focus mr-auto h-7 px-2 text-muted hover:bg-surface-2 hover:text-text"
-          aria-keyshortcuts="Escape"
-        >
-          Close
-        </button>
+        <span className="mr-auto flex gap-1">
+          <NotYet label="Dictate" story="Story 16.1">
+            <Mic />
+          </NotYet>
+          <NotYet label="Add an image" story="Story 12.1">
+            <ImageIcon />
+          </NotYet>
+        </span>
         <button
           type="button"
           disabled={!ready}
