@@ -15,6 +15,7 @@ import {
   type DocumentInfo,
   type EditorNode,
 } from '../src/index';
+import { readZip, writeZip } from '../src/file';
 import { expect, openEditor, test, type RemoteEditor } from '../src/playwright/index';
 
 const names = (doc: DocumentInfo): string[] => {
@@ -181,6 +182,28 @@ test('open → edit → save → reopen', async ({ editor, page, editorOptions }
   third.open('Poster.figcraft', second.bytes);
   await expect.poll(() => docNames(third)).toEqual(['First', 'Second']);
   expect((await third.inspect({ depth: 0, fields: [] })).dirty).toBe(false);
+});
+
+test('a file rewritten by writeZip opens in the editor', async ({
+  editor,
+  page,
+  editorOptions,
+}) => {
+  await newDoc(editor);
+  const { id } = (await editor.execute('node.create', { type: 'frame', name: 'Before' })) as {
+    id: number;
+  };
+  const saved = await editor.nextSave(() => editor.save());
+  const entries = (await readZip(saved.bytes))!;
+  const doc = JSON.parse(new TextDecoder().decode(entries.get('document.json'))) as {
+    nodes: Record<string, { name: string }>;
+  };
+  doc.nodes[String(id)]!.name = 'After';
+  entries.set('document.json', new TextEncoder().encode(JSON.stringify(doc)));
+
+  const again = await openEditor(page, editorOptions);
+  again.open('Rewritten.figcraft', await writeZip(entries));
+  await expect.poll(() => docNames(again)).toEqual(['After']);
 });
 
 test('change detection catches a control-channel edit', async ({ page }) => {
