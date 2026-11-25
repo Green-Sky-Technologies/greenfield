@@ -15,7 +15,6 @@ const plexMono = IBM_Plex_Mono({
   subsets: ['latin'],
   weight: ['400', '500'],
 });
-// The wordmark only (components/logo.tsx), so it loads when the logo first renders it.
 const cormorant = Cormorant_Garamond({
   variable: '--font-cormorant',
   subsets: ['latin'],
@@ -40,7 +39,6 @@ export default async function RootLayout({ children }: LayoutProps<'/'>) {
         <ClerkProvider
           taskUrls={{ 'choose-organization': '/session-tasks/choose-organization' }}
           appearance={{
-            // The brand tokens in globals.css, so Clerk's pages follow the theme.
             variables: {
               colorPrimary: 'var(--field)',
               colorBackground: 'var(--panel)',

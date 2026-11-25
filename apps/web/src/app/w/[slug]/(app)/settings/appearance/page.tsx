@@ -5,7 +5,6 @@ import { requireActor } from '@/server/context';
 
 export const metadata = { title: 'Appearance' };
 
-/** Per browser, not per workspace: any member can set it. */
 export default async function AppearancePage({
   params,
 }: PageProps<'/w/[slug]/settings/appearance'>) {

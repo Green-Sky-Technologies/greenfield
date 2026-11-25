@@ -1,8 +1,3 @@
-/**
- * Project activity (Story 6.4 of CrunchDesign). Comment and share services write rows here.
- * The feed that merged them with the HTML model's op log was removed in Story 1.2; Epic 3
- * builds the new one on file versions.
- */
 import { activity, type Db } from '@greenfield/db';
 import type { Actor } from './types';
 

@@ -1,63 +1,25 @@
 @import 'tailwindcss';
 
-/*
- * App chrome tokens: the Greenfield brand (docs/brand/README.md). Dark is the default; light is
- * chosen by `data-theme="light"` on <html>, or by the OS under `data-theme="system"` (the theme
- * cookie, features/theme). These style the app itself; a user's design tokens live in their design
- * files and render inside the editor independently of this theme.
- *
- * Contrast is checked from this file by src/features/theme/contrast.test.ts: keep the dark block,
- * the light block and the system block in step, and keep every token as a 6-digit hex.
- */
 :root {
   color-scheme: dark;
-  --ground: #0b0c0a;
-  --panel: #121410;
-  --raise: #1b1e18;
-  --rule: rgba(236, 232, 222, 0.12);
-  --ink: #ece8de;
-  --body: #b9b5ac;
-  --field: #3fd67f; /* you: selection, focus, primary action */
-  --ember: #ff9a4d; /* the agent */
-  --ember-ink: #0b0c0a; /* text on ember fills: ground */
-  --danger: #f2554f; /* not in the brand sheet; see docs/brand/README.md */
+  --ground: light-dark(#f3f0e8, #0b0c0a);
+  --panel: light-dark(#fbf9f4, #121410);
+  --raise: light-dark(#e8e4da, #1b1e18);
+  --rule: light-dark(rgba(20, 21, 15, 0.12), rgba(236, 232, 222, 0.12));
+  --ink: light-dark(#14150f, #ece8de);
+  --body: light-dark(#55534c, #b9b5ac);
+  --field: light-dark(#1b733f, #3fd67f);
+  --ember: light-dark(#a54a0f, #ff9a4d);
+  --ember-ink: light-dark(#f3f0e8, #0b0c0a);
+  --danger: light-dark(#8c1515, #f2554f);
 }
-
 :root[data-theme='light'] {
   color-scheme: light;
-  --ground: #f3f0e8;
-  --panel: #fbf9f4;
-  --raise: #e8e4da;
-  --rule: rgba(20, 21, 15, 0.12);
-  --ink: #14150f;
-  --body: #55534c;
-  --field: #1b733f;
-  --ember: #a54a0f;
-  --ember-ink: #f3f0e8;
-  --danger: #8c1515;
-}
-
-/* System: the server can't know the OS setting, so CSS picks (no flash, no script). */
-@media (prefers-color-scheme: light) {
-  :root[data-theme='system'] {
-    color-scheme: light;
-    --ground: #f3f0e8;
-    --panel: #fbf9f4;
-    --raise: #e8e4da;
-    --rule: rgba(20, 21, 15, 0.12);
-    --ink: #14150f;
-    --body: #55534c;
-    --field: #1b733f;
-    --ember: #a54a0f;
-    --ember-ink: #f3f0e8;
-    --danger: #8c1515;
-  }
 }
 :root[data-theme='system'] {
   color-scheme: light dark;
 }
 
-/* Names the components use, mapped to the brand tokens. */
 :root {
   --bg: var(--ground);
   --surface: var(--panel);
@@ -106,11 +68,9 @@ body {
   color: var(--ground);
 }
 
-/* Pixel-art marks: whole-multiple sizes, never smoothed. */
 .pixel {
   image-rendering: pixelated;
 }
-/* The mark has a dark-ground and a light-ground file; show the one for the theme in effect. */
 .mark-on-light {
   display: none;
 }
@@ -129,7 +89,6 @@ body {
   }
 }
 
-/* Labels: Plex Mono, 11px, uppercase, 0.1em tracking, tabular numbers. */
 @utility type-label {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -139,7 +98,6 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* Square: no radius in the app chrome. Radius belongs to the user's designs. */
 @utility btn {
   @apply inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
 }

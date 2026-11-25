@@ -10,7 +10,6 @@ import {
 
 const LABELS: Record<ThemePreference, string> = { system: 'System', dark: 'Dark', light: 'Light' };
 
-/** System / Dark / Light. Applies at once and is remembered in a cookie. */
 export function ThemeSetting({ initial }: { initial: ThemePreference }) {
   const [pref, setPref] = useState(initial);
   const choose = (p: ThemePreference) => {
