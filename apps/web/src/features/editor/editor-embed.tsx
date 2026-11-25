@@ -6,13 +6,14 @@
  *
  *   ready -> load the project's document and open it; with nothing saved yet, `file.new` opens a
  *            blank document named after the project (Story 3.7) instead of the home screen
- *   dirty -> the indicator in the bar
+ *   dirty -> the page asks before it is left with unsaved changes
  *   save  -> store the document (design-file-client: Blob upload + commit, or PUT); the bridge
  *            acks the editor only once it's stored, so a refused save stays unsaved
  *
  * Editors hold the project's edit lock while the tab is open; a save from a stale lock is
- * refused by the server (Story 3.1). The status element's data-* attributes are what the
- * Playwright specs read. Bytes are never logged. The shell (features/shell) gets the bridge
+ * refused by the server (Story 3.1). The status element is hidden: its data-* attributes are
+ * what the Playwright specs read. People see only what needs them: a lock they don't hold, or an
+ * error. Bytes are never logged. The shell (features/shell) gets the bridge
  * through `onEditor`.
  */
 import { createBridge, EditorHiddenError, type Editor, type SaveEvent } from '@greenfield/bridge';
@@ -179,9 +180,18 @@ export function EditorEmbed({ projectId, author, canEdit, webgl, canvasMode, onE
     };
   }, [projectId, author, canEdit, webgl]);
 
+  const notice =
+    error ??
+    (lock === 'held-by-other'
+      ? 'Someone else is editing. Your changes won’t save.'
+      : lock === 'lost'
+        ? 'Your edit lock moved or expired. Reload to keep editing.'
+        : null);
+
   return (
     <div className="flex min-h-0 flex-1 flex-col">
       <div
+        hidden
         data-testid="editor-status"
         data-status={status}
         data-dirty={String(dirty)}
@@ -192,15 +202,16 @@ export function EditorEmbed({ projectId, author, canEdit, webgl, canvasMode, onE
         data-storage={storage ?? ''}
         data-lock={lock ?? ''}
         data-last-save={lastSave}
-        className="flex items-center gap-3 border-b px-4 py-1 text-xs"
-      >
-        <span>{dirty ? 'Unsaved changes' : 'All changes saved'}</span>
-        <span className="opacity-60">{status}</span>
-        {storage && <span className="opacity-60">storage: {storage}</span>}
-        {lock === 'held-by-other' && <span>Someone else is editing. Your changes won’t save.</span>}
-        {lock === 'lost' && <span>Your edit lock moved or expired. Reload to keep editing.</span>}
-        {error && <span role="alert">{error}</span>}
-      </div>
+      />
+      {notice && (
+        <p
+          role="alert"
+          className="flex items-center gap-2 border-b border-border bg-surface px-4 py-1.5 text-xs text-text"
+        >
+          <span aria-hidden className="size-1.5 shrink-0 bg-danger" />
+          {notice}
+        </p>
+      )}
       <div className="relative min-h-0 flex-1 overflow-hidden">
         <iframe
           ref={iframe}
