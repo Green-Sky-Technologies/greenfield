@@ -91,7 +91,7 @@ test('canvas mode: panels follow the canvas, F6 cycles the panes, the fallback r
   await page.mouse.click(swatch.x, swatch.y);
   await expect(page.getByTestId('design-tab-name')).toHaveText('Swatch');
   await expect(layers.getByRole('treeitem', { selected: true })).toHaveAccessibleName('Swatch');
-  await expect(page.getByTestId('design-width')).toHaveText('160');
+  await expect(page.getByTestId('design-width')).toHaveValue('160');
   expect(await hostFocus(page)).toBe('canvas');
 
   // 5.4: F6 cycles the panes and Shift+F6 goes back; Esc returns to the canvas.

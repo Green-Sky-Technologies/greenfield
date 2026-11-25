@@ -1,18 +1,47 @@
 'use client';
 
 /**
- * The Design tab. Stub for lane W2-B (Story 5.8: position, size, auto layout, fills, strokes,
- * effects, text, mixed values; number fields scrub with `useGesture`). Reads `useSelection` and
- * `useNode` (the selected layers' full fields).
+ * The Design tab (Story 5.8): for the selection, position, size and constraints; auto layout
+ * and resizing; opacity, blend and radius; fills, strokes and effects; typography. Several
+ * layers selected: shared values, "Mixed" where they differ, and an edit sets them all. Values
+ * Claude set in the last turn carry an ember mark and "changed by Claude · Revert" (Story 5.5).
+ * Reads `useSelection` and the selected layers' fields; writes through the store.
  */
-import { useNode, useSelection } from '@greenfield/editor-state/react';
+import type { NodeFields } from '@greenfield/editor-state';
+import { useEditorState, useSelection } from '@greenfield/editor-state/react';
+import { useMemo, useState } from 'react';
 import { StylesSection } from './styles/styles-section';
-
-const num = (v: unknown) => (typeof v === 'number' ? String(Math.round(v * 100) / 100) : '–');
+import { AgentChangesProvider } from './agent-changes';
+import { ReportContext } from './controls';
+import { isText, MIXED, shared, typeName } from './fields';
+import { LayerSection, LayoutSection, PositionSection } from './geometry';
+import { EffectsSection, PaintsSection } from './paints';
+import { TypographySection } from './typography';
 
 export function DesignTab() {
+  return (
+    <AgentChangesProvider>
+      <Inspector />
+    </AgentChangesProvider>
+  );
+}
+
+function Inspector() {
   const selection = useSelection();
-  const node = useNode(selection[0]);
+  const fields = useEditorState((s) => s.nodes);
+  const nodes = useMemo(
+    () => selection.map((id) => fields.get(id)).filter((n): n is NodeFields => !!n),
+    [selection, fields],
+  );
+  // Constraints apply inside a frame, not to a page's top-level layers.
+  const nested = useEditorState((s) =>
+    selection.some((id) => {
+      const parent = s.tree.nodes.get(id)?.parent;
+      return parent !== undefined && parent !== s.tree.page;
+    }),
+  );
+  const [error, setError] = useState<string | null>(null);
+
   if (!selection.length) {
     return (
       <p data-testid="design-tab" data-selected="" className="p-4 text-xs text-muted">
@@ -20,26 +49,37 @@ export function DesignTab() {
       </p>
     );
   }
+  const type = nodes.length ? shared(nodes, (n) => n.type) : undefined;
+  const ids = nodes.map((n) => n.id);
   return (
-    <section aria-label="Design" data-testid="design-tab" data-selected={selection.join(',')}>
-      <div className="flex items-baseline justify-between border-b border-border px-4 py-3.5">
-        <span className="text-[13px] font-semibold" data-testid="design-tab-name">
-          {selection.length > 1 ? `${selection.length} layers` : (node?.name ?? '…')}
-        </span>
-        <span className="font-mono text-[11px] text-muted">{node?.type ?? ''}</span>
-      </div>
-      <dl className="grid grid-cols-2 gap-2 border-b border-border px-4 py-3.5 font-mono text-xs">
-        {(['x', 'y', 'width', 'height'] as const).map((k) => (
-          <div key={k} className="flex gap-2 bg-surface-2 px-2.5 py-1.5">
-            <dt className="text-muted">
-              {k === 'width' ? 'W' : k === 'height' ? 'H' : k.toUpperCase()}
-            </dt>
-            <dd data-testid={`design-${k}`}>{num(node?.[k])}</dd>
-          </div>
-        ))}
-      </dl>
-      <p className="px-4 pt-3 type-label text-muted">Design · Story 5.8</p>
-      <StylesSection />
-    </section>
+    <ReportContext.Provider value={setError}>
+      <section aria-label="Design" data-testid="design-tab" data-selected={selection.join(',')}>
+        <div className="flex items-baseline justify-between gap-2 border-b border-border px-4 py-3.5">
+          <span className="truncate text-[13px] font-semibold" data-testid="design-tab-name">
+            {selection.length > 1 ? `${selection.length} layers` : (nodes[0]?.name ?? '…')}
+          </span>
+          <span className="shrink-0 font-mono text-[11px] text-muted">
+            {type === MIXED ? 'Mixed' : typeName(type)}
+          </span>
+        </div>
+        {nodes.length > 0 && (
+          <>
+            <PositionSection ids={ids} nodes={nodes} nested={nested} />
+            <LayoutSection ids={ids} nodes={nodes} />
+            <LayerSection ids={ids} nodes={nodes} />
+            {nodes.every(isText) && <TypographySection ids={ids} nodes={nodes} />}
+            <PaintsSection ids={ids} nodes={nodes} kind="fills" />
+            <PaintsSection ids={ids} nodes={nodes} kind="strokes" />
+            <EffectsSection ids={ids} nodes={nodes} />
+          </>
+        )}
+        <StylesSection />
+        {error && (
+          <p role="status" className="px-4 py-3 text-xs text-danger" data-testid="design-error">
+            {error}
+          </p>
+        )}
+      </section>
+    </ReportContext.Provider>
   );
 }
