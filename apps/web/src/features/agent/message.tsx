@@ -6,6 +6,7 @@
  * the turn runs, then what it changed, its questions, or the job it offered or started.
  */
 import type { Editor } from '@greenfield/bridge';
+import { Check } from '@/components/icons';
 import { DesignCheckCard } from '@/features/design-systems/check-card';
 import type { MessageView } from '@/server/services/agent';
 import { ChangeList } from './change-list';
@@ -25,28 +26,22 @@ export function UserMessage({ message, name }: { message: MessageView; name: str
   );
 }
 
-const MARK: Record<ActivityItem['status'], string> = {
-  done: '✓',
-  running: '',
-  error: '×',
-};
-
 function Activity({ items }: { items: ActivityItem[] }) {
   return (
-    <ul aria-label="Steps" className="space-y-2 text-[13px]">
+    <ul aria-label="Steps" className="text-[13px]">
       {items.map((a) => (
-        <li key={a.id} data-status={a.status} className="flex items-start gap-2.5">
+        <li key={a.id} data-status={a.status} className="flex items-start gap-2 py-1.5">
           <span
             aria-hidden
             className={`mt-0.5 flex size-3.5 shrink-0 items-center justify-center text-xs leading-none ${
               a.status === 'running'
-                ? 'border border-agent'
+                ? 'shadow-[inset_0_0_0_1.5px_var(--color-agent)]'
                 : a.status === 'done'
                   ? 'text-user'
                   : 'text-danger'
             }`}
           >
-            {MARK[a.status]}
+            {a.status === 'done' ? <Check size={14} /> : a.status === 'error' ? '×' : null}
           </span>
           <span className={a.status === 'done' ? 'text-muted' : undefined}>{a.label}</span>
         </li>
@@ -76,7 +71,9 @@ export function ClaudeMessage({ message: m, asked, chat, editor }: ClaudeProps) 
       data-status={m.status}
       className="space-y-2"
     >
-      <p className="type-label text-agent">Claude</p>
+      <p className="type-label text-agent">
+        Claude{running && (changed > 0 ? ' · editing' : ' · working')}
+      </p>
       {m.text ? (
         <p className="whitespace-pre-wrap">{m.text}</p>
       ) : (
@@ -85,14 +82,14 @@ export function ClaudeMessage({ message: m, asked, chat, editor }: ClaudeProps) 
       {steps.length > 0 && (running || !m.changes.length) && <Activity items={steps} />}
       {running && (
         <div className="flex items-center gap-2 text-xs text-muted">
-          <span aria-hidden className="size-1.5 bg-agent" />
+          <span aria-hidden className="size-2 bg-agent" />
           <span data-testid="turn-progress" className="flex-1">
-            {m.checking ? 'Checking the result' : 'Working'}
+            {m.checking ? 'Checking the result' : steps.length ? `Step ${steps.length}` : 'Working'}
             {changed > 0 && ` · ${changed} layer${changed === 1 ? '' : 's'} changed so far`}
           </span>
           <button
             type="button"
-            className="btn-ghost px-2.5 py-0.5 text-xs"
+            className="btn-ghost h-[26px] px-3 text-xs"
             onClick={() => chat.cancel(m.id)}
           >
             Stop
