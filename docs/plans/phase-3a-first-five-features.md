@@ -4,7 +4,7 @@
 with Greenfield's own chrome, Claude as a collaborator, chat with the selection, comment or ask on
 any element, and design systems Claude follows. Features 6 to 10 are out of scope.
 
-**Gate.** Nothing starts until the `greenfield-editor` fork repo is built and verified (byte-identical
+**Gate.** Nothing starts until the `greenfield-editor` fork repo (public) is built and verified (byte-identical
 to the patch build), because every fork change in this plan lands there, not in
 `spikes/0.2-fork-build`.
 
@@ -154,6 +154,14 @@ Chromium plus a WebKit and Firefox pass, and the perf box where it changes an in
 - **W2-H 10.2 + 10.5 + 10.6.** Build a system from a GitHub repo, uploads or a `.fig` (a 4.5 job);
   the guide and a summary in the agent's cached prefix; a deterministic check for raw colours
   and off-scale spacing after each turn; library updates with a review.
+
+## Designs
+
+Another agent adds a design per story to the repo while this runs (alongside
+`docs/brand/mockups/`). Before building a story, each lane looks for its design (pull `main`,
+search for the story number and the panel's name). With a design, build to it. Without one, build
+the basics from the SPEC text and the brand README, say so in the PR, and come back to match the
+design once it lands. The parent re-checks for new designs at each wave boundary.
 
 ## Done means
 
