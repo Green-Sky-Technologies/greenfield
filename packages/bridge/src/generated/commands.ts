@@ -8,8 +8,8 @@ export const EDITOR_VERSION = '0.18.1';
 export const EDITOR_RELEASE_SHA256 =
   '2fbeb93f5022b0a7cc9d8528f1ed7e2b54c94d213ef79e65128aa898c399f02b';
 /** sha256 of `figcraft.commands()` in canonical form (see scripts/command-types.ts). */
-export const COMMANDS_HASH = '582abc62317c3ec414a8a21eaf79f3026fa92280b5406e0edddfbd7f676de469';
-export const COMMAND_COUNT = 648;
+export const COMMANDS_HASH = '6ccd1d4e3941be83f2a519cce14fa2cfb1c52e2806be220ea7d327df973028dd';
+export const COMMAND_COUNT = 649;
 
 /** Layer keys `document.inspect` and `node.get` accept in `fields`. */
 export const NODE_FIELDS = [
@@ -537,6 +537,23 @@ export interface NodeProps {
 
 /** Parameters per command id, from the pinned editor. */
 export interface CommandParamsMap {
+  /**
+   * Hold an agent's presence
+   *
+   * `{name (the agent's client name, as in engine.execute's 'agent'), active (true: it shows in the file in front until you release it; false: it goes after the usual few seconds)}  an agent's outline and avatar for a whole turn, not only after its commands`
+   */
+  'agent.presence': {
+    /**
+     * the agent's client name, as in engine.execute's `agent`
+     */
+    name: string;
+    /**
+     * true: it shows in the file in front until you release it; false: it goes after the usual few seconds
+     */
+    active: unknown;
+    ids?: (number | string)[];
+    id?: number | string;
+  };
   /**
    * Align bottom [Arrange] (Alt+S) · undoable
    *
@@ -9525,6 +9542,16 @@ export interface CommandParamsMap {
 
 /** Every command of the pinned editor, as `figcraft.commands()` lists it, plus `takes`. */
 export const COMMANDS: readonly CommandInfo[] = [
+  {
+    id: 'agent.presence',
+    label: "Hold an agent's presence",
+    menu: null,
+    params:
+      "{name (the agent's client name, as in engine.execute's `agent`), active (true: it shows in the file in front until you release it; false: it goes after the usual few seconds)}  an agent's outline and avatar for a whole turn, not only after its commands",
+    shortcut: null,
+    undoable: false,
+    takes: ['name', 'active'],
+  },
   {
     id: 'align.bottom',
     label: 'Align bottom',

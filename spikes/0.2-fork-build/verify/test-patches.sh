@@ -33,4 +33,7 @@ docker run --rm --name fork-patch-tests \
     cargo test -q -p figcraft-web --bin figcraft-web query_tests
     # 0009: gesture commands (edit.begin, edit.preview, edit.commit, edit.cancel)
     cargo test -q -p figcraft-engine --lib gesture_command_tests
+    # 0010: the agent's ember colour (4.5:1 not needed, 3:1 on canvas and panel), agent.presence, host events
+    cargo test -q -p figcraft-engine --lib agent_presence_tests
+    cargo test -q -p figcraft-ui-egui --lib live::agent
   '
