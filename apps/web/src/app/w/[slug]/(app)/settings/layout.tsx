@@ -11,6 +11,7 @@ export default async function SettingsLayout({
   const items = [
     { href: '/members', label: 'Members' },
     { href: '/appearance', label: 'Appearance' },
+    { href: '/design-systems', label: 'Design systems' },
     ...(can(actor.role, 'workspace:manage_credentials')
       ? [
           { href: '/credentials', label: 'Model access' },

@@ -30,10 +30,21 @@ export const PERMISSIONS = [
   'export:deterministic', // built-in exports, no model use (Epic 7)
   'export:llm', // code generation jobs (Epic 7)
   'share:manage', // create/revoke share links
+  // design systems (Epic 10)
+  'design_system:read',
+  'design_system:edit', // create drafts from a library file, review, write the guide
+  'design_system:publish', // publish, unpublish and delete (see designSystemPermissions)
+  'design_system:set_default',
+  'design_system:manage_policy', // choose who may publish and set the default
 ] as const;
 export type Permission = (typeof PERMISSIONS)[number];
 
-const VIEWER: readonly Permission[] = ['workspace:read', 'project:read', 'export:deterministic'];
+const VIEWER: readonly Permission[] = [
+  'workspace:read',
+  'project:read',
+  'export:deterministic',
+  'design_system:read',
+];
 
 const EDITOR: readonly Permission[] = [
   ...VIEWER,
@@ -45,12 +56,16 @@ const EDITOR: readonly Permission[] = [
   'agent:run',
   'export:llm',
   'share:manage',
+  'design_system:edit',
 ];
 
 const ADMIN: readonly Permission[] = [
   ...EDITOR,
   'workspace:manage_members',
   'workspace:manage_credentials',
+  'design_system:publish',
+  'design_system:set_default',
+  'design_system:manage_policy',
 ];
 
 const MATRIX: Record<Role, ReadonlySet<Permission>> = {
@@ -83,6 +98,38 @@ export const ARCHIVED_PROJECT_BLOCKED: readonly Permission[] = [
 export function permissionsForProject(role: Role, project: { archived: boolean }): Permission[] {
   const all = permissionsFor(role);
   return project.archived ? all.filter((p) => !ARCHIVED_PROJECT_BLOCKED.includes(p)) : all;
+}
+
+/**
+ * Who may publish design systems and set the default, chosen per workspace by an admin (Story
+ * 10.4): admins only (the role matrix above), or admins and editors.
+ */
+export type DesignSystemManagers = 'admins' | 'admins_and_editors';
+
+/** What `DesignSystemManagers = 'admins_and_editors'` adds for editors. */
+export const DESIGN_SYSTEM_DELEGABLE: readonly Permission[] = [
+  'design_system:publish',
+  'design_system:set_default',
+];
+
+/** The permissions a role has in a workspace, taking its design system policy into account. */
+export function permissionsInWorkspace(
+  role: Role,
+  workspace: { designSystemManagers: DesignSystemManagers },
+): Permission[] {
+  const all = permissionsFor(role);
+  if (role !== 'editor' || workspace.designSystemManagers !== 'admins_and_editors') return all;
+  return [...all, ...DESIGN_SYSTEM_DELEGABLE];
+}
+
+/** `assertCan` for a permission an admin may delegate (see `permissionsInWorkspace`). */
+export function assertCanInWorkspace(
+  role: Role,
+  permission: Permission,
+  workspace: { designSystemManagers: DesignSystemManagers },
+): void {
+  if (!permissionsInWorkspace(role, workspace).includes(permission))
+    throw new ForbiddenError(permission);
 }
 
 export function roleFromClerk(orgRole: string | null | undefined): Role {

@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db, requireActor } from '../context';
 import { copyDesignFile, defaultDesignFileStorage } from '../services/design-files';
+import { attachDefaultDesignSystem } from '../services/design-systems';
 import {
   createProject,
   duplicateProject,
@@ -22,6 +23,7 @@ export async function createProjectAction(
       name: form.get('name'),
       description: form.get('description'),
     });
+    await attachDefaultDesignSystem(db(), actor, defaultDesignFileStorage(), { projectId: p.id });
     return { id: p.id };
   });
   if (res.ok) redirect(`/w/${actor.workspace.slug}/p/${res.data.id}`);
