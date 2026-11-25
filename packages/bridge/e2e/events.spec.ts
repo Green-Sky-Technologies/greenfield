@@ -178,34 +178,44 @@ test('interaction.changed: the host’s gesture and the canvas’s own drag', as
   expect(await editor.getNode(id, { fields: ['x'] })).toMatchObject({ x: 20 });
 });
 
-test('a control call resolves within a frame of being made', async ({ editor, page }) => {
+test('a control call resolves when the editor frame that ran it ends', async ({ editor, page }) => {
   await newDoc(editor);
-  // In the host page: the editor's frame period, and calls made at random points in a frame,
-  // timed from the call to its reply.
-  const { frame, calls } = await page.evaluate(async () => {
+  // In the host page: wrap the editor's requestAnimationFrame to see when each of its frames
+  // starts and ends, then make calls at random points and time each reply against the end of the
+  // first editor frame that started after the call (the one that ran it). A reply poll would add
+  // up to 16 ms after that frame.
+  const { gap, roundTrip } = await page.evaluate(async () => {
     const f = (document.getElementById('editor') as HTMLIFrameElement).contentWindow as Window & {
       figcraft: { execute(c: string, p: unknown): Promise<unknown> };
     };
-    const stamps: number[] = [];
-    await new Promise<void>((done) => {
-      const tick = (t: number) => {
-        stamps.push(t);
-        if (stamps.length < 31) f.requestAnimationFrame(tick);
-        else done();
-      };
-      f.requestAnimationFrame(tick);
-    });
-    const periods = stamps.slice(1).map((t, i) => t - stamps[i]!);
-    const calls: number[] = [];
+    const frames: { start: number; end: number }[] = [];
+    const raf = f.requestAnimationFrame.bind(f);
+    f.requestAnimationFrame = (cb) =>
+      raf((ts) => {
+        const start = performance.now();
+        try {
+          cb(ts);
+        } finally {
+          frames.push({ start, end: performance.now() });
+        }
+      });
+    const gaps: number[] = [];
+    const trips: number[] = [];
     for (let i = 0; i < 30; i++) {
       await new Promise((r) => setTimeout(r, Math.random() * 20));
       const t0 = performance.now();
       await f.figcraft.execute('view.get', {});
-      calls.push(performance.now() - t0);
+      const t1 = performance.now();
+      const ran = frames.find((fr) => fr.start >= t0);
+      if (ran) gaps.push(t1 - ran.end);
+      trips.push(t1 - t0);
     }
+    f.requestAnimationFrame = raf;
     const median = (xs: number[]) => [...xs].sort((x, y) => x - y)[xs.length >> 1]!;
-    return { frame: median(periods), calls: median(calls) };
+    return { gap: median(gaps), roundTrip: median(trips) };
   });
-  console.log(`control round trip p50 ${calls.toFixed(1)} ms, frame ${frame.toFixed(1)} ms`);
-  expect(calls).toBeLessThan(frame);
+  console.log(
+    `control round trip p50 ${roundTrip.toFixed(1)} ms; reply after its frame ended p50 ${gap.toFixed(1)} ms`,
+  );
+  expect(gap).toBeLessThan(4);
 });
