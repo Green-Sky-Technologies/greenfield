@@ -1,10 +1,11 @@
 import { saveChord, type KeyPlatform } from '@greenfield/bridge';
 import { describe, expect, it } from 'vitest';
-import { shellKeyAction } from './keys';
+import { editPanelChord, shellKeyAction } from './keys';
 
 type Init = Partial<Parameters<typeof shellKeyAction>[0]>;
 const key = (k: string, init: Init = {}) => ({
   key: k,
+  code: '',
   metaKey: false,
   ctrlKey: false,
   altKey: false,
@@ -19,6 +20,16 @@ const key = (k: string, init: Init = {}) => ({
 function save(platform: KeyPlatform) {
   const [mod] = saveChord(platform).split('+');
   return key('s', mod === 'Meta' ? { metaKey: true } : { ctrlKey: true });
+}
+
+/** The platform's edit panel chord as a key event, from `editPanelChord` (never a fixed Ctrl). */
+function editPanel(platform: KeyPlatform, init: Init = {}) {
+  const mod = editPanelChord(platform).split('+')[0];
+  return key('\\', {
+    code: 'Backslash',
+    ...(mod === 'Meta' ? { metaKey: true } : { ctrlKey: true }),
+    ...init,
+  });
 }
 
 const textarea = { tagName: 'TEXTAREA', isContentEditable: false } as unknown as EventTarget;
@@ -55,6 +66,25 @@ describe('shellKeyAction', () => {
         expect(shellKeyAction(key('F6', { shiftKey: true }), 'canvas', platform)).toBe(
           'previous-pane',
         );
+      });
+
+      it('the edit panel chord toggles the edit panel from both places in canvas mode', () => {
+        for (const where of ['shell', 'canvas'] as const)
+          expect(shellKeyAction(editPanel(platform), where, platform)).toBe('toggle-edit-panel');
+        // By the physical key too, for layouts where it types another character.
+        expect(shellKeyAction(editPanel(platform, { key: '#' }), 'canvas', platform)).toBe(
+          'toggle-edit-panel',
+        );
+        const other = editPanel(platform === 'mac' ? 'other' : 'mac');
+        expect(shellKeyAction(other, 'canvas', platform)).toBeNull();
+        const shifted = editPanel(platform, { shiftKey: true });
+        expect(shellKeyAction(shifted, 'canvas', platform)).toBeNull();
+      });
+
+      it('leaves the edit panel chord to the editor while its own panels are back', () => {
+        const fallback = { canvasMode: false };
+        expect(shellKeyAction(editPanel(platform), 'canvas', platform, fallback)).toBeNull();
+        expect(shellKeyAction(key('F6'), 'canvas', platform, fallback)).toBe('next-pane');
       });
 
       it('routes the platform Save chord to the editor only from the shell', () => {

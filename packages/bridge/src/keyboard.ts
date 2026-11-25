@@ -37,6 +37,19 @@ export function focusEditor(iframe: HTMLIFrameElement): boolean {
   return canvas !== null;
 }
 
+/**
+ * Take keyboard focus out of the editor before the host focuses one of its own controls. The
+ * editor puts focus back on its canvas for as long as it thinks it has it; in Firefox that wins
+ * over a host `focus()` unless the canvas is blurred first.
+ */
+export function blurEditor(iframe: HTMLIFrameElement): void {
+  try {
+    (iframe.contentDocument?.activeElement as HTMLElement | null)?.blur();
+  } catch {
+    // not same-origin (yet): nothing of the editor's has focus
+  }
+}
+
 /** Whether keyboard focus is in the editor (the host page's focused element is its iframe). */
 export function editorHasFocus(iframe: HTMLIFrameElement): boolean {
   return iframe.ownerDocument.activeElement === iframe;
