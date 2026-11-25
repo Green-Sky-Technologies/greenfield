@@ -1,0 +1,237 @@
+{
+  "build": "story-2.3",
+  "browser": "firefox",
+  "channel": null,
+  "headless": true,
+  "file": "large",
+  "nodes": 269,
+  "sync": "pointer",
+  "canvas": "flag",
+  "loadMs": 1625,
+  "env": {
+    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:157.0) Gecko/20100101 Firefox/157.0",
+    "renderer": "Apple M1, or similar",
+    "dpr": 1,
+    "webgpu": true
+  },
+  "trials": 20,
+  "framePeriod": {
+    "frames": 86,
+    "periodP50": 8,
+    "workP50": 1,
+    "workP95": 3
+  },
+  "canvasInfo": {
+    "rect": [
+      0,
+      0,
+      828,
+      829
+    ],
+    "zoom": 0.4861111111111111,
+    "panels": {
+      "left": 240,
+      "leftCollapsed": false,
+      "minimized": false,
+      "right": 240
+    }
+  },
+  "eventFloor": {
+    "postMessageHop": {
+      "n": 40,
+      "p50": 0,
+      "p95": 2,
+      "max": 2,
+      "min": 0
+    },
+    "postToPaint": {
+      "n": 40,
+      "p50": 11,
+      "p95": 13,
+      "max": 14,
+      "min": 6
+    }
+  },
+  "clickToInspector": {
+    "samples": 20,
+    "clickToInspector": {
+      "n": 20,
+      "p50": 53,
+      "p95": 66,
+      "max": 66,
+      "min": 49
+    },
+    "canvasFrameEnd": {
+      "n": 20,
+      "p50": 7,
+      "p95": 11,
+      "max": 11,
+      "min": 3
+    },
+    "addedOverCanvas": {
+      "n": 20,
+      "p50": 47,
+      "p95": 56,
+      "max": 56,
+      "min": 44
+    },
+    "inputToSyncRequest": {
+      "n": 20,
+      "p50": 8,
+      "p95": 20,
+      "max": 20,
+      "min": 4
+    },
+    "gateMs": {
+      "n": 20,
+      "p50": 19,
+      "p95": 22,
+      "max": 22,
+      "min": 16
+    },
+    "stateSetToPaint": {
+      "n": 20,
+      "p50": 7,
+      "p95": 12,
+      "max": 12,
+      "min": 4
+    }
+  },
+  "gestures": true,
+  "scrub": {
+    "target": "leaf",
+    "moves": 60,
+    "previewsApplied": 60,
+    "moveToApplied": {
+      "n": 60,
+      "p50": 18,
+      "p95": 26,
+      "max": 36,
+      "min": 16
+    },
+    "moveToCanvasFrameEnd": {
+      "n": 60,
+      "p50": 3,
+      "p95": 24,
+      "max": 31,
+      "min": 2
+    },
+    "previewCallMs": {
+      "n": 60,
+      "p50": 18,
+      "p95": 26,
+      "max": 36,
+      "min": 16
+    },
+    "editorFramesDuringScrub": 171,
+    "undoStepsAdded": 1,
+    "startValue": 5,
+    "endValue": 125
+  },
+  "scrubFrame": {
+    "target": "frame",
+    "moves": 60,
+    "previewsApplied": 60,
+    "moveToApplied": {
+      "n": 60,
+      "p50": 20,
+      "p95": 37,
+      "max": 46,
+      "min": 16
+    },
+    "moveToCanvasFrameEnd": {
+      "n": 60,
+      "p50": 5,
+      "p95": 27,
+      "max": 29,
+      "min": 2
+    },
+    "previewCallMs": {
+      "n": 60,
+      "p50": 20,
+      "p95": 37,
+      "max": 46,
+      "min": 16
+    },
+    "editorFramesDuringScrub": 149,
+    "undoStepsAdded": 1,
+    "startValue": 0,
+    "endValue": 120
+  },
+  "escCancel": {
+    "gestures": true,
+    "startValue": 120,
+    "restored": false,
+    "undoStepsAdded": 1
+  },
+  "editToLayers": {
+    "duplicate": {
+      "n": 8,
+      "keyToLayers": {
+        "n": 8,
+        "p50": 83,
+        "p95": 130,
+        "max": 130,
+        "min": 79
+      },
+      "addedOverCanvas": {
+        "n": 8,
+        "p50": 67,
+        "p95": 117,
+        "max": 117,
+        "min": 62
+      },
+      "treeMs": {
+        "n": 8,
+        "p50": 22,
+        "p95": 69,
+        "max": 69,
+        "min": 19
+      },
+      "rows": 536
+    },
+    "delete": {
+      "n": 8,
+      "keyToLayers": {
+        "n": 8,
+        "p50": 49,
+        "p95": 60,
+        "max": 60,
+        "min": 46
+      }
+    },
+    "controlEdit": {
+      "n": 2,
+      "editToLayers": {
+        "n": 2,
+        "p50": 63,
+        "p95": 63,
+        "max": 63,
+        "min": 61
+      }
+    }
+  },
+  "dragSettle": {
+    "n": 6,
+    "upToFinalInspector": {
+      "n": 6,
+      "p50": 69,
+      "p95": 73,
+      "max": 73,
+      "min": 42
+    },
+    "inspectorPaintsPerDrag": {
+      "n": 6,
+      "p50": 8,
+      "p95": 8,
+      "max": 8,
+      "min": 7
+    }
+  },
+  "cpuIdle": {
+    "start": 87.18,
+    "end": 82.31,
+    "quietMin": 75
+  },
+  "problems": []
+}
