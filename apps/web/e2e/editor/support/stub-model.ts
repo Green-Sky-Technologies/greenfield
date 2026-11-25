@@ -9,6 +9,7 @@
  * - `[ask]`: follow-up questions (`ask_followup`);
  * - `[job]`: an offer of three alternatives as a background job (`suggest_generation_job`);
  * - `[slow]`: text streamed over ~15 s the first time a prompt is seen (to stop it), then fast;
+ * - `[slow edit]`: the usual edit, then its answer streamed over ~15 s (Claude mid-turn, edited);
  * - `[fail]`: a provider error, the first time a prompt is seen (to retry it);
  * - anything else: one `run_batch` that makes the first selected layer ember and renames it.
  */
@@ -32,6 +33,9 @@ function reply(messages: Turn[], seen: Map<string, number>): Reply {
   const results = last.filter((b) => b.type === 'tool_result');
   if (results.length) {
     const asked = blocks(messages.at(-2)).find((b) => b.type === 'tool_use')?.name;
+    const slowEdit = messages.some((m) => blocks(m).some((b) => b.text?.includes('[slow edit]')));
+    if (asked === 'run_batch' && slowEdit)
+      return { kind: 'text', text: 'Checking the card, word by word, '.repeat(12), delayMs: 250 };
     return {
       kind: 'text',
       text:

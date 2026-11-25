@@ -211,6 +211,24 @@ test('a turn on the selection: its changes listed, shown on the canvas and undon
   problems.splice(0, problems.length, ...problems.filter((p) => !NOISE.test(p)));
 });
 
+test('while Claude edits, the pane says so (5.5)', async ({ as, run, problems }) => {
+  await connectModel(await as('admin'), run.org.slug);
+  const page = await as('editor');
+  const { editor } = await openProject(page, run.org.slug, 'Editing');
+  await addCard(editor);
+  await send(page, '[slow edit] Make the card ember');
+  const reply = replies(page).last();
+  // The edit has run; the reply is still streaming.
+  await expect(reply.getByText('Claude · editing', { exact: true })).toBeVisible();
+  await expect(reply.getByTestId('turn-progress')).toHaveText('Step 1 · 1 layer changed so far');
+  await expect(reply.locator('[data-status="done"]')).toHaveText('Make the card ember');
+  await reply.getByRole('button', { name: 'Stop' }).click();
+  await expect(reply).toHaveAttribute('data-status', 'cancelled');
+  await expect(reply.getByText('Claude', { exact: true })).toBeVisible();
+
+  problems.splice(0, problems.length, ...problems.filter((p) => !NOISE.test(p)));
+});
+
 test("a comment's Ask Claude starts a turn scoped to its layer (6.2 → 5.2)", async ({
   as,
   run,
