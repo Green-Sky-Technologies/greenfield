@@ -12,8 +12,10 @@
  */
 import fs from 'node:fs';
 import path from 'node:path';
+import { platformFromUserAgent } from '@greenfield/bridge';
 import { openEditor, type RemoteEditor } from '@greenfield/bridge/playwright';
 import type { Locator, Page } from '@playwright/test';
+import { editPanelChord } from '../../src/features/shell/keys';
 import { createProject, pageFetch, uniqueName } from '../app/support/app';
 import { expect, test } from '../app/support/fixtures';
 
@@ -299,6 +301,72 @@ test('5.9 and 5.11: styles, variables, instances, pickers and export', async ({
   await page.keyboard.press('Enter');
   await expect(fonts).toBeHidden();
   expect(await page.evaluate(() => (window as { picked?: string }).picked)).toBe(first);
+});
+
+test('5.8 and 5.10 open the real colour picker: a drag is one undo step, Esc reverts', async ({
+  as,
+  run,
+  problems,
+}) => {
+  const noise =
+    /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+  const page = await as('editor');
+  const projectId = await createProject(page, run.org.slug, uniqueName('Pickers'));
+  const editor = await openEditor(page, { hostPath: `/w/${run.org.slug}/p/${projectId}` });
+  await expect(page.getByTestId('editor-status')).toHaveAttribute('data-status', 'empty');
+  const swatch = id(
+    await editor.execute('node.create', {
+      type: 'rectangle',
+      name: 'Swatch',
+      width: 160,
+      height: 120,
+      props: { fill: '#3fd67f' },
+    }),
+  );
+  await editor.execute('view.zoomFit', {});
+  await select(page, editor, [swatch], 'Swatch');
+  const picker = page.getByRole('dialog', { name: 'Colour' });
+  const fill = async () => (await get(editor, swatch)).fills![0]!.color;
+
+  /** Open the picker with `open`, drag to `to` (one step), then Esc mid-drag (reverted, no step). */
+  async function dragThenCancel(open: () => Promise<void>, to: [number, number]) {
+    await open();
+    await expect(picker).toBeVisible();
+    const area = picker.getByTestId('colour-area');
+    const start = await fill();
+    await oneStep(editor, async () => {
+      await drag(page, area, [0.9, 0.1], to);
+      await page.mouse.up();
+    });
+    const dragged = await fill();
+    expect(dragged).not.toBe(start);
+    const depth = await undoDepth(editor);
+    await drag(page, area, to, [0.95, 0.05]);
+    await expect.poll(fill).not.toBe(dragged);
+    await page.keyboard.press('Escape');
+    await page.mouse.up();
+    await expect(picker).toBeHidden();
+    await expect.poll(fill).toBe(dragged);
+    expect(await undoDepth(editor)).toBe(depth);
+  }
+
+  // The inspector's fill swatch (W2-B).
+  const right = page.getByRole('complementary', { name: 'Edit panel' });
+  await dragThenCancel(
+    () => right.getByRole('button', { name: 'Fill 1 colour' }).click(),
+    [0.3, 0.6],
+  );
+
+  // The floating toolbar's fill (W2-D), with the edit panel hidden.
+
+  await page.getByTitle('Design canvas').focus();
+  const platform = platformFromUserAgent(await page.evaluate(() => navigator.userAgent));
+  await page.keyboard.press(editPanelChord(platform));
+  const toolbar = page.getByRole('toolbar', { name: 'Selection' });
+  await expect(toolbar).toBeVisible();
+  await dragThenCancel(() => toolbar.getByRole('button', { name: /^Fill #/ }).click(), [0.6, 0.3]);
+
+  problems.splice(0, problems.length, ...problems.filter((p) => !noise.test(p)));
 });
 
 test("5.11: the font picker lists the file's design system first", async ({
