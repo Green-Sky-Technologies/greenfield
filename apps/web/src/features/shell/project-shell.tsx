@@ -243,7 +243,7 @@ function Shell({
           )}
           <ContextMenu />
           <PickerHost />
-          <Composer />
+          <Composer canComment={bar.canComment} />
           <FloatingToolbar editPanelHidden={!editPanel} />
         </main>
         <PanelTabs

@@ -209,3 +209,22 @@ test('comment or ask on an element, and the comments list', async ({
     /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
   problems.splice(0, problems.length, ...problems.filter((p) => !noise.test(p)));
 });
+
+test("a viewer's canvas comment request opens no composer", async ({ as, run }) => {
+  const owner = await as('editor');
+  const projectId = await createProject(owner, run.org.slug, uniqueName('Viewer'));
+  const page = await as('viewer');
+  await openEditor(page, { hostPath: `/w/${run.org.slug}/p/${projectId}` });
+  await page.evaluate(() =>
+    window.__greenfieldStore!.dispatch({
+      type: 'ui.request',
+      kind: 'comment.new',
+      screen: { x: 300, y: 200 },
+      data: { x: 10, y: 10 },
+    }),
+  );
+  await expect
+    .poll(() => page.evaluate(() => window.__greenfieldStore!.getState().request))
+    .toBeNull();
+  await expect(page.getByRole('dialog', { name: 'Comment or ask' })).toHaveCount(0);
+});

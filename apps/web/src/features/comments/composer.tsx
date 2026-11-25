@@ -209,10 +209,15 @@ interface NewComment {
   ask?: boolean;
 }
 
-export function Composer() {
+export function Composer({ canComment }: { canComment: boolean }) {
   const request = useUiRequest();
   const store = useEditorStore();
-  const data = request?.kind === 'comment.new' ? (request.data as NewComment) : null;
+  const asked = request?.kind === 'comment.new' ? (request.data as NewComment) : null;
+  // Viewers can't comment: their canvas's request opens nothing.
+  const data = canComment ? asked : null;
+  useEffect(() => {
+    if (asked && !canComment) store.requestDone();
+  }, [asked, canComment, store]);
   const ids = data?.ids?.length ? data.ids : null;
   const firstName = useEditorState((s) =>
     ids ? (s.tree.nodes.get(ids[0]!)?.name ?? s.nodes.get(ids[0]!)?.name ?? null) : null,
