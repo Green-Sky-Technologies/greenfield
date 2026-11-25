@@ -35,8 +35,7 @@ const LABELS: Record<string, string> = {
   'sizing.vertical': 'height',
 };
 
-const label = (field: string) =>
-  LABELS[field] ?? words(field.slice(field.lastIndexOf('.') + 1));
+const label = (field: string) => LABELS[field] ?? words(field.slice(field.lastIndexOf('.') + 1));
 
 const isRecord = (v: unknown): v is Record<string, unknown> =>
   typeof v === 'object' && v !== null && !Array.isArray(v);

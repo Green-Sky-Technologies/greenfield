@@ -13,8 +13,7 @@
  * Editors hold the project's edit lock while the tab is open; a save from a stale lock is
  * refused by the server (Story 3.1). The status element is hidden: its data-* attributes are
  * what the Playwright specs read. People see only what needs them: a lock they don't hold, or an
- * error. Bytes are never logged. The shell (features/shell) gets the bridge
- * through `onEditor`.
+ * error. Bytes are never logged. The shell (features/shell) gets the bridge through `onEditor`.
  */
 import { createBridge, EditorHiddenError, type Editor, type SaveEvent } from '@greenfield/bridge';
 import { useEffect, useRef, useState } from 'react';
