@@ -159,4 +159,22 @@ describe('HostChannel', () => {
     expect(hasListener()).toBe(false);
     await expect(waiting).rejects.toBeInstanceOf(EditorNotReadyError);
   });
+
+  it('passes on the editor events it knows, narrowed by name', () => {
+    const { channel, deliver } = setup();
+    const seen = vi.fn();
+    channel.onEvent(seen);
+    const data = { document: 1, page: 2, ids: [5], nodes: [{ id: 5, x: 10 }] };
+    deliver({ type: 'figcraft:event', name: 'selection.changed', data });
+    deliver({ type: 'figcraft:event', name: 'some.future', data: {} });
+    deliver({ type: 'figcraft:event', name: 'tool.changed' });
+    deliver(
+      { type: 'figcraft:event', name: 'tool.changed', data: { tool: 'frame' } },
+      { source: {} },
+    );
+    expect(seen.mock.calls).toEqual([[{ name: 'selection.changed', data }]]);
+    channel.close();
+    deliver({ type: 'figcraft:event', name: 'selection.changed', data });
+    expect(seen).toHaveBeenCalledTimes(1);
+  });
 });

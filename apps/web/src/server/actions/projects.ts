@@ -4,12 +4,8 @@ import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { db, requireActor } from '../context';
 import { copyDesignFile, defaultDesignFileStorage } from '../services/design-files';
-import {
-  createProject,
-  duplicateProject,
-  renameProject,
-  setProjectArchived,
-} from '../services/projects';
+import { createProjectWithDefaultSystem } from '../services/design-systems';
+import { duplicateProject, renameProject, setProjectArchived } from '../services/projects';
 import { run, type ActionResult } from './result';
 
 export async function createProjectAction(
@@ -18,7 +14,7 @@ export async function createProjectAction(
 ): Promise<ActionResult<{ id: string }>> {
   const actor = await requireActor();
   const res = await run(async () => {
-    const p = await createProject(db(), actor, {
+    const p = await createProjectWithDefaultSystem(db(), actor, defaultDesignFileStorage(), {
       name: form.get('name'),
       description: form.get('description'),
     });

@@ -15,6 +15,7 @@ function fakeApi(over: Partial<FigcraftApi> = {}): FigcraftApi {
   return {
     request: vi.fn(async () => ({})),
     execute: vi.fn(async () => ({ id: 2 })),
+    executeAs: vi.fn(async () => ({ id: 2 })),
     commands: vi.fn(async () => []),
     docInspect: vi.fn(async () => ({ id: 1, pages: [{ id: 1 }] })),
     ...over,
@@ -123,6 +124,26 @@ describe('ControlClient', () => {
     });
     expect(onMutation).toHaveBeenCalledTimes(2);
     await c.inspect();
+    expect(onMutation).toHaveBeenCalledTimes(2);
+  });
+
+  it('runs execute and batch as an agent through executeAs', async () => {
+    const api = fakeApi({ executeAs: vi.fn(async () => ({ id: 5 })) });
+    const { c, onMutation } = client(api);
+    await c.execute('node.set', { ids: [4], name: 'Hero' }, { agent: 'Claude' });
+    expect(api.executeAs).toHaveBeenLastCalledWith('Claude', 'node.set', {
+      ids: [4],
+      name: 'Hero',
+    });
+    await c.batch([{ command: 'node.set', params: { ids: [4], visible: false } }], {
+      label: 'Tidy',
+      agent: 'Claude',
+    });
+    expect(api.executeAs).toHaveBeenLastCalledWith('Claude', 'command.batch', {
+      label: 'Tidy',
+      commands: [{ command: 'node.set', params: { ids: [4], visible: false } }],
+    });
+    expect(api.execute).not.toHaveBeenCalled();
     expect(onMutation).toHaveBeenCalledTimes(2);
   });
 

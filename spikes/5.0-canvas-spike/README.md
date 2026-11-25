@@ -4,7 +4,7 @@ Measurement scripts for [ADR 0005](../../docs/adr/0005-canvas-mode.md). The page
 `apps/web/src/app/dev/canvas-spike` (throwaway; Story 5.6 replaces it).
 
 ```sh
-# 1. Put a fork build in apps/web/public/editor/ (the dist from spikes/0.2-fork-build/verify/docker-build.sh).
+# 1. Put a fork build in apps/web/public/editor/ (a greenfield-editor release, or the site from its greenfield/verify/docker-build.sh).
 # 2. The editor's CSP hashes its index.html when the app builds, so rebuild after swapping the editor.
 cd apps/web && CANVAS_SPIKE=1 pnpm exec next build && CANVAS_SPIKE=1 pnpm exec next start --port 3350
 

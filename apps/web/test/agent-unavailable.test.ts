@@ -1,23 +1,14 @@
 /**
- * Story 1.2 switched the agent off (AgentUnavailableError, 503). Story 4.2 turns interactive turns
- * back on (agent-interactive.test.ts); answering follow-up questions (4.4) and jobs (4.5) stay
- * off until their stories. Stored conversations stay readable.
+ * Story 1.2 switched the agent off (AgentUnavailableError, 503). Stories 4.2–4.5 turned it back
+ * on (agent-*.test.ts); what's left here: validation, the 503 shape non-agent jobs still use, and
+ * stored conversations staying readable.
  */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
 import { parseSse } from '@greenfield/agent';
-import { agentConversations, agentMessages, eq, jobs } from '@greenfield/db';
-import { recordingSandboxApi } from '@greenfield/sandbox-runner';
+import { agentConversations, agentMessages } from '@greenfield/db';
 import { apiError } from '@/server/api';
-import {
-  answerQuestions,
-  cancelMessage,
-  getProjectChat,
-  messageEvents,
-  sendMessage,
-} from '@/server/services/agent';
-import { jobRunner } from '@/server/services/agent/runner';
-import { createJob, startJob } from '@/server/services/jobs';
+import { cancelMessage, getProjectChat, messageEvents, sendMessage } from '@/server/services/agent';
 import { createProject } from '@/server/services/projects';
 import { AgentUnavailableError, NotFoundError, ValidationError } from '@/server/services/types';
 import { makeActor, reset, testDb } from './helpers';
@@ -77,15 +68,6 @@ describe('agent while unavailable', () => {
     expect(await res.json()).toMatchObject({ error: 'agent_unavailable' });
   });
 
-  it('answerQuestions is unavailable too', async () => {
-    const editor = await makeActor(db, 'editor');
-    const project = await createProject(db, editor, { name: 'P' });
-    const msg = await storedReply(editor, project.id);
-    await expect(
-      answerQuestions(db, editor, msg.id, { answers: [], skip: true }),
-    ).rejects.toBeInstanceOf(AgentUnavailableError);
-  });
-
   it('stored conversations can still be read, streamed and cancelled', async () => {
     const editor = await makeActor(db, 'editor');
     const project = await createProject(db, editor, { name: 'P' });
@@ -98,23 +80,5 @@ describe('agent while unavailable', () => {
     let text = '';
     for await (const f of messageEvents(db, editor, msg.id, { pollMs: 5 })) text += f;
     expect(parseSse(text).map((e) => e.event)).toEqual(['open', 'message', 'done']);
-  });
-
-  it('a job started through the app runner fails at once, without retries', async () => {
-    const editor = await makeActor(db, 'editor');
-    const project = await createProject(db, editor, { name: 'P' });
-    const job = await createJob(db, editor, {
-      kind: 'generate',
-      projectId: project.id,
-      input: { prompt: 'A page' },
-    });
-    // The app's runner over an in-memory sandbox: preparing the spec throws.
-    const api = recordingSandboxApi();
-    const runner = jobRunner({ api });
-    const after = await startJob(db, job.id, { runner });
-    expect(after).toMatchObject({ status: 'failed' });
-    const [row] = await db.select().from(jobs).where(eq(jobs.id, job.id));
-    expect(row!.error).toContain('not available');
-    expect(api.sandboxes.size).toBe(0);
   });
 });

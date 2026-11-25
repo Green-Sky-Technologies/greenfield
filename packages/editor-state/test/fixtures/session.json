@@ -1,0 +1,3022 @@
+{
+  "editor": {
+    "version": "1",
+    "appVersion": "0.18.1"
+  },
+  "steps": [
+    {
+      "step": "file.new",
+      "events": [
+        {
+          "name": "tool.changed",
+          "data": {
+            "tool": "move"
+          }
+        },
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [],
+            "nodes": [],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [],
+            "removed": [],
+            "resync": true,
+            "revision": 2,
+            "undoDepth": 0
+          }
+        },
+        {
+          "name": "text.editing",
+          "data": {
+            "document": 2,
+            "id": null
+          }
+        },
+        {
+          "name": "viewport.changed",
+          "data": {
+            "document": 2,
+            "x": -100,
+            "y": -100,
+            "zoom": 1
+          }
+        },
+        {
+          "name": "interaction.changed",
+          "data": {
+            "active": false,
+            "document": 2,
+            "host": false,
+            "label": null
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": false,
+          "history": {
+            "redo": 0,
+            "undo": [],
+            "undoDepth": 0
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 2,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "move",
+        "canvasMode": false,
+        "view": {
+          "zoom": 1,
+          "cx": 272,
+          "cy": 280,
+          "vw": 744,
+          "vh": 760
+        }
+      }
+    },
+    {
+      "step": "canvas mode on",
+      "events": [
+        {
+          "name": "canvas.mode",
+          "data": {
+            "on": true
+          }
+        },
+        {
+          "name": "viewport.changed",
+          "data": {
+            "document": 2,
+            "x": -368,
+            "y": -120,
+            "zoom": 1
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": false,
+          "history": {
+            "redo": 0,
+            "undo": [],
+            "undoDepth": 0
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 4,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 1,
+          "cx": 272,
+          "cy": 280,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "create a frame",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [2],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 300,
+                  "width": 400,
+                  "x": 0,
+                  "y": 0
+                },
+                "clip": true,
+                "fills": [
+                  {
+                    "color": "#FFFFFF",
+                    "type": "solid"
+                  }
+                ],
+                "height": 300,
+                "id": 2,
+                "name": "Card",
+                "type": "FRAME",
+                "width": 400,
+                "x": 0,
+                "y": 0
+              }
+            ],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [
+              {
+                "id": 2,
+                "index": 0,
+                "parent": 1
+              }
+            ],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "childCount": 1,
+                "id": 1
+              },
+              {
+                "absoluteBounds": {
+                  "height": 300,
+                  "width": 400,
+                  "x": 0,
+                  "y": 0
+                },
+                "clip": true,
+                "fills": [
+                  {
+                    "color": "#FFFFFF",
+                    "type": "solid"
+                  }
+                ],
+                "height": 300,
+                "id": 2,
+                "name": "Card",
+                "type": "FRAME",
+                "width": 400,
+                "x": 0,
+                "y": 0
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 6,
+            "undoDepth": 1
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": ["Create layer"],
+            "undoDepth": 1
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 6,
+          "selection": [2],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 300,
+              "width": 400,
+              "x": 0,
+              "y": 0
+            },
+            "clip": true,
+            "fills": [
+              {
+                "color": "#FFFFFF",
+                "type": "solid"
+              }
+            ],
+            "height": 300,
+            "id": 2,
+            "name": "Card",
+            "type": "FRAME",
+            "width": 400,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 1,
+          "cx": 272,
+          "cy": 280,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "add children in one undo step",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [4],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 40,
+                  "width": 120,
+                  "x": 20,
+                  "y": 200
+                },
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "fills": [
+                  {
+                    "color": "#D9D9D9",
+                    "type": "solid"
+                  }
+                ],
+                "height": 40,
+                "id": 4,
+                "name": "Button",
+                "type": "RECTANGLE",
+                "width": 120,
+                "x": 20,
+                "y": 200
+              }
+            ],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [
+              {
+                "id": 3,
+                "index": 0,
+                "parent": 2
+              },
+              {
+                "id": 4,
+                "index": 1,
+                "parent": 2
+              }
+            ],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "childCount": 2,
+                "id": 2
+              },
+              {
+                "absoluteBounds": {
+                  "height": 15,
+                  "width": 25,
+                  "x": 20,
+                  "y": 20
+                },
+                "characters": "Title",
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "fills": [
+                  {
+                    "color": "#000000",
+                    "type": "solid"
+                  }
+                ],
+                "fontFamily": "Inter",
+                "fontSize": 12,
+                "fontStyle": "Regular",
+                "height": 15,
+                "id": 3,
+                "letterSpacing": "0%",
+                "lineHeight": "Auto",
+                "name": "Title",
+                "sizing": {
+                  "horizontal": "hug",
+                  "vertical": "hug"
+                },
+                "textAlign": "left",
+                "textAutoResize": "widthAndHeight",
+                "type": "TEXT",
+                "width": 25,
+                "x": 20,
+                "y": 20
+              },
+              {
+                "absoluteBounds": {
+                  "height": 40,
+                  "width": 120,
+                  "x": 20,
+                  "y": 200
+                },
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "fills": [
+                  {
+                    "color": "#D9D9D9",
+                    "type": "solid"
+                  }
+                ],
+                "height": 40,
+                "id": 4,
+                "name": "Button",
+                "type": "RECTANGLE",
+                "width": 120,
+                "x": 20,
+                "y": 200
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 10,
+            "undoDepth": 2
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": ["Fill card", "Create layer"],
+            "undoDepth": 2
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 3,
+                      "name": "Title",
+                      "type": "TEXT",
+                      "visible": true
+                    },
+                    {
+                      "id": 4,
+                      "name": "Button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 10,
+          "selection": [4],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 40,
+              "width": 120,
+              "x": 20,
+              "y": 200
+            },
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "fills": [
+              {
+                "color": "#D9D9D9",
+                "type": "solid"
+              }
+            ],
+            "height": 40,
+            "id": 4,
+            "name": "Button",
+            "type": "RECTANGLE",
+            "width": 120,
+            "x": 20,
+            "y": 200
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 1,
+          "cx": 272,
+          "cy": 280,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "zoom to fit",
+      "events": [
+        {
+          "name": "viewport.changed",
+          "data": {
+            "document": 2,
+            "x": -85.71428571428567,
+            "y": -28.571428571428555,
+            "zoom": 2.24
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": ["Fill card", "Create layer"],
+            "undoDepth": 2
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 3,
+                      "name": "Title",
+                      "type": "TEXT",
+                      "visible": true
+                    },
+                    {
+                      "id": 4,
+                      "name": "Button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 12,
+          "selection": [4],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 40,
+              "width": 120,
+              "x": 20,
+              "y": 200
+            },
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "fills": [
+              {
+                "color": "#D9D9D9",
+                "type": "solid"
+              }
+            ],
+            "height": 40,
+            "id": 4,
+            "name": "Button",
+            "type": "RECTANGLE",
+            "width": 120,
+            "x": 20,
+            "y": 200
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "select on the canvas",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [],
+            "nodes": [],
+            "page": 1
+          }
+        },
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [4],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 40,
+                  "width": 120,
+                  "x": 20,
+                  "y": 200
+                },
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "fills": [
+                  {
+                    "color": "#D9D9D9",
+                    "type": "solid"
+                  }
+                ],
+                "height": 40,
+                "id": 4,
+                "name": "Button",
+                "type": "RECTANGLE",
+                "width": 120,
+                "x": 20,
+                "y": 200
+              }
+            ],
+            "page": 1
+          }
+        },
+        {
+          "name": "interaction.changed",
+          "data": {
+            "active": true,
+            "document": 2,
+            "host": false,
+            "label": "Move"
+          }
+        },
+        {
+          "name": "interaction.changed",
+          "data": {
+            "active": false,
+            "document": 2,
+            "host": false,
+            "label": null
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": ["Fill card", "Create layer"],
+            "undoDepth": 2
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 3,
+                      "name": "Title",
+                      "type": "TEXT",
+                      "visible": true
+                    },
+                    {
+                      "id": 4,
+                      "name": "Button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 20,
+          "selection": [4],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 40,
+              "width": 120,
+              "x": 20,
+              "y": 200
+            },
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "fills": [
+              {
+                "color": "#D9D9D9",
+                "type": "solid"
+              }
+            ],
+            "height": 40,
+            "id": 4,
+            "name": "Button",
+            "type": "RECTANGLE",
+            "width": 120,
+            "x": 20,
+            "y": 200
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "rename",
+      "events": [
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "id": 4,
+                "name": "Primary button"
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 22,
+            "undoDepth": 3
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": ["Set properties", "Fill card", "Create layer"],
+            "undoDepth": 3
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 3,
+                      "name": "Title",
+                      "type": "TEXT",
+                      "visible": true
+                    },
+                    {
+                      "id": 4,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 22,
+          "selection": [4],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 40,
+              "width": 120,
+              "x": 20,
+              "y": 200
+            },
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "fills": [
+              {
+                "color": "#D9D9D9",
+                "type": "solid"
+              }
+            ],
+            "height": 40,
+            "id": 4,
+            "name": "Primary button",
+            "type": "RECTANGLE",
+            "width": 120,
+            "x": 20,
+            "y": 200
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "move by key",
+      "events": [
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 40,
+                  "width": 120,
+                  "x": 21,
+                  "y": 200
+                },
+                "id": 4,
+                "x": 21
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 24,
+            "undoDepth": 4
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": ["Nudge", "Set properties", "Fill card", "Create layer"],
+            "undoDepth": 4
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 3,
+                      "name": "Title",
+                      "type": "TEXT",
+                      "visible": true
+                    },
+                    {
+                      "id": 4,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 24,
+          "selection": [4],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 40,
+              "width": 120,
+              "x": 21,
+              "y": 200
+            },
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "fills": [
+              {
+                "color": "#D9D9D9",
+                "type": "solid"
+              }
+            ],
+            "height": 40,
+            "id": 4,
+            "name": "Primary button",
+            "type": "RECTANGLE",
+            "width": 120,
+            "x": 21,
+            "y": 200
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "hide and lock",
+      "events": [
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "id": 3,
+                "locked": true,
+                "visible": false
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 26,
+            "undoDepth": 5
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": ["Set properties", "Nudge", "Set properties", "Fill card", "Create layer"],
+            "undoDepth": 5
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 3,
+                      "locked": true,
+                      "name": "Title",
+                      "type": "TEXT",
+                      "visible": false
+                    },
+                    {
+                      "id": 4,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 26,
+          "selection": [4],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 40,
+              "width": 120,
+              "x": 21,
+              "y": 200
+            },
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "fills": [
+              {
+                "color": "#D9D9D9",
+                "type": "solid"
+              }
+            ],
+            "height": 40,
+            "id": 4,
+            "name": "Primary button",
+            "type": "RECTANGLE",
+            "width": 120,
+            "x": 21,
+            "y": 200
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "duplicate",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [5],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 40,
+                  "width": 120,
+                  "x": 21,
+                  "y": 200
+                },
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "fills": [
+                  {
+                    "color": "#D9D9D9",
+                    "type": "solid"
+                  }
+                ],
+                "height": 40,
+                "id": 5,
+                "name": "Primary button",
+                "type": "RECTANGLE",
+                "width": 120,
+                "x": 21,
+                "y": 200
+              }
+            ],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [
+              {
+                "id": 5,
+                "index": 2,
+                "parent": 2
+              }
+            ],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "childCount": 3,
+                "id": 2
+              },
+              {
+                "absoluteBounds": {
+                  "height": 40,
+                  "width": 120,
+                  "x": 21,
+                  "y": 200
+                },
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "fills": [
+                  {
+                    "color": "#D9D9D9",
+                    "type": "solid"
+                  }
+                ],
+                "height": 40,
+                "id": 5,
+                "name": "Primary button",
+                "type": "RECTANGLE",
+                "width": 120,
+                "x": 21,
+                "y": 200
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 30,
+            "undoDepth": 6
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 6
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 3,
+                      "locked": true,
+                      "name": "Title",
+                      "type": "TEXT",
+                      "visible": false
+                    },
+                    {
+                      "id": 4,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 30,
+          "selection": [5],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 40,
+              "width": 120,
+              "x": 21,
+              "y": 200
+            },
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "fills": [
+              {
+                "color": "#D9D9D9",
+                "type": "solid"
+              }
+            ],
+            "height": 40,
+            "id": 5,
+            "name": "Primary button",
+            "type": "RECTANGLE",
+            "width": 120,
+            "x": 21,
+            "y": 200
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "bring to front",
+      "events": [
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": null,
+            "document": 2,
+            "moved": [
+              {
+                "id": 3,
+                "index": 2,
+                "parent": 2
+              }
+            ],
+            "nodes": [],
+            "removed": [],
+            "resync": false,
+            "revision": 32,
+            "undoDepth": 7
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 7
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 4,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "id": 3,
+                      "locked": true,
+                      "name": "Title",
+                      "type": "TEXT",
+                      "visible": false
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 32,
+          "selection": [5],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 40,
+              "width": 120,
+              "x": 21,
+              "y": 200
+            },
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "fills": [
+              {
+                "color": "#D9D9D9",
+                "type": "solid"
+              }
+            ],
+            "height": 40,
+            "id": 5,
+            "name": "Primary button",
+            "type": "RECTANGLE",
+            "width": 120,
+            "x": 21,
+            "y": 200
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "group",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [6],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 220,
+                  "width": 121,
+                  "x": 20,
+                  "y": 20
+                },
+                "childCount": 2,
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "height": 220,
+                "id": 6,
+                "name": "Group 1",
+                "type": "GROUP",
+                "width": 121,
+                "x": 20,
+                "y": 20
+              }
+            ],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [
+              {
+                "id": 6,
+                "index": 1,
+                "parent": 2
+              }
+            ],
+            "agent": null,
+            "document": 2,
+            "moved": [
+              {
+                "id": 3,
+                "index": 1,
+                "parent": 6
+              },
+              {
+                "id": 4,
+                "index": 0,
+                "parent": 6
+              }
+            ],
+            "nodes": [
+              {
+                "childCount": 2,
+                "id": 2
+              },
+              {
+                "constraints": null,
+                "id": 3
+              },
+              {
+                "constraints": null,
+                "id": 4
+              },
+              {
+                "absoluteBounds": {
+                  "height": 220,
+                  "width": 121,
+                  "x": 20,
+                  "y": 20
+                },
+                "childCount": 2,
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "height": 220,
+                "id": 6,
+                "name": "Group 1",
+                "type": "GROUP",
+                "width": 121,
+                "x": 20,
+                "y": 20
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 36,
+            "undoDepth": 8
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 8
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 4,
+                          "name": "Primary button",
+                          "type": "RECTANGLE",
+                          "visible": true
+                        },
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 36,
+          "selection": [6],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 220,
+              "width": 121,
+              "x": 20,
+              "y": 20
+            },
+            "childCount": 2,
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "height": 220,
+            "id": 6,
+            "name": "Group 1",
+            "type": "GROUP",
+            "width": 121,
+            "x": 20,
+            "y": 20
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "delete",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [],
+            "nodes": [],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 15,
+                  "width": 25,
+                  "x": 20,
+                  "y": 20
+                },
+                "childCount": 1,
+                "height": 15,
+                "id": 6,
+                "width": 25
+              }
+            ],
+            "removed": [
+              {
+                "id": 4,
+                "index": 0,
+                "parent": 6
+              }
+            ],
+            "resync": false,
+            "revision": 40,
+            "undoDepth": 9
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 9
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 40,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "undo",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [6],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 220,
+                  "width": 121,
+                  "x": 20,
+                  "y": 20
+                },
+                "childCount": 2,
+                "constraints": {
+                  "horizontal": "left",
+                  "vertical": "top"
+                },
+                "height": 220,
+                "id": 6,
+                "name": "Group 1",
+                "type": "GROUP",
+                "width": 121,
+                "x": 20,
+                "y": 20
+              }
+            ],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [
+              {
+                "id": 4,
+                "index": 0,
+                "parent": 6
+              }
+            ],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 40,
+                  "width": 120,
+                  "x": 21,
+                  "y": 200
+                },
+                "fills": [
+                  {
+                    "color": "#D9D9D9",
+                    "type": "solid"
+                  }
+                ],
+                "height": 40,
+                "id": 4,
+                "name": "Primary button",
+                "type": "RECTANGLE",
+                "width": 120,
+                "x": 21,
+                "y": 200
+              },
+              {
+                "absoluteBounds": {
+                  "height": 220,
+                  "width": 121,
+                  "x": 20,
+                  "y": 20
+                },
+                "childCount": 2,
+                "height": 220,
+                "id": 6,
+                "width": 121
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 44,
+            "undoDepth": 8
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 1,
+            "undo": [
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 8
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 4,
+                          "name": "Primary button",
+                          "type": "RECTANGLE",
+                          "visible": true
+                        },
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 44,
+          "selection": [6],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 220,
+              "width": 121,
+              "x": 20,
+              "y": 20
+            },
+            "childCount": 2,
+            "constraints": {
+              "horizontal": "left",
+              "vertical": "top"
+            },
+            "height": 220,
+            "id": 6,
+            "name": "Group 1",
+            "type": "GROUP",
+            "width": 121,
+            "x": 20,
+            "y": 20
+          }
+        ],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "redo",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [],
+            "nodes": [],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 15,
+                  "width": 25,
+                  "x": 20,
+                  "y": 20
+                },
+                "childCount": 1,
+                "height": 15,
+                "id": 6,
+                "width": 25
+              }
+            ],
+            "removed": [
+              {
+                "id": 4,
+                "index": 0,
+                "parent": 6
+              }
+            ],
+            "resync": false,
+            "revision": 48,
+            "undoDepth": 9
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 9
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 48,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "move",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "tool by key",
+      "events": [
+        {
+          "name": "tool.changed",
+          "data": {
+            "tool": "rectangle"
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 9
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 52,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "rectangle",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "agent presence",
+      "events": [
+        {
+          "name": "agent.presence",
+          "data": {
+            "active": true,
+            "held": true,
+            "layers": [],
+            "name": "Claude (agent)"
+          }
+        },
+        {
+          "name": "agent.presence",
+          "data": {
+            "active": true,
+            "held": true,
+            "layers": [2],
+            "name": "Claude (agent)"
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": "Claude (agent)",
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "id": 2,
+                "name": "Card (Claude)"
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 55,
+            "undoDepth": 10
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Set properties",
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 10
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card (Claude)",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 55,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "rectangle",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "agent presence released",
+      "events": [
+        {
+          "name": "agent.presence",
+          "data": {
+            "active": true,
+            "held": false,
+            "layers": [2],
+            "name": "Claude (agent)"
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Set properties",
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 10
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card (Claude)",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 57,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "rectangle",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "right-click",
+      "events": [
+        {
+          "name": "ui.request",
+          "data": {
+            "data": {
+              "ids": [2]
+            },
+            "kind": "contextMenu",
+            "screen": {
+              "x": 640,
+              "y": 400
+            }
+          }
+        },
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [2],
+            "nodes": [
+              {
+                "absoluteBounds": {
+                  "height": 300,
+                  "width": 400,
+                  "x": 0,
+                  "y": 0
+                },
+                "childCount": 2,
+                "clip": true,
+                "fills": [
+                  {
+                    "color": "#FFFFFF",
+                    "type": "solid"
+                  }
+                ],
+                "height": 300,
+                "id": 2,
+                "name": "Card (Claude)",
+                "type": "FRAME",
+                "width": 400,
+                "x": 0,
+                "y": 0
+              }
+            ],
+            "page": 1
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Set properties",
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 10
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card (Claude)",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 59,
+          "selection": [2],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [
+          {
+            "absoluteBounds": {
+              "height": 300,
+              "width": 400,
+              "x": 0,
+              "y": 0
+            },
+            "childCount": 2,
+            "clip": true,
+            "fills": [
+              {
+                "color": "#FFFFFF",
+                "type": "solid"
+              }
+            ],
+            "height": 300,
+            "id": 2,
+            "name": "Card (Claude)",
+            "type": "FRAME",
+            "width": 400,
+            "x": 0,
+            "y": 0
+          }
+        ],
+        "tool": "rectangle",
+        "canvasMode": true,
+        "view": {
+          "zoom": 2.24,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "add a page and switch to it",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [],
+            "nodes": [],
+            "page": 7
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [
+              {
+                "id": 7,
+                "index": 1,
+                "parent": null
+              }
+            ],
+            "agent": null,
+            "document": 2,
+            "moved": [],
+            "nodes": [
+              {
+                "background": "#F5F5F5",
+                "id": 7,
+                "name": "Second",
+                "type": "PAGE"
+              }
+            ],
+            "removed": [],
+            "resync": false,
+            "revision": 61,
+            "undoDepth": 11
+          }
+        },
+        {
+          "name": "viewport.changed",
+          "data": {
+            "document": 2,
+            "x": -100,
+            "y": -100,
+            "zoom": 1
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 7,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Add page",
+              "Set properties",
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 11
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "childCount": 1,
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            },
+            {
+              "id": 7,
+              "name": "Second",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 61,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "rectangle",
+        "canvasMode": true,
+        "view": {
+          "zoom": 1,
+          "cx": 540,
+          "cy": 300,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "back to the first page",
+      "events": [
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 2,
+            "ids": [],
+            "nodes": [],
+            "page": 1
+          }
+        },
+        {
+          "name": "viewport.changed",
+          "data": {
+            "document": 2,
+            "x": -440,
+            "y": -250,
+            "zoom": 1
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Add page",
+              "Set properties",
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 11
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card (Claude)",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            },
+            {
+              "id": 7,
+              "name": "Second",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 63,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "rectangle",
+        "canvasMode": true,
+        "view": {
+          "zoom": 1,
+          "cx": 200,
+          "cy": 150,
+          "vw": 1280,
+          "vh": 800
+        }
+      }
+    },
+    {
+      "step": "canvas mode off",
+      "events": [
+        {
+          "name": "canvas.mode",
+          "data": {
+            "on": false
+          }
+        },
+        {
+          "name": "viewport.changed",
+          "data": {
+            "document": 2,
+            "x": -172,
+            "y": -230,
+            "zoom": 1
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": true,
+          "history": {
+            "redo": 0,
+            "undo": [
+              "Add page",
+              "Set properties",
+              "Delete",
+              "Group selection",
+              "Bring to front",
+              "Duplicate",
+              "Set properties",
+              "Nudge",
+              "Set properties",
+              "Fill card",
+              "Create layer"
+            ],
+            "undoDepth": 11
+          },
+          "id": 2,
+          "images": 0,
+          "kind": "design",
+          "name": "Recorded",
+          "pages": [
+            {
+              "children": [
+                {
+                  "children": [
+                    {
+                      "id": 5,
+                      "name": "Primary button",
+                      "type": "RECTANGLE",
+                      "visible": true
+                    },
+                    {
+                      "children": [
+                        {
+                          "id": 3,
+                          "locked": true,
+                          "name": "Title",
+                          "type": "TEXT",
+                          "visible": false
+                        }
+                      ],
+                      "id": 6,
+                      "name": "Group 1",
+                      "type": "GROUP",
+                      "visible": true
+                    }
+                  ],
+                  "id": 2,
+                  "name": "Card (Claude)",
+                  "type": "FRAME",
+                  "visible": true
+                }
+              ],
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            },
+            {
+              "id": 7,
+              "name": "Second",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 65,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "rectangle",
+        "canvasMode": false,
+        "view": {
+          "zoom": 1,
+          "cx": 200,
+          "cy": 150,
+          "vw": 744,
+          "vh": 760
+        }
+      }
+    },
+    {
+      "step": "open another file",
+      "events": [
+        {
+          "name": "agent.presence",
+          "data": {
+            "active": false,
+            "held": false,
+            "layers": [],
+            "name": "Claude (agent)"
+          }
+        },
+        {
+          "name": "selection.changed",
+          "data": {
+            "document": 3,
+            "ids": [],
+            "nodes": [],
+            "page": 1
+          }
+        },
+        {
+          "name": "document.changed",
+          "data": {
+            "added": [],
+            "agent": null,
+            "document": 3,
+            "moved": [],
+            "nodes": [],
+            "removed": [],
+            "resync": true,
+            "revision": 1,
+            "undoDepth": 0
+          }
+        },
+        {
+          "name": "text.editing",
+          "data": {
+            "document": 3,
+            "id": null
+          }
+        },
+        {
+          "name": "viewport.changed",
+          "data": {
+            "document": 3,
+            "x": -100,
+            "y": -100,
+            "zoom": 1
+          }
+        },
+        {
+          "name": "interaction.changed",
+          "data": {
+            "active": false,
+            "document": 3,
+            "host": false,
+            "label": null
+          }
+        }
+      ],
+      "truth": {
+        "doc": {
+          "colorProfile": "srgb",
+          "currentPage": 1,
+          "dirty": false,
+          "history": {
+            "redo": 0,
+            "undo": [],
+            "undoDepth": 0
+          },
+          "id": 3,
+          "images": 0,
+          "kind": "design",
+          "name": "Other",
+          "pages": [
+            {
+              "id": 1,
+              "name": "Page 1",
+              "type": "PAGE",
+              "visible": true
+            }
+          ],
+          "path": null,
+          "revision": 1,
+          "selection": [],
+          "styles": [],
+          "textEdit": null,
+          "variables": 0
+        },
+        "nodes": [],
+        "tool": "rectangle",
+        "canvasMode": false,
+        "view": {
+          "zoom": 1,
+          "cx": 272,
+          "cy": 280,
+          "vw": 744,
+          "vh": 760
+        }
+      }
+    }
+  ]
+}

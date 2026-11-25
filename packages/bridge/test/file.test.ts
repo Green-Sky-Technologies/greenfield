@@ -1,7 +1,10 @@
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 import { deflateRawSync } from 'node:zlib';
 import { describe, expect, it } from 'vitest';
-import { readFileComments } from '../src/file';
+import { readFileComments, readZip, readZipEntry, writeZip } from '../src/file';
 
 /** Saved by the pinned editor (e2e/comments.spec.ts makes the same document). */
 const fixture = new Uint8Array(
@@ -122,5 +125,49 @@ describe('readFileComments', () => {
     ).toBeNull();
     const broken = zip('document.json', doc([]));
     expect(await readFileComments(broken.subarray(0, broken.length - 30))).toBeNull();
+  });
+});
+
+describe('readZip and writeZip', () => {
+  const utf8 = (s: string) => new TextEncoder().encode(s);
+
+  it("round-trips the editor's own file, entry for entry", async () => {
+    const entries = await readZip(fixture);
+    expect(entries?.has('document.json')).toBe(true);
+    const rewritten = await writeZip(entries!);
+    expect(await readZip(rewritten)).toEqual(entries);
+    expect(await readFileComments(rewritten)).toEqual(await readFileComments(fixture));
+  });
+
+  it('keeps order, empty entries and UTF-8 names', async () => {
+    const entries: [string, Uint8Array][] = [
+      ['document.json', utf8('{"a":1}')],
+      ['empty', new Uint8Array()],
+      ['images/café.png', new Uint8Array(4096).map((_, i) => i % 251)],
+    ];
+    const zipped = await writeZip(entries);
+    expect([...(await readZip(zipped))!]).toEqual(entries);
+    expect(await readZipEntry(zipped, 'images/café.png')).toEqual(entries[2]![1]);
+    expect(await readZipEntry(zipped, 'missing')).toBeNull();
+  });
+
+  it('writes a zip another reader accepts, CRCs included', async () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'bridge-zip-'));
+    try {
+      const file = path.join(tmp, 'x.zip');
+      fs.writeFileSync(file, await writeZip([['a/b.txt', utf8('hello zip')]]));
+      expect(execFileSync('unzip', ['-t', file], { encoding: 'utf8' })).toMatch(/No errors/);
+      expect(execFileSync('unzip', ['-p', file, 'a/b.txt'], { encoding: 'utf8' })).toBe(
+        'hello zip',
+      );
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
+    }
+  });
+
+  it('returns null for an unreadable zip', async () => {
+    expect(await readZip(new Uint8Array([1, 2, 3]))).toBeNull();
+    const broken = zip('document.json', doc([]));
+    expect(await readZip(broken.subarray(0, broken.length - 30))).toBeNull();
   });
 });

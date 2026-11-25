@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     'next-env.d.ts',
     // The FigCraft web release, downloaded by scripts/fetch-editor.mjs.
     'public/editor/**',
+    // Code fixtures (a sample repository the design-system builder reads, Story 10.2).
+    'test/fixtures/**',
   ]),
 ]);
 

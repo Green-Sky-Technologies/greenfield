@@ -33,6 +33,7 @@ import {
   type ToolOutput,
 } from './agent-tools';
 import { agentCommandBlocked } from './batch';
+import { LAYOUT_DERIVED, layerChanges, topFrame, type LayerChange } from './changes';
 import { SUGGEST_JOB_RESULT, type JobSuggestion, type QuestionSet } from './followup';
 import { stableStringify } from './stable';
 
@@ -83,6 +84,10 @@ export type ToolOutcome =
       isError: false;
       /** Layers this call added, removed or changed (`run_batch` only). */
       touched: NodeId[];
+      /** `run_batch`: what changed, property by property (Story 4.7). Not sent to the model. */
+      changes?: LayerChange[];
+      /** `run_batch`: the top-level frames the changes are in (what a self-check renders). */
+      frames?: NodeId[];
       /** Set for control tools: the runtime ends the turn or shows the offer. */
       control?: ToolControl;
     }
@@ -107,6 +112,11 @@ export interface ToolContext {
   /** Passed to every bridge call (timeouts). */
   call?: CallOptions;
   /**
+   * Run edits as this agent (`run_batch`, comment replies): the editor outlines
+   * the layers they change with the agent's presence (Story 2.4). Unset: they run as the user.
+   */
+  agent?: string;
+  /**
    * Layers a scoped request may change, with their descendants (Story 4.2). A `run_batch` that
    * adds, removes or changes anything else is undone (`edit.undo`) and fails with `scope`.
    */
@@ -114,14 +124,6 @@ export interface ToolContext {
 }
 
 const DEFAULT_MAX_TEXT = 40_000;
-/** Fields auto layout recomputes on layers the batch didn't edit (Story 4.2 scope check). */
-const LAYOUT_DERIVED: ReadonlySet<string> = new Set([
-  'x',
-  'y',
-  'width',
-  'height',
-  'absoluteBounds',
-]);
 /** `document.inspect`'s maximum depth: the whole page for the change set. */
 const FULL_DEPTH = 64;
 
@@ -219,6 +221,7 @@ export async function executeTool(
       ],
       isError: false,
       touched: r.touched ?? [],
+      ...(r.changes ? { changes: r.changes, frames: r.frames ?? [] } : {}),
       ...(r.control ? { control: r.control } : {}),
     };
   } catch (e) {
@@ -243,6 +246,8 @@ interface RunResult {
   text?: string;
   image?: ToolContent;
   touched?: NodeId[];
+  changes?: LayerChange[];
+  frames?: NodeId[];
   control?: ToolControl;
 }
 
@@ -307,6 +312,7 @@ async function run<N extends AgentToolName>(
       const results = await editor.batch(i.commands as unknown as BatchStep[], {
         label: i.label,
         ...call,
+        agent: ctx.agent,
       });
       // The batch has applied: from here on, never report a failure (the model would retry it).
       const after = await editor
@@ -318,8 +324,11 @@ async function run<N extends AgentToolName>(
         changes ? [...changes.added, ...changes.removed, ...changes.changed.map((c) => c.id)] : [],
       );
       // A command that set a value to what it already was still targeted that layer.
+      const targeted = new Set<NodeId>();
       for (const s of i.commands)
-        for (const id of targetIds(s.params)) if (before.has(id) || after?.has(id)) touched.add(id);
+        for (const id of targetIds(s.params))
+          if (before.has(id) || after?.has(id)) targeted.add(id);
+      for (const id of targeted) touched.add(id);
       if (ctx.scope?.length) {
         // Auto layout moves and resizes ancestors and siblings of whatever changed: those are
         // not edits. What counts is what the batch added, removed or set, and what it targeted.
@@ -340,9 +349,18 @@ async function run<N extends AgentToolName>(
         const outside = outOfScope(edited, ctx.scope, before, after);
         if (outside.length) await undoOutOfScope(editor, i.label, outside, ctx.scope, call);
       }
+      const records = after ? layerChanges(before, after, targeted) : [];
+      const frames = new Set<NodeId>();
+      for (const c of records) if (c.frame != null) frames.add(c.frame);
+      for (const id of targeted) {
+        const f = after?.has(id) ? topFrame(after, id) : null;
+        if (f != null) frames.add(f);
+      }
       return {
         output: { label: i.label, results, changes } satisfies ToolOutput<'run_batch'>,
         touched: [...touched].sort((a, b) => a - b),
+        changes: records,
+        frames: [...frames].sort((a, b) => a - b),
       };
     }
     case 'render': {
@@ -387,7 +405,7 @@ async function run<N extends AgentToolName>(
         await editor.execute(
           'comment.reply',
           { id: i.threadId, text: i.reply, author: ctx.author ?? 'Claude' },
-          call,
+          { ...call, agent: ctx.agent },
         );
       return { output: { thread, replied: i.reply !== undefined } };
     }

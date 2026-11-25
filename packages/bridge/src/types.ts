@@ -4,6 +4,7 @@
  * all implement `Editor`.
  */
 import type { BatchStep, CommandId, CommandParams } from './commands';
+import type { EditorEvent } from './events';
 import type { NodeField } from './generated/commands';
 
 /** A layer or page id. Ids are numbers, unique within a document. */
@@ -45,8 +46,8 @@ export interface DocumentInfo {
   dirty: boolean;
   currentPage: NodeId;
   selection: NodeId[];
-  /** The last 20 undo labels and the redo count. */
-  history: { undo: string[]; redo: number };
+  /** The last 20 undo labels, the redo count and (from the fork) the full undo depth. */
+  history: { undo: string[]; redo: number; undoDepth?: number };
   /** The current page's tree to `depth`; other pages summarised unless `allPages`. */
   pages: EditorNode[];
   [key: string]: unknown;
@@ -141,7 +142,15 @@ export interface CallOptions {
   timeoutMs?: number;
 }
 
-export interface BatchOptions extends CallOptions {
+export interface ExecuteOptions extends CallOptions {
+  /**
+   * Run as this agent (`figcraft.executeAs`): the editor attributes the change to it
+   * (`document.changed.agent`) and draws its presence on the layers it changed.
+   */
+  agent?: string;
+}
+
+export interface BatchOptions extends ExecuteOptions {
   /** The undo step's label. */
   label?: string;
 }
@@ -165,6 +174,11 @@ export interface Editor {
   onSave(cb: (e: SaveEvent) => void | Promise<void>): Unsubscribe;
   /** The editor couldn't start. */
   onFailed(cb: (error: string) => void): Unsubscribe;
+  /**
+   * The editor's events (`figcraft:event`): selection, document patches, tool, text editing,
+   * viewport, interaction, presence, canvas mode and `ui.request`. Narrow on `e.name`.
+   */
+  onEvent(cb: (e: EditorEvent) => void): Unsubscribe;
   /** Open a document (`figcraft:open`). The bytes are copied, never transferred away. */
   open(name: string, bytes: Uint8Array | ArrayBuffer): void;
   /** Press Save (Cmd+S on a Mac, Ctrl+S elsewhere); the file arrives through `onSave`. */
@@ -175,7 +189,7 @@ export interface Editor {
   execute<C extends CommandId>(
     command: C,
     params?: CommandParams<C>,
-    opts?: CallOptions,
+    opts?: ExecuteOptions,
   ): Promise<unknown>;
   /**
    * Several commands as one undo step (`command.batch`). Steps may name themselves (`as`) and

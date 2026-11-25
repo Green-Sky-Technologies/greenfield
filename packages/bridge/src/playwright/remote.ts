@@ -6,6 +6,7 @@
  */
 import type { Frame, Page } from '@playwright/test';
 import type { BatchStep, CommandId, CommandParams } from '../commands';
+import type { EditorEvent } from '../events';
 import {
   BridgeError,
   CommandError,
@@ -20,6 +21,7 @@ import type {
   BatchOptions,
   BatchStepResult,
   CallOptions,
+  ExecuteOptions,
   ChangeSet,
   CommandInfo,
   DocumentInfo,
@@ -96,6 +98,7 @@ export type HostEvent =
   | { type: 'dirty'; payload: boolean }
   | { type: 'save'; payload: { name: string; saveAs: boolean; bytes: string; id?: unknown } }
   | { type: 'failed'; payload: string }
+  | { type: 'event'; payload: EditorEvent }
   | { type: 'change'; payload: ChangeSet }
   | { type: 'error'; payload: string };
 
@@ -106,6 +109,7 @@ export class RemoteEditor implements Editor {
   private readonly dirtyCbs = new Emitter<boolean>();
   private readonly saveCbs = new Emitter<SaveEvent>();
   private readonly failedCbs = new Emitter<string>();
+  private readonly eventCbs = new Emitter<EditorEvent>();
   private readonly changeCbs = new Emitter<ChangeSet>();
   private queue: Promise<unknown> = Promise.resolve();
   private platformCache: KeyPlatform | undefined;
@@ -113,6 +117,8 @@ export class RemoteEditor implements Editor {
   readonly saves: SaveEvent[] = [];
   /** Every dirty flag the editor reported. */
   readonly dirtyLog: boolean[] = [];
+  /** Every `figcraft:event` so far, in order. */
+  readonly events: EditorEvent[] = [];
   /** Detector errors reported by the host page. */
   readonly errors: string[] = [];
 
@@ -142,6 +148,10 @@ export class RemoteEditor implements Editor {
       }
       case 'failed':
         this.failedCbs.emit(e.payload);
+        break;
+      case 'event':
+        this.events.push(e.payload);
+        this.eventCbs.emit(e.payload);
         break;
       case 'change':
         this.changeCbs.emit(e.payload);
@@ -233,6 +243,9 @@ export class RemoteEditor implements Editor {
   onFailed(cb: (error: string) => void): Unsubscribe {
     return this.failedCbs.add(cb);
   }
+  onEvent(cb: (e: EditorEvent) => void): Unsubscribe {
+    return this.eventCbs.add(cb);
+  }
   open(name: string, bytes: Uint8Array | ArrayBuffer): void {
     const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
     // Queued: later calls see the open. Errors surface on the next call's `await`.
@@ -249,7 +262,7 @@ export class RemoteEditor implements Editor {
   execute<C extends CommandId>(
     command: C,
     params?: CommandParams<C>,
-    opts?: CallOptions,
+    opts?: ExecuteOptions,
   ): Promise<unknown> {
     return this.call('execute', [command, params, opts]);
   }

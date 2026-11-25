@@ -27,8 +27,11 @@ import {
   type AgentStep,
   type Anthropic,
 } from '@greenfield/agent';
+import { layerChange, mergeLayerChanges, type LayerChange } from '@greenfield/contracts';
 import { agentMessages, and, asc, eq, sql, type AgentMessageRow, type Db } from '@greenfield/db';
 import { z } from 'zod';
+import { CHECK_FIELDS, checkLayers, checkPrompt, type DesignCheck } from '../design-systems/check';
+import type { TurnDesignSystem } from '../design-systems/follow';
 import { ProviderError, streamModel, type LlmProxyDeps } from '../llm-proxy';
 import { NotFoundError, ValidationError, type Actor } from '../types';
 
@@ -40,6 +43,31 @@ export const TOOL_LEASE_MS = 45_000;
 export const SEEN_THROTTLE_MS = 5_000;
 /** One `advanceTurn` stops starting model calls after this (route maxDuration is 300 s). */
 const ADVANCE_DEADLINE_MS = 200_000;
+/** Self-check rounds per turn (Story 4.3): render, look, fix at most this many times. */
+export const MAX_SELF_CHECKS = 2;
+/** Self-check renders are half size: enough to judge a frame, a quarter of the image tokens. */
+export const SELF_CHECK_SCALE = 0.5;
+/** Frames one self-check renders at most (the render tool's limit is 20 ids). */
+const MAX_CHECK_FRAMES = 4;
+/** Tool_use ids of self-check renders: never the model's (theirs start with `toolu_`). */
+const SELF_CHECK_ID = 'selfcheck_';
+export const SELF_CHECK_PROMPT =
+  'Self-check: this is a render of the frame you just changed. Compare it with the request. ' +
+  'If anything is off (a font that fell back to Regular, clipped or overlapping text, ragged card ' +
+  "heights, changes the user didn't ask for), fix it with one run_batch. If it looks right, reply " +
+  'with one short sentence and no tool calls.';
+/** Design-system check rounds per turn (Story 10.5): check, fix, check again. */
+export const MAX_DESIGN_CHECKS = 2;
+/** Tool_use ids of the design-system check's reads. */
+const DESIGN_CHECK_ID = 'dscheck_';
+/** Fields of a changed layer that the design-system check looks at. */
+const CHECKED_FIELDS: ReadonlySet<string> = new Set([
+  'fills',
+  'strokes',
+  'layout',
+  'boundVariables',
+  'styles',
+]);
 
 export interface ToolCallState {
   id: string;
@@ -50,6 +78,10 @@ export interface ToolCallState {
   claimedBy?: string;
   result?: Anthropic.ToolResultBlockParam;
   touched?: number[];
+  /** `run_batch`: what changed, from the tab (Story 4.7). */
+  changes?: LayerChange[];
+  /** `run_batch`: the top-level frames the changes are in. */
+  frames?: number[];
 }
 
 /** An interactive turn in progress (`StoredAssistantContent.run`). */
@@ -59,8 +91,15 @@ export interface TurnRun {
   step: number;
   /** Layers the tab may change (the selection the request was sent with); null = whole page. */
   scope: number[] | null;
-  /** The step whose tool calls are out (phases `tools` and `ready`). */
-  pending: { step: AgentStep; calls: ToolCallState[] } | null;
+  /**
+   * The calls out to the tab (phases `tools` and `ready`): a model step's, or (`step` null) the
+   * self-check render the server asked for (Story 4.3).
+   */
+  pending: { step: AgentStep | null; calls: ToolCallState[] } | null;
+  /** Frames changed since the last render, and self-checks done so far (Story 4.3). */
+  check?: { frames: number[]; rounds: number };
+  /** Story 10.5: design-system checks so far, and whether the turn changed layers since. */
+  design?: { rounds: number; dirty: boolean };
   /** Last phase change (ISO). */
   at: string;
   /** Last sign of the requesting tab (ISO): its stream, a claim or a result. */
@@ -76,6 +115,12 @@ export interface RunContent {
   jobSuggestion?: unknown;
   stopReason?: string | null;
   run?: TurnRun | null;
+  /** What the turn changed, one record per layer (Story 4.7). */
+  changes?: LayerChange[];
+  /** The turn's undo steps (its run_batch labels), in the order they ran. */
+  undoLabels?: string[];
+  /** Story 10.5: the design-system check of what the turn changed. */
+  designCheck?: DesignCheck;
   [k: string]: unknown;
 }
 
@@ -85,6 +130,8 @@ export interface TurnDeps {
   flushMs?: number;
   /** How often to check for cancellation while the model streams (ms). */
   cancelPollMs?: number;
+  /** Self-check rounds per turn (default MAX_SELF_CHECKS; 0 turns self-checks off). */
+  maxSelfChecks?: number;
   now?: () => Date;
 }
 
@@ -96,6 +143,8 @@ export interface TurnInputs {
   scope: number[] | null;
   /** History plus this turn's user message, ready for the model. */
   messages: Anthropic.MessageParam[];
+  /** The file's design system (Story 10.5): a prefix block and the post-turn check's rules. */
+  designSystem?: TurnDesignSystem | null;
 }
 
 export type LoadTurnInputs = (row: AgentMessageRow) => Promise<TurnInputs>;
@@ -123,12 +172,147 @@ function userFacingError(e: unknown): string {
   return 'Something went wrong running the agent.';
 }
 
-/** The content a finished turn keeps (no run state, no partial). */
+const RENDER_DROPPED = 'A render was shown here during the turn; it is not kept.';
+
+const isImage = (b: unknown) =>
+  typeof b === 'object' && b !== null && (b as { type?: string }).type === 'image';
+
+/** The turns without their renders (Story 4.3 AC: renders are not stored beyond the turn). */
+export function withoutRenders(turns: Anthropic.MessageParam[]): Anthropic.MessageParam[] {
+  const strip = <T>(blocks: T[]): T[] =>
+    blocks.some(isImage)
+      ? [
+          ...blocks.filter((b) => !isImage(b)),
+          { type: 'text', text: RENDER_DROPPED } as unknown as T,
+        ]
+      : blocks;
+  return turns.map((t) => {
+    if (t.role !== 'user' || typeof t.content === 'string') return t;
+    return {
+      ...t,
+      content: strip(
+        t.content.map((b) =>
+          b.type === 'tool_result' && Array.isArray(b.content)
+            ? { ...b, content: strip(b.content) }
+            : b,
+        ),
+      ),
+    };
+  });
+}
+
+/** The content a finished turn keeps (no run state, no partial, no renders). */
 function finished(c: RunContent, extra: Partial<RunContent> = {}): RunContent {
-  const rest: RunContent = { ...c };
+  const rest: RunContent = { ...c, ...extra };
   delete rest.run;
   delete rest.partial;
-  return { ...rest, activity: [], ...extra };
+  return { ...rest, turns: withoutRenders(rest.turns ?? []), activity: [] };
+}
+
+/** Image blocks of a tool result (a render). */
+function images(r: Anthropic.ToolResultBlockParam | undefined): Anthropic.ImageBlockParam[] {
+  if (!r || r.is_error || !Array.isArray(r.content)) return [];
+  return r.content.filter((b): b is Anthropic.ImageBlockParam => b.type === 'image');
+}
+
+/** Fold a step's results into the turn's change records, undo labels and self-check state. */
+function recordStep(c: RunContent, calls: ToolCallState[]) {
+  let changes = c.changes ?? [];
+  const undoLabels = [...(c.undoLabels ?? [])];
+  const check = { frames: [...(c.run?.check?.frames ?? [])], rounds: c.run?.check?.rounds ?? 0 };
+  const design = { rounds: c.run?.design?.rounds ?? 0, dirty: c.run?.design?.dirty ?? false };
+  for (const x of calls) {
+    if (!x.result || x.result.is_error) continue;
+    if (x.name === 'render') check.frames = [];
+    if (x.name !== 'run_batch' || !x.touched?.length) continue;
+    undoLabels.push(String((x.input as { label?: unknown }).label ?? ''));
+    if (x.changes?.length) changes = mergeLayerChanges([changes, x.changes]);
+    const frames = x.frames?.length ? x.frames : x.touched;
+    check.frames = [...new Set([...check.frames, ...frames])];
+    design.dirty = true;
+  }
+  return { changes, undoLabels, check, design };
+}
+
+/** The layers the design-system check looks at: added ones, and changed paints or layout. */
+function checkedLayers(changes: LayerChange[]): Set<number> {
+  return new Set(
+    changes
+      .filter(
+        (x) =>
+          x.kind === 'added' ||
+          (x.kind === 'changed' && x.fields.some((f) => CHECKED_FIELDS.has(f.field))),
+      )
+      .map((x) => x.id),
+  );
+}
+
+/** What `get_node` returned in the check's reads. */
+function readNodes(calls: ToolCallState[]): unknown[] {
+  return calls.flatMap((x) => {
+    if (!x.result || x.result.is_error || !Array.isArray(x.result.content)) return [];
+    return x.result.content.flatMap((b) => {
+      if (b.type !== 'text') return [];
+      try {
+        const parsed = JSON.parse(b.text) as { node?: unknown };
+        return [parsed.node ?? parsed];
+      } catch {
+        return [];
+      }
+    });
+  });
+}
+
+/**
+ * The server-side check due when the model ends a turn, if any: first the design-system check
+ * (Story 10.5) of layers changed since the last one, then the self-check render (Story 4.3).
+ * Both are calls out to the tab with no model step.
+ */
+function dueCheck(
+  c: RunContent,
+  run: TurnRun,
+  designSystem: TurnDesignSystem | null | undefined,
+  maxSelfChecks: number,
+): (Pick<TurnRun, 'check' | 'design'> & { calls: ToolCallState[] }) | null {
+  const design = run.design ?? { rounds: 0, dirty: false };
+  const check = run.check ?? { frames: [], rounds: 0 };
+  if (designSystem && design.dirty && design.rounds < MAX_DESIGN_CHECKS) {
+    const only = checkedLayers(c.changes ?? []);
+    const frames = [
+      ...new Set(
+        (c.changes ?? []).flatMap((x) => (only.has(x.id) && x.frame !== null ? [x.frame] : [])),
+      ),
+    ].slice(0, MAX_CHECK_FRAMES);
+    if (frames.length) {
+      const rounds = design.rounds + 1;
+      return {
+        check,
+        design: { rounds, dirty: false },
+        calls: frames.map((id, i) => ({
+          id: `${DESIGN_CHECK_ID}${rounds}_${i}`,
+          name: 'get_node',
+          input: { id, depth: 8, fields: [...CHECK_FIELDS] },
+          state: 'queued' as const,
+        })),
+      };
+    }
+  }
+  if (check.frames.length && check.rounds < maxSelfChecks) {
+    const rounds = check.rounds + 1;
+    return {
+      design,
+      check: { frames: [], rounds },
+      calls: [
+        {
+          id: `${SELF_CHECK_ID}${rounds}`,
+          name: 'render',
+          input: { ids: check.frames.slice(0, MAX_CHECK_FRAMES), scale: SELF_CHECK_SCALE },
+          state: 'queued',
+        },
+      ],
+    };
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -148,6 +332,7 @@ async function claimStep(
   messageId: string,
   load: LoadTurnInputs,
   now: Date,
+  maxSelfChecks: number,
 ): Promise<Claim> {
   return db.transaction(async (tx) => {
     const row = await lockMessage(tx, actor, messageId);
@@ -159,22 +344,92 @@ async function claimStep(
     if (row.status === 'pending') {
       step = 1;
       inputs = await load(row);
-    } else if (row.status === 'streaming' && c.run?.phase === 'ready' && c.run.pending) {
+    } else if (
+      row.status === 'streaming' &&
+      c.run?.phase === 'ready' &&
+      c.run.pending?.step === null &&
+      c.run.pending.calls[0]?.id.startsWith(DESIGN_CHECK_ID)
+    ) {
+      // The design-system check's reads came back (Story 10.5): check them on the server.
+      inputs = await load(row);
+      const rules = inputs.designSystem?.rules;
+      const rounds = c.run.design?.rounds ?? 1;
+      const found = rules
+        ? checkLayers(readNodes(c.run.pending.calls), rules, checkedLayers(c.changes ?? []))
+        : [];
+      if (rules)
+        c.designCheck = {
+          system: rules.name,
+          rounds,
+          found: c.designCheck?.found ?? found,
+          left: found,
+        };
+      step = c.run.step + 1;
+      if (!rules || !found.length || rounds >= MAX_DESIGN_CHECKS || step > MAX_STEPS) {
+        // Nothing to fix (or no rounds left): go on to the self-check, or end the turn.
+        const next = dueCheck(c, c.run, null, maxSelfChecks);
+        await tx
+          .update(agentMessages)
+          .set(
+            next
+              ? {
+                  content: {
+                    ...c,
+                    run: {
+                      ...c.run,
+                      phase: 'tools',
+                      check: next.check,
+                      design: next.design,
+                      pending: { step: null, calls: next.calls },
+                      at: iso(now),
+                      seenAt: iso(now),
+                    },
+                  } satisfies RunContent,
+                }
+              : { status: 'complete', content: finished(c) },
+          )
+          .where(eq(agentMessages.id, row.id));
+        return { kind: 'none' };
+      }
+      turns.push({ role: 'user', content: [{ type: 'text', text: checkPrompt(rules, found) }] });
+    } else if (
+      row.status === 'streaming' &&
+      c.run?.phase === 'ready' &&
+      c.run.pending?.step === null
+    ) {
+      // The self-check render came back: show it to the model (Story 4.3).
+      const shown = images(c.run.pending.calls[0]?.result);
+      if (!shown.length) {
+        await tx
+          .update(agentMessages)
+          .set({ status: 'complete', content: finished(c) })
+          .where(eq(agentMessages.id, row.id));
+        return { kind: 'none' };
+      }
+      turns.push({ role: 'user', content: [{ type: 'text', text: SELF_CHECK_PROMPT }, ...shown] });
+      step = c.run.step + 1;
+      inputs = await load(row);
+    } else if (row.status === 'streaming' && c.run?.phase === 'ready' && c.run.pending?.step) {
       const { pending } = c.run;
+      const pendingStep = pending.step!;
       const results = Object.fromEntries(
         pending.calls.filter((x) => x.result).map((x) => [x.id, x.result!]),
       );
       for (const x of pending.calls) for (const id of x.touched ?? []) touched.add(String(id));
-      const blocks = stepResults(pending.step, results);
-      if (pending.step.questions) {
-        // Not reached while questions are off (Story 4.4); kept so the history stays valid.
+      const recorded = recordStep(c, pending.calls);
+      c.changes = recorded.changes;
+      c.undoLabels = recorded.undoLabels;
+      c.run = { ...c.run, check: recorded.check, design: recorded.design };
+      const blocks = stepResults(pendingStep, results);
+      if (pendingStep.questions) {
+        // ask_followup ends the turn (Story 4.4): its result is the user's answers, sent later.
         await tx
           .update(agentMessages)
           .set({
             status: 'complete',
             content: finished(c, {
               touched: [...touched],
-              questions: { ...pending.step.questions, results: blocks },
+              questions: { ...pendingStep.questions, results: blocks },
             }),
           })
           .where(eq(agentMessages.id, row.id));
@@ -206,6 +461,8 @@ async function claimStep(
         step,
         scope: inputs.scope,
         pending: null,
+        check: c.run?.check ?? { frames: [], rounds: 0 },
+        design: c.run?.design ?? { rounds: 0, dirty: false },
         at: iso(now),
         seenAt: c.run?.seenAt ?? iso(now),
       },
@@ -281,13 +538,11 @@ async function runStep(
           deps.proxy,
         ),
       model: inputs.model,
-      prefix: buildPrefix('interactive', prefixCacheTtl()),
+      prefix: buildPrefix('interactive', prefixCacheTtl(), inputs.designSystem?.prompt),
       messages: [...inputs.messages, ...content.turns],
       runtime: 'interactive',
       signal: controller.signal,
       effort: 'medium',
-      // Follow-up questions come with Story 4.4.
-      allowQuestions: false,
       onPartial: (p) => {
         partial = p;
         if (Date.now() - lastFlush >= (deps.flushMs ?? 250)) flush();
@@ -302,6 +557,27 @@ async function runStep(
       jobSuggestion: step.jobSuggestion ?? content.jobSuggestion ?? null,
       stopReason: step.stopReason,
     };
+    const next =
+      step.kind === 'final' && step.stopReason === 'end_turn' && run.step < MAX_STEPS
+        ? dueCheck(base, run, inputs.designSystem, deps.maxSelfChecks ?? MAX_SELF_CHECKS)
+        : null;
+    if (next) {
+      // The turn changed layers nobody checked since: the tab reads or renders them.
+      content = {
+        ...base,
+        run: {
+          ...run,
+          phase: 'tools',
+          check: next.check,
+          design: next.design,
+          pending: { step: null, calls: next.calls },
+          at: iso(now()),
+          seenAt: iso(now()),
+        },
+      };
+      await writeIfStreaming(db, row.id, { content });
+      return false;
+    }
     if (step.kind === 'final') {
       await writeIfStreaming(db, row.id, {
         status: 'complete',
@@ -361,7 +637,14 @@ export async function advanceTurn(
   const started = Date.now();
   try {
     for (;;) {
-      const claim = await claimStep(db, actor, messageId, load, deps.now?.() ?? new Date());
+      const claim = await claimStep(
+        db,
+        actor,
+        messageId,
+        load,
+        deps.now?.() ?? new Date(),
+        deps.maxSelfChecks ?? MAX_SELF_CHECKS,
+      );
       if (claim.kind === 'none') return;
       const again = await runStep(db, actor, claim, deps);
       if (!again || Date.now() - started > ADVANCE_DEADLINE_MS) return;
@@ -417,6 +700,8 @@ export const toolCallBody = z.discriminatedUnion('action', [
       content: toolResultContent,
       isError: z.boolean(),
       touched: z.array(z.number().int().nonnegative()).max(10_000).default([]),
+      changes: z.array(layerChange).max(2_000).optional(),
+      frames: z.array(z.number().int().nonnegative()).max(200).optional(),
     })
     .strict(),
 ]);
@@ -499,7 +784,16 @@ export async function toolCallAction(
       ...(body.isError ? { is_error: true } : {}),
     };
     const next = calls.map((x) =>
-      x.id === callId ? { ...x, state: 'done' as const, result, touched: body.touched } : x,
+      x.id === callId
+        ? {
+            ...x,
+            state: 'done' as const,
+            result,
+            touched: body.touched,
+            ...(body.changes ? { changes: body.changes } : {}),
+            ...(body.frames ? { frames: body.frames } : {}),
+          }
+        : x,
     );
     const ready = next.every((x) => x.state === 'done');
     await save(next, ready ? 'ready' : 'tools');
@@ -564,7 +858,22 @@ export function windowHistory(
   return exchanges.slice(cut).flat();
 }
 
-/** Earlier complete exchanges of a conversation. Failed and cancelled replies are skipped. */
+/** The ask_followup call a user turn answers: the id of its last leading tool_result. */
+function answeredToolUseId(turn: Anthropic.MessageParam | undefined): string | null {
+  if (!turn || typeof turn.content === 'string') return null;
+  let id: string | null = null;
+  for (const b of turn.content) {
+    if (b.type !== 'tool_result') break;
+    id = b.tool_use_id;
+  }
+  return id;
+}
+
+/**
+ * Earlier complete exchanges of a conversation. Failed and cancelled replies are skipped. An
+ * answer to follow-up questions (Story 4.4) joins the exchange that asked, right after the
+ * ask_followup call, so a window cut never separates a tool_result from its call.
+ */
 export async function historyBefore(
   db: Db,
   conversationId: string,
@@ -579,13 +888,26 @@ export async function historyBefore(
     .orderBy(asc(agentMessages.seq));
   const exchanges: Anthropic.MessageParam[][] = [];
   let open: Anthropic.MessageParam[] | null = null;
+  // The exchange whose reply ended on unanswered questions, by ask_followup tool_use id.
+  let asked: { toolUseId: string } | null = null;
   for (const r of rows) {
     if (r.role === 'user') {
-      open = ((r.content as { turns?: Anthropic.MessageParam[] }).turns ?? []).map(withoutDocument);
+      const turns = ((r.content as { turns?: Anthropic.MessageParam[] }).turns ?? []).map(
+        withoutDocument,
+      );
+      // Answers reopen the asking exchange (always the newest); their reply continues it.
+      open =
+        asked && answeredToolUseId(turns[0]) === asked.toolUseId
+          ? [...exchanges.pop()!, ...turns]
+          : turns;
+      asked = null;
     } else if (r.role === 'assistant' && open) {
       // An exchange counts only with a complete reply (a user turn alone would break alternation).
-      if (r.status === 'complete')
-        exchanges.push([...open, ...((r.content as RunContent).turns ?? [])]);
+      if (r.status === 'complete') {
+        const c = r.content as RunContent & { questions?: { toolUseId: string } | null };
+        exchanges.push([...open, ...(c.turns ?? [])]);
+        if (c.questions) asked = { toolUseId: c.questions.toolUseId };
+      }
       open = null;
     }
   }

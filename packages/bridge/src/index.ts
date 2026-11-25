@@ -62,8 +62,22 @@ export {
   type NodeField,
   type NodeProps,
 } from './generated/commands';
+export {
+  editorEvent,
+  type EditorEvent,
+  type EditorEventMap,
+  type EditorEventName,
+  type NodeChange,
+  type NodePlace,
+} from './events';
 export { HostChannel, type HostChannelOptions } from './host';
-export { editorHasFocus, focusEditor, interceptEditorKeys, isEditableTarget } from './keyboard';
+export {
+  blurEditor,
+  editorHasFocus,
+  focusEditor,
+  interceptEditorKeys,
+  isEditableTarget,
+} from './keyboard';
 export { base64ToBytes, bytesToBase64, pngSize } from './png';
 export {
   isSaveShortcut,

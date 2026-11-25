@@ -2,7 +2,7 @@
  * Story 5.0 spike: the editor state the throwaway panels read, and the three ways to keep it in
  * step with the canvas (`poll`, `pointer`, `events`). Throwaway: Story 5.6 builds the real store.
  */
-import type { Editor } from '@greenfield/bridge';
+import type { Editor, EditorEventMap } from '@greenfield/bridge';
 import { perf } from './perf';
 
 export type SyncMode = 'poll' | 'pointer' | 'events';
@@ -114,6 +114,107 @@ export function firstFill(fills: unknown): string | null {
   return null;
 }
 
+function toSelected(raw: RawNode): SelectedNode {
+  return {
+    id: raw.id,
+    name: raw.name ?? '',
+    type: raw.type ?? '',
+    x: raw.x ?? 0,
+    y: raw.y ?? 0,
+    width: raw.width ?? 0,
+    height: raw.height ?? 0,
+    fill: firstFill(raw.fills),
+  };
+}
+
+/** A layer in the spike's copy of the page tree, patched from `document.changed`. */
+interface TreeNode {
+  id: number;
+  name: string;
+  type: string;
+  visible: boolean;
+  parent: number | null;
+  children: number[];
+}
+
+/** The page tree as rows, front-most first. */
+function rowsOf(tree: Map<number, TreeNode>, page: number): LayerRow[] {
+  const rows: LayerRow[] = [];
+  const walk = (id: number, depth: number) => {
+    const n = tree.get(id);
+    if (!n) return;
+    rows.push({ id, name: n.name || String(id), type: n.type, depth, visible: n.visible });
+    for (const c of n.children) walk(c, depth + 1);
+  };
+  for (const c of [...(tree.get(page)?.children ?? [])].reverse()) walk(c, 0);
+  return rows;
+}
+
+function treeOf(page: RawNode): Map<number, TreeNode> {
+  const tree = new Map<number, TreeNode>();
+  const add = (n: RawNode, parent: number | null) => {
+    const kids = n.children ?? [];
+    tree.set(n.id, {
+      id: n.id,
+      name: n.name ?? '',
+      type: n.type ?? '',
+      visible: n.visible !== false,
+      parent,
+      children: kids.map((c) => c.id),
+    });
+    for (const c of kids) add(c, n.id);
+  };
+  add(page, null);
+  return tree;
+}
+
+/**
+ * Apply a `document.changed` patch (the order the event documents: removed, take moved out,
+ * insert added and moved by ascending index). False when it can't: the host reads the tree.
+ */
+function applyPatch(tree: Map<number, TreeNode>, d: EditorEventMap['document.changed']): boolean {
+  const detach = (id: number) => {
+    const n = tree.get(id);
+    const p = n?.parent != null ? tree.get(n.parent) : undefined;
+    if (p) p.children = p.children.filter((c) => c !== id);
+  };
+  const drop = (id: number) => {
+    for (const c of tree.get(id)?.children ?? []) drop(c);
+    tree.delete(id);
+  };
+  for (const r of d.removed) {
+    detach(r.id);
+    drop(r.id);
+  }
+  for (const m of d.moved) detach(m.id);
+  const fields = new Map(d.nodes.map((n) => [n.id, n]));
+  for (const a of d.added) {
+    const n = fields.get(a.id);
+    tree.set(a.id, {
+      id: a.id,
+      name: String(n?.name ?? ''),
+      type: String(n?.type ?? ''),
+      visible: n?.visible !== false,
+      parent: a.parent,
+      children: [],
+    });
+  }
+  for (const place of [...d.added, ...d.moved].sort((x, y) => x.index - y.index)) {
+    const parent = place.parent != null ? tree.get(place.parent) : undefined;
+    const n = tree.get(place.id);
+    if (!parent || !n) return false;
+    n.parent = place.parent;
+    parent.children.splice(place.index, 0, place.id);
+  }
+  for (const c of d.nodes) {
+    const n = tree.get(c.id);
+    if (!n) continue;
+    if (typeof c.name === 'string') n.name = c.name;
+    if ('visible' in c) n.visible = c.visible !== false;
+  }
+  return true;
+}
+
 function flatten(page: RawNode | undefined): LayerRow[] {
   const rows: LayerRow[] = [];
   const walk = (n: RawNode, depth: number) => {
@@ -149,6 +250,9 @@ export class Syncer {
   private lastSelection = '';
   private treeBusy = false;
   private treeAgain = false;
+  /** The page tree from the last read, patched by `document.changed` (events mode). */
+  private tree: Map<number, TreeNode> | null = null;
+  private treePage = 0;
 
   constructor(
     private readonly editor: Editor,
@@ -207,25 +311,24 @@ export class Syncer {
       depth: 0,
       fields: NODE_FIELDS as never,
     })) as RawNode | null;
-    if (!raw) return null;
-    return {
-      id: raw.id,
-      name: raw.name ?? '',
-      type: raw.type ?? '',
-      x: raw.x ?? 0,
-      y: raw.y ?? 0,
-      width: raw.width ?? 0,
-      height: raw.height ?? 0,
-      fill: firstFill(raw.fills),
-    };
+    return raw ? toSelected(raw) : null;
   }
 
   private nodeGen = 0;
 
-  /** `selection.changed {ids}`: the layers list can highlight now; the numbers take one read. */
-  onSelectionEvent(ids: number[]) {
+  /**
+   * `selection.changed`: the layers list can highlight now. With the layers' fields in the event
+   * (fork 2.3 payloads) the inspector has its numbers too; without, they take one read.
+   */
+  onSelectionEvent(ids: number[], nodes?: RawNode[]) {
     const gen = ++this.nodeGen;
     this.lastSelection = JSON.stringify(ids);
+    const first = nodes?.[0];
+    if (first) {
+      this.store.set({ selection: ids, node: toSelected(first) });
+      perf.log('state-set', { sel: ids[0] ?? null, via: 'payload' });
+      return;
+    }
     this.store.set({ selection: ids, node: ids.length ? this.store.current.node : null });
     perf.log('selection-set', { sel: ids[0] ?? null });
     if (!ids.length) return;
@@ -236,8 +339,26 @@ export class Syncer {
     });
   }
 
-  /** `document.changed`: re-read the selected layer and the tree (each on its own track). */
-  onDocumentEvent() {
+  /**
+   * `document.changed`: with a patch (fork 2.3 payloads), apply it to the selected layer and the
+   * tree; without one, re-read them (each on its own track).
+   */
+  onDocumentEvent(d?: EditorEventMap['document.changed']) {
+    if (d?.nodes && !d.resync && this.tree) {
+      const node = this.store.current.node;
+      const change = node && d.nodes.find((n) => n.id === node.id);
+      if (change) {
+        const { fills, ...rest } = change as RawNode;
+        const fill = 'fills' in change ? firstFill(fills) : node.fill;
+        this.store.set({ node: { ...node, ...(rest as Partial<SelectedNode>), fill } });
+        perf.log('state-set', { sel: node.id, via: 'payload' });
+      }
+      if (applyPatch(this.tree, d)) {
+        this.store.set({ layers: rowsOf(this.tree, this.treePage) });
+        perf.log('tree', { ms: 0, rows: this.store.current.layers.length, via: 'payload' });
+        return;
+      }
+    }
     const gen = ++this.nodeGen;
     const sel = this.store.current.selection[0];
     if (sel !== undefined) {
@@ -260,7 +381,10 @@ export class Syncer {
     try {
       const t0 = performance.now();
       const info = await this.editor.inspect({ outline: true, depth: 12 });
-      const layers = flatten(info.pages?.[0] as RawNode | undefined);
+      const page = info.pages?.[0] as RawNode | undefined;
+      const layers = flatten(page);
+      this.tree = page ? treeOf(page) : null;
+      this.treePage = page?.id ?? 0;
       perf.log('tree', { ms: performance.now() - t0, rows: layers.length });
       this.store.set({ layers });
     } catch (e) {

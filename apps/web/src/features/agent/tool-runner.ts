@@ -7,13 +7,14 @@
  *   so a repeated view (SSE reconnects) never starts it again. Posting the result is retried;
  *   the server accepts a repeat from the same tab as a duplicate.
  * - Calls run in order, one at a time, through `executeTool` with the turn's scope: a batch that
- *   leaves the scope is undone and comes back as an error (`@greenfield/contracts`).
+ *   leaves the scope is undone and comes back as an error (`@greenfield/contracts`). Edits run
+ *   as Claude, so the editor outlines the layers they change in Claude's colour.
  * - Hidden tab: the bridge fails fast with `EditorHiddenError` (nothing ran). The runner keeps
  *   the claim, waits until the tab is shown and runs the call then: the turn pauses.
  * - A turn that ended (cancelled, closed tab) runs nothing more.
  */
 import type { Editor } from '@greenfield/bridge';
-import { executeTool, type ToolContent } from '@greenfield/contracts';
+import { executeTool, type LayerChange, type ToolContent } from '@greenfield/contracts';
 
 export interface ToolCallInfo {
   id: string;
@@ -35,6 +36,9 @@ export interface ToolResultBody {
   content: ToolContent[];
   isError: boolean;
   touched: number[];
+  /** `run_batch`: what changed, property by property, and in which frames (Story 4.7). */
+  changes?: LayerChange[];
+  frames?: number[];
 }
 
 export interface ToolRunnerApi {
@@ -97,6 +101,7 @@ export class ToolRunner {
       const r = await executeTool(call.name, call.input, editor, {
         runtime: 'interactive',
         scope: view.scope,
+        agent: 'Claude',
       });
       if (!r.ok && r.error.kind === 'hidden') {
         await this.o.whenVisible();
@@ -107,6 +112,7 @@ export class ToolRunner {
         content: this.fit(r.content),
         isError: r.isError,
         touched: r.touched,
+        ...(r.ok && r.changes ? { changes: r.changes, frames: r.frames } : {}),
       });
       return;
     }

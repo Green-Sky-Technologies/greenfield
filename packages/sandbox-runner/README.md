@@ -13,5 +13,11 @@ short-lived job token. Provider credentials never enter it (SPEC D9).
 | `VERCEL_AUTOMATION_BYPASS_SECRET` | protected previews | With Deployment Protection on, the sandbox can't reach a preview. Set this to the project's "Protection Bypass for Automation" secret. The runner then has the sandbox **egress firewall** add `x-vercel-protection-bypass` to requests for the app host only. The secret is never put in the VM's env or files. Don't disable Deployment Protection. |
 | Vercel Sandbox auth               | creating sandboxes | Automatic via OIDC on Vercel. Locally: `vercel env pull` (`VERCEL_OIDC_TOKEN`), or `VERCEL_TOKEN` + `VERCEL_TEAM_ID` + `VERCEL_PROJECT_ID`.                                                                                                                                                                                                           |
 
-Egress from the sandbox is limited to the app host and `registry.npmjs.org`. Use `allowHosts`
-if the Agent SDK needs more.
+Egress from the sandbox is limited to the app host, `registry.npmjs.org` and the host of the
+pinned `figcraft-cli` (GitHub release downloads). Use `allowHosts` if the Agent SDK needs more.
+
+Agent jobs (Story 4.5) run headless `figcraft-cli` (Linux x86_64, from the fork's release, pinned
+by sha256 as `cli: { url, sha256 }` in `packages/bridge/editor-release.json`, or
+`GREENFIELD_FIGCRAFT_CLI_URL` / `GREENFIELD_FIGCRAFT_CLI_SHA256`) confined to the job folder with
+`--automation-read-root` / `--automation-write-root` (Story 4.6). `FIGCRAFT_CLI=<path> pnpm test`
+also runs `entrypoint.test.ts` against a real CLI, including the confinement tests.

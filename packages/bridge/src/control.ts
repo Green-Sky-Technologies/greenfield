@@ -20,6 +20,7 @@ import type {
   CallOptions,
   CommandInfo,
   DocumentInfo,
+  ExecuteOptions,
   EditorNode,
   GetNodeOptions,
   InspectOptions,
@@ -32,6 +33,7 @@ import type {
 export interface FigcraftApi {
   request(method: string, params?: unknown): Promise<unknown>;
   execute(command: string, params?: unknown): Promise<unknown>;
+  executeAs(agent: string, command: string, params?: unknown): Promise<unknown>;
   commands(): Promise<unknown>;
   docInspect(params?: unknown): Promise<unknown>;
 }
@@ -85,22 +87,26 @@ export class ControlClient {
   execute<C extends CommandId>(
     command: C,
     params?: CommandParams<C>,
-    opts?: CallOptions,
+    opts?: ExecuteOptions,
   ): Promise<unknown> {
     this.opts.onMutation?.();
-    return this.call('engine.execute', command, (f) => f.execute(command, params ?? {}), opts);
+    return this.run(command, params ?? {}, opts);
   }
 
   async batch(steps: readonly BatchStep[], opts?: BatchOptions): Promise<unknown[]> {
     this.opts.onMutation?.();
-    const params = clean({ label: opts?.label, commands: steps });
-    const r = await this.call<unknown>(
+    const r = await this.run('command.batch', clean({ label: opts?.label, commands: steps }), opts);
+    return Array.isArray(r) ? r : [r];
+  }
+
+  private run(command: string, params: unknown, opts: ExecuteOptions | undefined) {
+    const agent = opts?.agent;
+    return this.call<unknown>(
       'engine.execute',
-      'command.batch',
-      (f) => f.execute('command.batch', params),
+      command,
+      (f) => (agent ? f.executeAs(agent, command, params) : f.execute(command, params)),
       opts,
     );
-    return Array.isArray(r) ? r : [r];
   }
 
   async batchContinue(

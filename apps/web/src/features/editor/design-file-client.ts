@@ -140,16 +140,18 @@ export function holdEditLock(
     })
     .catch(() => onChange('error'));
 
+  const session = encodeURIComponent(sessionId);
   const release = () =>
-    fetch(`${api}?sessionId=${encodeURIComponent(sessionId)}&leave=1`, {
-      method: 'DELETE',
-      keepalive: true,
-    }).catch(() => {});
-  window.addEventListener('pagehide', release);
+    fetch(`${api}?sessionId=${session}&leave=1`, { method: 'DELETE', keepalive: true }).catch(
+      () => {},
+    );
+  // A beacon outlives the page; WebKit drops a keepalive DELETE sent while it unloads.
+  const leave = () => navigator.sendBeacon(`${api}/release?sessionId=${session}`);
+  window.addEventListener('pagehide', leave);
   return () => {
     stopped = true;
     clearInterval(timer);
-    window.removeEventListener('pagehide', release);
+    window.removeEventListener('pagehide', leave);
     pendingRelease.set(
       sessionId,
       setTimeout(() => {

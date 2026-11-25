@@ -235,3 +235,16 @@ test('editor: open from the projects list, edit, save, reopen', async ({
   fs.mkdirSync(path.dirname(out), { recursive: true });
   fs.writeFileSync(out, JSON.stringify(metrics, null, 2));
 });
+
+test('leaving the page releases the edit lock at once', async ({ as, run }) => {
+  const page = await as('editor');
+  const projectId = await createProject(page, run.org.slug, uniqueName('Leave'));
+  await expect(status(page)).toHaveAttribute('data-lock', 'held');
+  const lock = async () =>
+    JSON.parse((await pageFetch(page, `/api/projects/${projectId}/lock`)).body).lock;
+  expect(await lock()).not.toBeNull();
+  // A full navigation away (not the app's own link): the lock goes with the page, not after
+  // its time-to-live, so a colleague can edit straight away.
+  await page.goto(`/w/${run.org.slug}`);
+  await expect.poll(lock, { timeout: 5_000 }).toBeNull();
+});
