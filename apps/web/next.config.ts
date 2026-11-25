@@ -25,6 +25,7 @@ const nextConfig: NextConfig = {
     '@greenfield/agent',
     '@greenfield/sandbox-runner',
     '@greenfield/bridge',
+    '@greenfield/editor-state',
   ],
   serverExternalPackages: ['pg'],
   experimental: {

@@ -1,0 +1,27 @@
+{
+  "name": "@greenfield/editor-state",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./react": "./src/react.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p .",
+    "test": "vitest run",
+    "lint": "eslint src test scripts",
+    "record": "tsx scripts/record-events.ts",
+    "perf": "tsx scripts/perf.ts"
+  },
+  "dependencies": {
+    "@greenfield/bridge": "workspace:*"
+  },
+  "peerDependencies": {
+    "react": "^19"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.64.1",
+    "@types/react": "^19",
+    "react": "19.3.0"
+  }
+}

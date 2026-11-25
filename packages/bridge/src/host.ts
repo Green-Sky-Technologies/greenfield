@@ -6,13 +6,14 @@
  *   figcraft:dirty  editor → host  {dirty}
  *   figcraft:save   editor → host  {name, saveAs, bytes, id?}   (`figcraft:saved {id}` back)
  *   figcraft:failed editor → host  {error}
+ *   figcraft:event  editor → host  {name, data}             (Stories 2.3, 2.4, 2.11)
  *
  * A message is accepted only when `event.origin` is the host's own origin and `event.source` is
  * the editor iframe's window. Attach (`listen()`) before setting the iframe's `src`: ready is
  * posted once and never repeated. Bytes are never logged.
  */
 import { EditorFailedError, EditorNotReadyError } from './errors';
-import type { ReadyInfo, SaveEvent, Unsubscribe } from './types';
+import type { EditorEvent, ReadyInfo, SaveEvent, Unsubscribe } from './types';
 
 /** The parts of the host `window` the channel uses. */
 export interface HostWindowLike {
@@ -75,6 +76,7 @@ export class HostChannel {
   private readonly dirtyListeners = new Listeners<[boolean]>();
   private readonly saveListeners = new Listeners<[SaveEvent]>();
   private readonly failedListeners = new Listeners<[string]>();
+  private readonly eventListeners = new Listeners<[EditorEvent]>();
   private readyWaiters: { resolve(i: ReadyInfo): void; reject(e: Error): void }[] = [];
 
   constructor(private readonly opts: HostChannelOptions) {}
@@ -106,6 +108,7 @@ export class HostChannel {
     this.readyInfo = null;
     for (const l of [this.readyListeners, this.dirtyListeners, this.saveListeners]) l.clear();
     this.failedListeners.clear();
+    this.eventListeners.clear();
     const waiters = this.readyWaiters;
     this.readyWaiters = [];
     for (const w of waiters) w.reject(new EditorNotReadyError('ready', 'the bridge was disposed'));
@@ -137,6 +140,9 @@ export class HostChannel {
   }
   onFailed(cb: (error: string) => void): Unsubscribe {
     return this.failedListeners.add(cb);
+  }
+  onEvent(cb: (e: EditorEvent) => void): Unsubscribe {
+    return this.eventListeners.add(cb);
   }
 
   /** Send a document. The bytes are copied (the copy is transferred), never detached. */
@@ -175,6 +181,9 @@ export class HostChannel {
         this.readyListeners.emit(info);
         return;
       }
+      case 'figcraft:event':
+        if (typeof m.name === 'string') this.eventListeners.emit({ name: m.name, data: m.data });
+        return;
       case 'figcraft:dirty':
         if (typeof m.dirty === 'boolean') this.dirtyListeners.emit(m.dirty);
         return;

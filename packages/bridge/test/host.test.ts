@@ -87,6 +87,15 @@ describe('HostChannel', () => {
     expect(seen).toEqual([true, false]);
   });
 
+  it('reports editor events with their data, and ignores ones without a name', () => {
+    const { channel, deliver } = setup();
+    const seen: unknown[] = [];
+    channel.onEvent((e) => seen.push(e));
+    deliver({ type: 'figcraft:event', name: 'selection.changed', data: { ids: [2] } });
+    deliver({ type: 'figcraft:event', data: { ids: [3] } });
+    expect(seen).toEqual([{ name: 'selection.changed', data: { ids: [2] } }]);
+  });
+
   it('delivers saves as bytes and acknowledges ones with an id after the listeners finish', async () => {
     const { channel, deliver, posted } = setup();
     deliver(ready);

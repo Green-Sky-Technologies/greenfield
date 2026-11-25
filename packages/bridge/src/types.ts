@@ -45,8 +45,8 @@ export interface DocumentInfo {
   dirty: boolean;
   currentPage: NodeId;
   selection: NodeId[];
-  /** The last 20 undo labels and the redo count. */
-  history: { undo: string[]; redo: number };
+  /** The last 20 undo labels, the redo count and (from the fork) the full undo depth. */
+  history: { undo: string[]; redo: number; undoDepth?: number };
   /** The current page's tree to `depth`; other pages summarised unless `allPages`. */
   pages: EditorNode[];
   [key: string]: unknown;
@@ -101,6 +101,17 @@ export interface SaveEvent {
   saveAs: boolean;
   /** Present once the editor acknowledges saves; the bridge answers `figcraft:saved`. */
   id?: unknown;
+}
+
+/**
+ * An editor event (Stories 2.3, 2.4, 2.11): `{type: 'figcraft:event', name, data}` posted by the
+ * editor, e.g. `selection.changed {document, page, ids}`, `document.changed {document, revision,
+ * undoDepth}`, `canvas.mode {on}`, `agent.presence`, `ui.request`. `data` is the editor's, unparsed:
+ * `@greenfield/editor-state` reads it.
+ */
+export interface EditorEvent {
+  name: string;
+  data: unknown;
 }
 
 /** What changed since the last snapshot (two-tier detector, Story 0.4 (b)). */
@@ -165,6 +176,8 @@ export interface Editor {
   onSave(cb: (e: SaveEvent) => void | Promise<void>): Unsubscribe;
   /** The editor couldn't start. */
   onFailed(cb: (error: string) => void): Unsubscribe;
+  /** Every editor event (`figcraft:event`), in the order the editor posted them. */
+  onEvent(cb: (e: EditorEvent) => void): Unsubscribe;
   /** Open a document (`figcraft:open`). The bytes are copied, never transferred away. */
   open(name: string, bytes: Uint8Array | ArrayBuffer): void;
   /** Press Save (Cmd+S on a Mac, Ctrl+S elsewhere); the file arrives through `onSave`. */
