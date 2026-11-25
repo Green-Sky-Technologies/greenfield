@@ -24,6 +24,7 @@
     "@greenfield/contracts": "workspace:*",
     "@greenfield/crypto": "workspace:*",
     "@greenfield/db": "workspace:*",
+    "@greenfield/editor-state": "workspace:*",
     "@greenfield/providers": "workspace:*",
     "@greenfield/sandbox-runner": "workspace:*",
     "@vercel/blob": "^2.8.2",

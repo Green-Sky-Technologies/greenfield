@@ -46,8 +46,8 @@ export interface DocumentInfo {
   dirty: boolean;
   currentPage: NodeId;
   selection: NodeId[];
-  /** The last 20 undo labels and the redo count. */
-  history: { undo: string[]; redo: number };
+  /** The last 20 undo labels, the redo count and (from the fork) the full undo depth. */
+  history: { undo: string[]; redo: number; undoDepth?: number };
   /** The current page's tree to `depth`; other pages summarised unless `allPages`. */
   pages: EditorNode[];
   [key: string]: unknown;
