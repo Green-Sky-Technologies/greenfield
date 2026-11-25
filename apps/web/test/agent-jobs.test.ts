@@ -119,7 +119,7 @@ describe('agent jobs (Story 4.5)', () => {
     const runner = new VercelSandboxRunner({
       appUrl: 'https://app.example.com',
       api,
-      prepare: (j) => prepareAgentJob(db, s.storage, j, {}),
+      prepare: (j) => prepareAgentJob(db, s.storage, j, {}, {}),
     });
     expect(await startJob(db, job.id, { runner })).toMatchObject({ status: 'failed' });
     expect((await getJob(db, s.editor, job.id)).error).toContain('figcraft-cli');

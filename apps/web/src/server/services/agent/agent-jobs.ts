@@ -140,10 +140,11 @@ export async function prepareAgentJob(
   storage: DesignFileStorage,
   job: StartJob,
   env: Record<string, string | undefined> = process.env,
+  release?: { cli?: Partial<CliPin> },
 ): Promise<PreparedJob> {
   if (!isAgentJob(job.kind))
     throw new AgentUnavailableError(`${job.kind} jobs are not available yet.`);
-  const cli = editorCliPin(env);
+  const cli = editorCliPin(env, release);
   if (!cli)
     throw new AgentUnavailableError(
       'Agent jobs need the headless editor (a Linux figcraft-cli pinned in editor-release.json), which this deployment does not have yet.',
