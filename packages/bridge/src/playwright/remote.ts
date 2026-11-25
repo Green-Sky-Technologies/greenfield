@@ -6,6 +6,7 @@
  */
 import type { Frame, Page } from '@playwright/test';
 import type { BatchStep, CommandId, CommandParams } from '../commands';
+import type { EditorEvent } from '../events';
 import {
   BridgeError,
   CommandError,
@@ -24,7 +25,6 @@ import type {
   CommandInfo,
   DocumentInfo,
   Editor,
-  EditorEvent,
   EditorNode,
   GetNodeOptions,
   InspectOptions,
@@ -97,8 +97,8 @@ export type HostEvent =
   | { type: 'dirty'; payload: boolean }
   | { type: 'save'; payload: { name: string; saveAs: boolean; bytes: string; id?: unknown } }
   | { type: 'failed'; payload: string }
-  | { type: 'change'; payload: ChangeSet }
   | { type: 'event'; payload: EditorEvent }
+  | { type: 'change'; payload: ChangeSet }
   | { type: 'error'; payload: string };
 
 export class RemoteEditor implements Editor {
@@ -108,14 +108,16 @@ export class RemoteEditor implements Editor {
   private readonly dirtyCbs = new Emitter<boolean>();
   private readonly saveCbs = new Emitter<SaveEvent>();
   private readonly failedCbs = new Emitter<string>();
-  private readonly changeCbs = new Emitter<ChangeSet>();
   private readonly eventCbs = new Emitter<EditorEvent>();
+  private readonly changeCbs = new Emitter<ChangeSet>();
   private queue: Promise<unknown> = Promise.resolve();
   private platformCache: KeyPlatform | undefined;
   /** Every `figcraft:save` so far (tests often just need the last one). */
   readonly saves: SaveEvent[] = [];
   /** Every dirty flag the editor reported. */
   readonly dirtyLog: boolean[] = [];
+  /** Every `figcraft:event` so far, in order. */
+  readonly events: EditorEvent[] = [];
   /** Detector errors reported by the host page. */
   readonly errors: string[] = [];
 
@@ -146,11 +148,12 @@ export class RemoteEditor implements Editor {
       case 'failed':
         this.failedCbs.emit(e.payload);
         break;
+      case 'event':
+        this.events.push(e.payload);
+        this.eventCbs.emit(e.payload);
+        break;
       case 'change':
         this.changeCbs.emit(e.payload);
-        break;
-      case 'event':
-        this.eventCbs.emit(e.payload);
         break;
       case 'error':
         this.errors.push(e.payload);
@@ -239,6 +242,9 @@ export class RemoteEditor implements Editor {
   onFailed(cb: (error: string) => void): Unsubscribe {
     return this.failedCbs.add(cb);
   }
+  onEvent(cb: (e: EditorEvent) => void): Unsubscribe {
+    return this.eventCbs.add(cb);
+  }
   open(name: string, bytes: Uint8Array | ArrayBuffer): void {
     const b = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
     // Queued: later calls see the open. Errors surface on the next call's `await`.
@@ -307,34 +313,6 @@ export class RemoteEditor implements Editor {
         void this.page
           .evaluate(() =>
             (window as Window & { __bridgeChangeOff?: () => void }).__bridgeChangeOff?.(),
-          )
-          .catch(() => undefined);
-      }
-    };
-  }
-  onEvent(cb: (e: EditorEvent) => void): Unsubscribe {
-    const first = this.eventCbs.size === 0;
-    const off = this.eventCbs.add(cb);
-    if (first) {
-      void this.page
-        .evaluate(() => {
-          const w = window as Window & {
-            __bridgeEventOff?: () => void;
-            __greenfieldBridgeEvent?: (type: string, payload: unknown) => void;
-          };
-          w.__bridgeEventOff?.();
-          w.__bridgeEventOff = w.__greenfieldBridge!.editor.onEvent((e) =>
-            w.__greenfieldBridgeEvent?.('event', e),
-          );
-        })
-        .catch(() => undefined);
-    }
-    return () => {
-      off();
-      if (this.eventCbs.size === 0) {
-        void this.page
-          .evaluate(() =>
-            (window as Window & { __bridgeEventOff?: () => void }).__bridgeEventOff?.(),
           )
           .catch(() => undefined);
       }

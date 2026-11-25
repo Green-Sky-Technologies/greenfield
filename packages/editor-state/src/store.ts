@@ -1,6 +1,7 @@
 /**
  * `EditorStore`: the one store the panels read (Story 5.6). Fed only by the bridge's events (and
- * the reads in `reads.ts`), written only through the bridge: `run`, `batch` and `gesture`.
+ * the full reads on open in `reads.ts`), written only through the bridge: `run`, `batch` and
+ * `gesture`.
  *
  *   const store = new EditorStore();
  *   const disconnect = store.connect(editor);  // when the bridge exists
@@ -26,7 +27,6 @@ export class EditorStore {
   private state: EditorState;
   private readonly listeners = new Set<() => void>();
   private editor: Editor | null = null;
-  private reads: EditorReads | null = null;
 
   constructor(initial: Partial<EditorState> = {}) {
     this.state = { ...INITIAL_STATE, ...initial };
@@ -54,7 +54,6 @@ export class EditorStore {
   connect(editor: Editor): Unsubscribe {
     this.editor = editor;
     const reads = new EditorReads(editor, this);
-    this.reads = reads;
     const offs = [
       editor.onEvent((e) => {
         const action = fromEditorEvent(e);
@@ -67,10 +66,7 @@ export class EditorStore {
     ];
     return () => {
       for (const off of offs) off();
-      if (this.editor === editor) {
-        this.editor = null;
-        this.reads = null;
-      }
+      if (this.editor === editor) this.editor = null;
     };
   }
 
@@ -80,10 +76,8 @@ export class EditorStore {
   }
 
   /** Run one command. */
-  async run<C extends CommandId>(command: C, params?: CommandParams<C>): Promise<unknown> {
-    const result = await this.connected(command).execute(command, params);
-    this.reads?.afterRun(command);
-    return result;
+  run<C extends CommandId>(command: C, params?: CommandParams<C>): Promise<unknown> {
+    return this.connected(command).execute(command, params);
   }
 
   /** Several commands as one undo step. */

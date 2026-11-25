@@ -233,40 +233,6 @@ describe('keys and focus', () => {
     await press(document.body, { key: '\\', code: 'Backslash', [mod]: true });
     expect(panel.hidden).toBe(false);
   });
-});
-
-describe('panels read the editor store', () => {
-  it('a selection on the canvas shows in the Layers and Design stubs', async () => {
-    await mount();
-    await act(async () => {
-      await editor.userExecute('node.create', { type: 'frame', name: 'Hero' });
-    });
-    const doc = await editor.inspect({ depth: 0, fields: [] });
-    await act(async () => {
-      editor.postEvent('selection.changed', {
-        document: doc.id,
-        page: doc.currentPage,
-        ids: doc.selection,
-      });
-      editor.postEvent('document.changed', { document: doc.id, revision: 2, undoDepth: 1 });
-    });
-    await act(async () => {}); // the reads the ids-only events need
-    expect($('[data-testid="layers-summary"]')!.textContent).toContain('1 layers · 1 selected');
-    expect($('[data-testid="design-tab-name"]')!.textContent).toBe('Hero');
-    expect(document.activeElement).not.toBe(null);
-  });
-
-  it('"Editor panels" turns canvas mode off; ours hide until it comes back on', async () => {
-    await mount();
-    await act(async () => byName('Use editor panels')!.click());
-    expect(executed).toContain('view.canvasMode');
-    await act(async () => editor.postEvent('canvas.mode', { on: false }));
-    expect($('aside[aria-label="Left panel"]')!.hidden).toBe(true);
-    expect($('aside[aria-label="Edit panel"]')!.hidden).toBe(true);
-    expect(byName('Use editor panels')!.getAttribute('aria-pressed')).toBe('true');
-    await act(async () => editor.postEvent('canvas.mode', { on: true }));
-    expect($('aside[aria-label="Edit panel"]')!.hidden).toBe(false);
-  });
 
   it('routes the platform Save chord in the shell to the editor', async () => {
     await mount();
@@ -279,5 +245,49 @@ describe('panels read the editor store', () => {
     });
     expect(e.defaultPrevented).toBe(true);
     expect(save).toHaveBeenCalledOnce();
+  });
+});
+
+describe('panels read the editor store', () => {
+  it('a selection on the canvas shows in the Layers and Design stubs', async () => {
+    await mount();
+    const doc = await editor.inspect({ depth: 0, fields: [] });
+    const hero = { id: 2, name: 'Hero', type: 'FRAME', x: 40, y: 0, width: 320, height: 200 };
+    // What the editor posts when a frame is drawn and selected (Story 2.3 payloads).
+    await act(async () => {
+      editor.emitEvent({
+        name: 'document.changed',
+        data: {
+          document: doc.id,
+          revision: 2,
+          undoDepth: 1,
+          agent: null,
+          resync: false,
+          nodes: [hero],
+          added: [{ id: 2, parent: doc.currentPage, index: 0 }],
+          removed: [],
+          moved: [],
+        },
+      });
+      editor.emitEvent({
+        name: 'selection.changed',
+        data: { document: doc.id, page: doc.currentPage, ids: [2], nodes: [hero] },
+      });
+    });
+    expect($('[data-testid="layers-summary"]')!.textContent).toContain('1 layers · 1 selected');
+    expect($('[data-testid="design-tab-name"]')!.textContent).toBe('Hero');
+    expect($('[data-testid="design-width"]')!.textContent).toBe('320');
+  });
+
+  it('"Editor panels" turns canvas mode off; ours hide until it comes back on', async () => {
+    await mount();
+    await act(async () => byName('Use editor panels')!.click());
+    expect(executed).toContain('view.canvasMode');
+    await act(async () => editor.emitEvent({ name: 'canvas.mode', data: { on: false } }));
+    expect($('aside[aria-label="Left panel"]')!.hidden).toBe(true);
+    expect($('aside[aria-label="Edit panel"]')!.hidden).toBe(true);
+    expect(byName('Use editor panels')!.getAttribute('aria-pressed')).toBe('true');
+    await act(async () => editor.emitEvent({ name: 'canvas.mode', data: { on: true } }));
+    expect($('aside[aria-label="Edit panel"]')!.hidden).toBe(false);
   });
 });

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import {
-  diffTrees,
   INITIAL_STATE,
   patchTree,
   reduce,
@@ -138,25 +137,21 @@ function forkPatch(from: PageTree, to: PageTree): TreePatch {
 }
 
 describe('patchTree', () => {
-  for (const [name, patchOf] of [
-    ['diffTrees (the ids-only adapter)', diffTrees],
-    ['the fork’s own patches', forkPatch],
-  ] as const)
-    it(`gives the same tree as a full read over 2,000 random edits: ${name}`, () => {
-      const rand = rng(7);
-      let id = 100;
-      let layers: RawNode[] = [
-        { id: 2, name: 'Home', type: 'FRAME', children: [{ id: 3, name: 'Nav', type: 'FRAME' }] },
-        { id: 4, name: 'Pricing', type: 'FRAME' },
-      ];
-      let tree = page(layers);
-      for (let i = 0; i < 2000; i++) {
-        layers = mutate(layers, rand, () => ++id);
-        const full = page(layers);
-        tree = patchTree(tree, patchOf(tree, full));
-        expect(snapshot(tree), `edit ${i}`).toEqual(snapshot(full));
-      }
-    });
+  it('gives the same tree as a full read over 2,000 random edits', () => {
+    const rand = rng(7);
+    let id = 100;
+    let layers: RawNode[] = [
+      { id: 2, name: 'Home', type: 'FRAME', children: [{ id: 3, name: 'Nav', type: 'FRAME' }] },
+      { id: 4, name: 'Pricing', type: 'FRAME' },
+    ];
+    let tree = page(layers);
+    for (let i = 0; i < 2000; i++) {
+      layers = mutate(layers, rand, () => ++id);
+      const full = page(layers);
+      tree = patchTree(tree, forkPatch(tree, full));
+      expect(snapshot(tree), `edit ${i}`).toEqual(snapshot(full));
+    }
+  });
 
   const tree = page([
     { id: 1, name: 'Card', type: 'FRAME', children: [{ id: 2, name: 'Title', type: 'TEXT' }] },

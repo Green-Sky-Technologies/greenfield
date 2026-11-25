@@ -93,11 +93,3 @@ export function fromEditorEvent({ name, data }: EditorEvent): EditorAction | nul
   }
   return null;
 }
-
-/** Whether a `selection.changed` carries the selected layers' fields (Story 2.3 payloads). */
-export const hasSelectionFields = (a: EditorAction): boolean =>
-  a.type === 'selection.changed' && a.nodes !== undefined;
-
-/** Whether a `document.changed` carries what changed (Story 2.3 payloads). */
-export const hasDocumentPatch = (a: EditorAction): boolean =>
-  a.type === 'document.changed' && a.nodes !== undefined;

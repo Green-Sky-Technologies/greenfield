@@ -132,8 +132,8 @@ export interface Placement {
 }
 
 /**
- * `document.changed`. Today's editor sends `{document, revision, undoDepth}` only; the store's
- * reads fill in the rest until the fork's payloads land (lane W1-A).
+ * `document.changed`: apply `removed`, take `moved` out, then insert `added` and `moved` in
+ * ascending `index` (`patchTree`).
  */
 export interface DocumentChanged {
   type: 'document.changed';
@@ -156,7 +156,7 @@ export interface SelectionChanged {
   document: number;
   page: NodeId;
   ids: NodeId[];
-  /** The selected layers' fields; today's editor sends ids only. */
+  /** The selected layers' fields (`node.get` at depth 0). */
   nodes?: NodeFields[];
 }
 

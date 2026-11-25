@@ -13,10 +13,6 @@ export const EMPTY_TREE: PageTree = { page: null, nodes: new Map(), roots: [], r
 
 /** The fields a tree node keeps; anything else in a patch only matters to `nodes`. */
 const TREE_FIELDS = ['name', 'type', 'visible', 'locked'] as const;
-const DEFAULTS: Partial<Record<(typeof TREE_FIELDS)[number], unknown>> = {
-  visible: true,
-  locked: false,
-};
 
 function componentMark(type: string): TreeNode['component'] {
   if (type === 'COMPONENT') return 'main';
@@ -177,48 +173,4 @@ export function visibleRows(
     out.push(r);
   }
   return out;
-}
-
-/**
- * The patch that turns `from` into `to` (the same page), in the editor's `document.changed`
- * shape. The store uses it while the editor sends ids only (`reads.ts`); tests use it to check
- * that patching gives the same tree as a full read.
- */
-export function diffTrees(
-  from: PageTree,
-  to: PageTree,
-): { nodes: NodeFields[]; added: Placement[]; removed: Placement[]; moved: Placement[] } {
-  const nodes: NodeFields[] = [];
-  const added: Placement[] = [];
-  const removed: Placement[] = [];
-  const moved: Placement[] = [];
-  const siblings = (t: PageTree, parent: NodeId) =>
-    parent === t.page ? t.roots : (t.nodes.get(parent)?.children ?? []);
-  for (const [id, n] of from.nodes)
-    if (!to.nodes.has(id))
-      removed.push({ id, parent: n.parent, index: siblings(from, n.parent).indexOf(id) });
-  const visit = (parent: NodeId, ids: readonly NodeId[]) => {
-    const before = siblings(from, parent).filter((id) => to.nodes.get(id)?.parent === parent);
-    const kept = ids.filter((id) => from.nodes.get(id)?.parent === parent);
-    // Children that came in from elsewhere, or a changed order among the ones that stayed: list
-    // every child, which the editor's rule puts back in the right order whatever came before.
-    const reorder =
-      kept.join() !== before.join() ||
-      ids.some((id) => from.nodes.has(id) && from.nodes.get(id)!.parent !== parent);
-    ids.forEach((id, index) => {
-      const n = to.nodes.get(id)!;
-      const old = from.nodes.get(id);
-      const diff: Record<string, unknown> = {};
-      // As `node.get` reports a layer: no `visible` or `locked` at their defaults (`null`: gone).
-      for (const k of TREE_FIELDS)
-        if (old?.[k] !== n[k]) diff[k] = n[k] === DEFAULTS[k] ? (old ? null : undefined) : n[k];
-      if (!old) added.push({ id, parent, index });
-      else if (reorder) moved.push({ id, parent, index });
-      const set = Object.entries(diff).filter(([, v]) => v !== undefined);
-      if (set.length) nodes.push({ id, ...Object.fromEntries(set) });
-      visit(id, n.children);
-    });
-  };
-  if (to.page !== null) visit(to.page, to.roots);
-  return { nodes, added, removed, moved };
 }

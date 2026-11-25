@@ -5,10 +5,10 @@
  *   PERF=1 pnpm --filter @greenfield/web e2e:editor --project=chromium canvas-perf
  *
  * Measured in the page with `performance.now()` around `EditorStore.dispatch` (the reducer, the
- * tree patch and the row model's rebuild), for the `document.changed` payloads the editor will
- * send (lane W1-A), 200 runs each. Also: the full read on open (what every edit cost before
- * patches: ADR 0005's 64 ms at 5,002 layers), and today's ids-only path end to end (a rename
- * through the bridge until the store has it). Results go to stdout and the test's attachments.
+ * tree patch and the row model's rebuild), for `document.changed` payloads shaped like the
+ * editor's, 200 runs each. Also: the full read on open (what every edit cost before patches: ADR
+ * 0005's 64 ms at 5,002 layers), and a rename end to end (through the bridge until the editor's
+ * event has reached the store). Results go to stdout and the test's attachments.
  */
 import { openEditor } from '@greenfield/bridge/playwright';
 import { ref, type BatchStep } from '@greenfield/bridge';
@@ -21,7 +21,11 @@ const PER_FRAME = 500;
 test.skip(!process.env.PERF, 'perf run only: PERF=1');
 test.setTimeout(30 * 60_000);
 
-test('a 30,000-layer page: store and row model per update', async ({ as, run }, testInfo) => {
+test('a 30,000-layer page: store and row model per update', async ({
+  as,
+  run,
+  problems,
+}, testInfo) => {
   const page = await as('editor');
   const projectId = await createProject(page, run.org.slug, uniqueName('Perf'));
   const editor = await openEditor(page, { hostPath: `/w/${run.org.slug}/p/${projectId}` });
@@ -118,7 +122,7 @@ test('a 30,000-layer page: store and row model per update', async ({ as, run }, 
     });
     out['full read on open (editor reply)'] = +readMs.toFixed(1);
     out['full build on open (store)'] = +(performance.now() - tBuild).toFixed(1);
-    // Today's ids-only path: a rename through the bridge until the store has it.
+    // End to end: a rename through the bridge until the editor's event has reached the store.
     const id = store.getState().tree.rows[5]!.id;
     const tRename = performance.now();
     const seen = new Promise<number>((resolve) => {
@@ -130,10 +134,13 @@ test('a 30,000-layer page: store and row model per update', async ({ as, run }, 
       });
     });
     await bridge.execute('node.set', { ids: [id], name: 'Renamed' });
-    out['ids-only rename to store (today, with the re-read)'] = +(await seen).toFixed(1);
+    out['rename: bridge call to store updated'] = +(await seen).toFixed(1);
     return out;
   });
   const report = { browser: testInfo.project.name, generateMs, ...result };
   console.log(JSON.stringify(report, null, 1));
   await testInfo.attach('perf.json', { body: JSON.stringify(report, null, 1) });
+  // Clerk's FAPI retries fail CORS in Playwright WebKit now and then (see editor.spec.ts).
+  const noise = /clerk\.accounts\.dev.*access control checks/;
+  problems.splice(0, problems.length, ...problems.filter((p) => !noise.test(p)));
 });

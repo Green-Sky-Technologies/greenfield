@@ -6,12 +6,5 @@ export { fromEditorEvent } from './events';
 export { Gesture, type PreviewCommand } from './gesture';
 export { INITIAL_STATE, reduce } from './reducer';
 export { EditorStore } from './store';
-export {
-  diffTrees,
-  EMPTY_TREE,
-  patchTree,
-  treeFromLayers,
-  visibleRows,
-  type TreePatch,
-} from './tree';
+export { EMPTY_TREE, patchTree, treeFromLayers, visibleRows, type TreePatch } from './tree';
 export type * from './types';

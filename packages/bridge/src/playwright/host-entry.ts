@@ -39,6 +39,7 @@ function send(type: string, payload: unknown) {
 editor.onReady((info) => send('ready', info));
 editor.onDirty((dirty) => send('dirty', dirty));
 editor.onFailed((error) => send('failed', error));
+editor.onEvent((e) => send('event', e));
 editor.onSave((e) =>
   send('save', { name: e.name, saveAs: e.saveAs, bytes: bytesToBase64(e.bytes), id: e.id }),
 );

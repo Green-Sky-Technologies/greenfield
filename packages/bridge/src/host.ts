@@ -6,14 +6,15 @@
  *   figcraft:dirty  editor → host  {dirty}
  *   figcraft:save   editor → host  {name, saveAs, bytes, id?}   (`figcraft:saved {id}` back)
  *   figcraft:failed editor → host  {error}
- *   figcraft:event  editor → host  {name, data}             (Stories 2.3, 2.4, 2.11)
+ *   figcraft:event  editor → host  {name, data}   (`EditorEvent`, src/events.ts)
  *
  * A message is accepted only when `event.origin` is the host's own origin and `event.source` is
  * the editor iframe's window. Attach (`listen()`) before setting the iframe's `src`: ready is
  * posted once and never repeated. Bytes are never logged.
  */
 import { EditorFailedError, EditorNotReadyError } from './errors';
-import type { EditorEvent, ReadyInfo, SaveEvent, Unsubscribe } from './types';
+import { editorEvent, type EditorEvent } from './events';
+import type { ReadyInfo, SaveEvent, Unsubscribe } from './types';
 
 /** The parts of the host `window` the channel uses. */
 export interface HostWindowLike {
@@ -181,9 +182,6 @@ export class HostChannel {
         this.readyListeners.emit(info);
         return;
       }
-      case 'figcraft:event':
-        if (typeof m.name === 'string') this.eventListeners.emit({ name: m.name, data: m.data });
-        return;
       case 'figcraft:dirty':
         if (typeof m.dirty === 'boolean') this.dirtyListeners.emit(m.dirty);
         return;
@@ -205,6 +203,11 @@ export class HostChannel {
         } else {
           for (const r of results) if (r instanceof Promise) r.catch(report);
         }
+        return;
+      }
+      case 'figcraft:event': {
+        const e = editorEvent(m.name, m.data);
+        if (e) this.eventListeners.emit(e);
         return;
       }
       case 'figcraft:failed': {

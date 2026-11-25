@@ -28,6 +28,7 @@ import {
   EditorNotReadyError,
   NoDocumentError,
 } from './errors';
+import type { EditorEvent } from './events';
 import { COMMANDS, EDITOR_VERSION, NODE_FIELDS, NODE_SET_PROPS } from './generated/commands';
 import { saveKey, type KeyPlatform } from './platform';
 import { base64ToBytes, TINY_PNG_BASE64 } from './png';
@@ -40,7 +41,6 @@ import type {
   CommandInfo,
   DocumentInfo,
   Editor,
-  EditorEvent,
   EditorNode,
   GetNodeOptions,
   InspectOptions,
@@ -185,9 +185,9 @@ export class MockEditor implements Editor {
     this.failedCbs.emit(error);
   }
 
-  /** Post an editor event (`figcraft:event`), e.g. a recorded `selection.changed`. */
-  postEvent(name: string, data: unknown): void {
-    this.eventCbs.emit({ name, data });
+  /** Post a `figcraft:event` (the mock never posts one on its own). */
+  emitEvent(e: EditorEvent): void {
+    this.eventCbs.emit(e);
   }
 
   /** Pretend the tab was hidden or shown (`visibilitychange`). */

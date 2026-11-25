@@ -62,6 +62,14 @@ export {
   type NodeField,
   type NodeProps,
 } from './generated/commands';
+export {
+  editorEvent,
+  type EditorEvent,
+  type EditorEventMap,
+  type EditorEventName,
+  type NodeChange,
+  type NodePlace,
+} from './events';
 export { HostChannel, type HostChannelOptions } from './host';
 export {
   blurEditor,

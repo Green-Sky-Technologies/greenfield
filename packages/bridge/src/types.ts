@@ -4,6 +4,7 @@
  * all implement `Editor`.
  */
 import type { BatchStep, CommandId, CommandParams } from './commands';
+import type { EditorEvent } from './events';
 import type { NodeField } from './generated/commands';
 
 /** A layer or page id. Ids are numbers, unique within a document. */
@@ -103,17 +104,6 @@ export interface SaveEvent {
   id?: unknown;
 }
 
-/**
- * An editor event (Stories 2.3, 2.4, 2.11): `{type: 'figcraft:event', name, data}` posted by the
- * editor, e.g. `selection.changed {document, page, ids}`, `document.changed {document, revision,
- * undoDepth}`, `canvas.mode {on}`, `agent.presence`, `ui.request`. `data` is the editor's, unparsed:
- * `@greenfield/editor-state` reads it.
- */
-export interface EditorEvent {
-  name: string;
-  data: unknown;
-}
-
 /** What changed since the last snapshot (two-tier detector, Story 0.4 (b)). */
 export interface ChangeSet {
   added: NodeId[];
@@ -176,7 +166,10 @@ export interface Editor {
   onSave(cb: (e: SaveEvent) => void | Promise<void>): Unsubscribe;
   /** The editor couldn't start. */
   onFailed(cb: (error: string) => void): Unsubscribe;
-  /** Every editor event (`figcraft:event`), in the order the editor posted them. */
+  /**
+   * The editor's events (`figcraft:event`): selection, document patches, tool, text editing,
+   * viewport, interaction, presence, canvas mode and `ui.request`. Narrow on `e.name`.
+   */
   onEvent(cb: (e: EditorEvent) => void): Unsubscribe;
   /** Open a document (`figcraft:open`). The bytes are copied, never transferred away. */
   open(name: string, bytes: Uint8Array | ArrayBuffer): void;

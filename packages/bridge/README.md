@@ -4,7 +4,8 @@ The only way app code talks to the editor (SPEC §1, D21; Story 1.3). A typed cl
 embedded FigCraft editor's two channels:
 
 - **Host messages** (`?host=parent`, postMessage): `figcraft:ready`, `open`, `dirty`, `save`,
-  `failed`.
+  `failed`, and `figcraft:event` (`onEvent`: selection, document patches, tool, text editing,
+  viewport, interaction, presence, canvas mode, `ui.request`; shapes in `src/events.ts`).
 - **Control** (`?control`, the same-origin iframe's `window.figcraft`): commands,
   `document.inspect`, `node.get`, `ui.render`, `engine.commands`.
 
@@ -18,8 +19,9 @@ interface (`src/types.ts`):
 | `RemoteEditor` / `test` fixture | `@greenfield/bridge/playwright` | Playwright tests against the real editor |
 
 Pinned editor: **figcraft-web 0.18.1**, set once in [`editor-release.json`](editor-release.json)
-(`version`, the download `url` and the `sha256` of the zip). The `figcraft-web` workflow publishes
-our fork's build as a release on every push to `main` (tag `editor-<short sha>`) and prints the three
+(`version`, the download `url` and the `sha256` of the zip). Our fork,
+[`Green-Sky-Technologies/greenfield-editor`](https://github.com/Green-Sky-Technologies/greenfield-editor),
+publishes a release on every push to its `main` (tag `editor-<short sha>`) and prints the three
 pin values in the run summary. `node apps/web/scripts/fetch-editor.mjs` downloads the pinned release into `apps/web/public/editor`; the
 generated `EDITOR_VERSION` and `EDITOR_RELEASE_SHA256` must match it (`test/csp.test.ts` fails
 otherwise). To upgrade, change the pin, fetch, then `generate`.
@@ -62,6 +64,7 @@ Lifecycle and host messages
 | `onReady(cb)`        | once per load; called at once if already ready                                                                                                                                                                         |
 | `onDirty(cb)`        | unsaved changes appeared / went away                                                                                                                                                                                   |
 | `onSave(cb)`         | `{name, bytes, saveAs, id?}` for every file the editor hands over (Save, Save As, exports). Return a promise: when the editor sends an `id` (a future fork patch) the bridge answers `figcraft:saved` after it settles |
+| `onEvent(cb)`        | `figcraft:event`, typed `EditorEvent` narrowed on `name` (`src/events.ts`); at most once a frame each. Panels read these, never poll (ADR 0005)                                                                        |
 | `onFailed(cb)`       | the editor couldn't start (no WebGPU or WebGL2)                                                                                                                                                                        |
 | `open(name, bytes)`  | `figcraft:open`. The bytes are copied, never transferred away from the caller. Applies on a later frame (poll `inspect()` for the new document)                                                                        |
 | `save()`             | presses Save the way the platform does: Cmd+S when the user agent is a Mac, Ctrl+S elsewhere (`ui.key {ctrl}` on a Mac is the Control key and saves nothing)                                                           |
