@@ -65,6 +65,7 @@ describe('design system model (10.1)', () => {
     expect(version.items.map((i) => `${i.kind}:${i.name}`)).toEqual([
       'colours:Ink and paper',
       'colours:Accents',
+      'spacing:Spacing',
       'type:display/xl',
       'type:heading/m',
       'type:body/m',
@@ -142,6 +143,7 @@ describe('review (10.3)', () => {
 
     expect(published.summary!.map((i) => i.name)).toEqual([
       'Ink and paper',
+      'Spacing',
       'display/xl',
       'body/m',
       'Input',
@@ -153,7 +155,7 @@ describe('review (10.3)', () => {
     expect(libraryItems(file.doc)).toEqual(published.summary);
     const vars = file.doc.variables!.variables!;
     expect(vars.map((v) => v.name)).not.toContain('rubric/500');
-    // The spacing collection had no colours to review: it stays.
+    // The spacing scale was kept: it stays.
     expect(file.doc.variables!.collections!.map((c) => c.name)).toEqual([
       'Ink and paper',
       'Spacing',
@@ -257,6 +259,7 @@ describe('publish and default (10.4)', () => {
     expect(doc.current_page).toBe(doc.pages[0]);
     expect(libraryItems(doc).map((i) => i.name)).toEqual([
       'Ink and paper',
+      'Spacing',
       'display/xl',
       'heading/m',
       'body/m',

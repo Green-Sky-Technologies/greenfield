@@ -26,6 +26,7 @@ interface Props {
 
 const SECTIONS = [
   { kind: 'colours', title: 'Colours' },
+  { kind: 'spacing', title: 'Spacing and scales' },
   { kind: 'type', title: 'Type styles' },
   { kind: 'component', title: 'Components' },
 ] as const;
@@ -235,6 +236,8 @@ function meta(item: DesignSystemItem): string {
   switch (item.kind) {
     case 'colours':
       return `${item.colours.length} value${item.colours.length === 1 ? '' : 's'}`;
+    case 'spacing':
+      return `${item.values.length} step${item.values.length === 1 ? '' : 's'}`;
     case 'type':
       return `${item.fontFamily} ${item.fontStyle} · ${item.fontSize}`;
     case 'component':
@@ -254,6 +257,22 @@ function Preview({ item }: { item: DesignSystemItem }) {
                 style={{ background: c.hex ?? 'transparent' }}
               />
               <span className="mt-1 block truncate font-mono text-[11px] text-muted">{c.name}</span>
+            </li>
+          ))}
+        </ul>
+      );
+    case 'spacing':
+      return (
+        <ul className="flex flex-wrap items-end gap-3">
+          {item.values.map((v) => (
+            <li key={v.name} className="flex flex-col items-start gap-1">
+              <span
+                className="block h-3 bg-muted"
+                style={{ width: Math.min(Math.max(v.value, 2), 160) }}
+              />
+              <span className="font-mono text-[11px] text-muted">
+                {v.name} · {v.value}
+              </span>
             </li>
           ))}
         </ul>

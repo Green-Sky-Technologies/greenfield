@@ -26,7 +26,7 @@ export function UploadForm({ base }: { base: string }) {
   }
 
   return (
-    <form action={submit} className="flex flex-col gap-5">
+    <form action={submit} className="flex flex-col gap-5" aria-label="Upload a library file">
       <div>
         <label className="label" htmlFor="ds-name">
           Name

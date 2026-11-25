@@ -107,17 +107,22 @@ export interface Prefix {
 
 /**
  * Build the prefix. The cache breakpoint sits on the system prompt, which renders after the
- * tools, so one entry covers both.
+ * tools, so one entry covers both. A file's design system (Story 10.5) is a second system block
+ * with its own breakpoint: the shared prompt stays cached for every file, and each system
+ * version's block is cached for the files that use it.
  */
-export function buildPrefix(runtime: AgentRuntime, ttl: CacheTtl = '1h'): Prefix {
+export function buildPrefix(
+  runtime: AgentRuntime,
+  ttl: CacheTtl = '1h',
+  designSystem?: string | null,
+): Prefix {
+  const cache_control =
+    ttl === '1h' ? ({ type: 'ephemeral', ttl: '1h' } as const) : ({ type: 'ephemeral' } as const);
   return {
     tools: toolsForPrefix(runtime),
     system: [
-      {
-        type: 'text',
-        text: systemPromptFor(runtime),
-        cache_control: ttl === '1h' ? { type: 'ephemeral', ttl: '1h' } : { type: 'ephemeral' },
-      },
+      { type: 'text', text: systemPromptFor(runtime), cache_control },
+      ...(designSystem ? [{ type: 'text' as const, text: designSystem, cache_control }] : []),
     ],
   };
 }

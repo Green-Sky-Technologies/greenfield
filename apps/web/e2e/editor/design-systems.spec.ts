@@ -72,21 +72,23 @@ test('an admin reviews, publishes and defaults a system; a new file starts with 
     .getByRole('link', { name: 'Design systems' })
     .click();
   await admin.getByRole('link', { name: '+ New design system' }).click();
-  await admin.getByLabel('Name').fill(name);
-  await admin.getByLabel('Library file').setInputFiles(LIBRARY);
-  await admin.getByRole('button', { name: 'Upload and review' }).click();
+  await admin.getByText('Or upload a library file').click();
+  const adminUpload = admin.getByRole('form', { name: 'Upload a library file' });
+  await adminUpload.getByLabel('Name').fill(name);
+  await adminUpload.getByLabel('Library file').setInputFiles(LIBRARY);
+  await adminUpload.getByRole('button', { name: 'Upload and review' }).click();
   await admin.waitForURL(new RegExp(`${base}/[0-9a-f-]{36}$`));
   const systemUrl = new URL(admin.url()).pathname;
 
   // 10.3: every colour group, type style and component is offered; drop the accents.
   await expect(admin.getByRole('heading', { name: `Review · ${name}` })).toBeVisible();
   const items = admin.getByTestId('review-item');
-  await expect(items).toHaveCount(8);
-  await expect(admin.getByText('8 kept · 0 dropped')).toBeVisible();
+  await expect(items).toHaveCount(9);
+  await expect(admin.getByText('9 kept · 0 dropped')).toBeVisible();
   const accents = admin.getByRole('region', { name: 'Colours' }).getByLabel('Accents');
   await accents.getByRole('button', { name: 'Drop' }).click();
   await expect(accents).toHaveAttribute('data-dropped', 'true');
-  await expect(admin.getByText('7 kept · 1 dropped')).toBeVisible();
+  await expect(admin.getByText('8 kept · 1 dropped')).toBeVisible();
   await admin.screenshot({ path: testInfo.outputPath('10.3-review.png'), fullPage: true });
   await admin.getByLabel('Guide for Claude').fill('Ink on paper. Rubric only for emphasis.');
   await admin.getByRole('button', { name: 'Publish' }).click();
@@ -125,9 +127,11 @@ test('an admin reviews, publishes and defaults a system; a new file starts with 
   await expect(editorRow.getByRole('switch')).toBeDisabled();
   await expect(editor.getByRole('radio', { name: /Admins and Editors/ })).toBeDisabled();
   await editor.getByRole('link', { name: '+ New design system' }).click();
-  await editor.getByLabel('Name').fill(uniqueName('Draft'));
-  await editor.getByLabel('Library file').setInputFiles(LIBRARY);
-  await editor.getByRole('button', { name: 'Upload and review' }).click();
+  await editor.getByText('Or upload a library file').click();
+  const editorUpload = editor.getByRole('form', { name: 'Upload a library file' });
+  await editorUpload.getByLabel('Name').fill(uniqueName('Draft'));
+  await editorUpload.getByLabel('Library file').setInputFiles(LIBRARY);
+  await editorUpload.getByRole('button', { name: 'Upload and review' }).click();
   await editor.waitForURL(new RegExp(`${base}/[0-9a-f-]{36}$`));
   await expect(editor.getByRole('button', { name: 'Save draft' })).toBeEnabled();
   await expect(editor.getByRole('button', { name: 'Publish' })).toBeDisabled();

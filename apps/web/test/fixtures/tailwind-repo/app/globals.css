@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 40 33% 98%;
+    --foreground: 60 14% 7%;
+    --primary: 8 73% 53%;
+    --primary-foreground: 40 33% 98%;
+    --muted: 40 20% 92%;
+    --muted-foreground: 50 6% 45%;
+    --border: 40 15% 85%;
+    --input: 40 15% 85%;
+    --radius: 0.5rem;
+  }
+
+  .dark {
+    --background: 60 10% 5%;
+    --foreground: 40 20% 90%;
+    --primary: 8 80% 60%;
+    --primary-foreground: 60 10% 5%;
+    --muted: 60 6% 15%;
+    --muted-foreground: 45 6% 65%;
+    --border: 60 6% 18%;
+    --input: 60 6% 18%;
+  }
+}

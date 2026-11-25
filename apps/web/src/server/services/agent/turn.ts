@@ -30,6 +30,8 @@ import {
 import { layerChange, mergeLayerChanges, type LayerChange } from '@greenfield/contracts';
 import { agentMessages, and, asc, eq, sql, type AgentMessageRow, type Db } from '@greenfield/db';
 import { z } from 'zod';
+import { CHECK_FIELDS, checkLayers, checkPrompt, type DesignCheck } from '../design-systems/check';
+import type { TurnDesignSystem } from '../design-systems/follow';
 import { ProviderError, streamModel, type LlmProxyDeps } from '../llm-proxy';
 import { NotFoundError, ValidationError, type Actor } from '../types';
 
@@ -54,6 +56,18 @@ export const SELF_CHECK_PROMPT =
   'If anything is off (a font that fell back to Regular, clipped or overlapping text, ragged card ' +
   "heights, changes the user didn't ask for), fix it with one run_batch. If it looks right, reply " +
   'with one short sentence and no tool calls.';
+/** Design-system check rounds per turn (Story 10.5): check, fix, check again. */
+export const MAX_DESIGN_CHECKS = 2;
+/** Tool_use ids of the design-system check's reads. */
+const DESIGN_CHECK_ID = 'dscheck_';
+/** Fields of a changed layer that the design-system check looks at. */
+const CHECKED_FIELDS: ReadonlySet<string> = new Set([
+  'fills',
+  'strokes',
+  'layout',
+  'boundVariables',
+  'styles',
+]);
 
 export interface ToolCallState {
   id: string;
@@ -84,6 +98,8 @@ export interface TurnRun {
   pending: { step: AgentStep | null; calls: ToolCallState[] } | null;
   /** Frames changed since the last render, and self-checks done so far (Story 4.3). */
   check?: { frames: number[]; rounds: number };
+  /** Story 10.5: design-system checks so far, and whether the turn changed layers since. */
+  design?: { rounds: number; dirty: boolean };
   /** Last phase change (ISO). */
   at: string;
   /** Last sign of the requesting tab (ISO): its stream, a claim or a result. */
@@ -103,6 +119,8 @@ export interface RunContent {
   changes?: LayerChange[];
   /** The turn's undo steps (its run_batch labels), in the order they ran. */
   undoLabels?: string[];
+  /** Story 10.5: the design-system check of what the turn changed. */
+  designCheck?: DesignCheck;
   [k: string]: unknown;
 }
 
@@ -125,6 +143,8 @@ export interface TurnInputs {
   scope: number[] | null;
   /** History plus this turn's user message, ready for the model. */
   messages: Anthropic.MessageParam[];
+  /** The file's design system (Story 10.5): a prefix block and the post-turn check's rules. */
+  designSystem?: TurnDesignSystem | null;
 }
 
 export type LoadTurnInputs = (row: AgentMessageRow) => Promise<TurnInputs>;
@@ -200,6 +220,7 @@ function recordStep(c: RunContent, calls: ToolCallState[]) {
   let changes = c.changes ?? [];
   const undoLabels = [...(c.undoLabels ?? [])];
   const check = { frames: [...(c.run?.check?.frames ?? [])], rounds: c.run?.check?.rounds ?? 0 };
+  const design = { rounds: c.run?.design?.rounds ?? 0, dirty: c.run?.design?.dirty ?? false };
   for (const x of calls) {
     if (!x.result || x.result.is_error) continue;
     if (x.name === 'render') check.frames = [];
@@ -208,8 +229,90 @@ function recordStep(c: RunContent, calls: ToolCallState[]) {
     if (x.changes?.length) changes = mergeLayerChanges([changes, x.changes]);
     const frames = x.frames?.length ? x.frames : x.touched;
     check.frames = [...new Set([...check.frames, ...frames])];
+    design.dirty = true;
   }
-  return { changes, undoLabels, check };
+  return { changes, undoLabels, check, design };
+}
+
+/** The layers the design-system check looks at: added ones, and changed paints or layout. */
+function checkedLayers(changes: LayerChange[]): Set<number> {
+  return new Set(
+    changes
+      .filter(
+        (x) =>
+          x.kind === 'added' ||
+          (x.kind === 'changed' && x.fields.some((f) => CHECKED_FIELDS.has(f.field))),
+      )
+      .map((x) => x.id),
+  );
+}
+
+/** What `get_node` returned in the check's reads. */
+function readNodes(calls: ToolCallState[]): unknown[] {
+  return calls.flatMap((x) => {
+    if (!x.result || x.result.is_error || !Array.isArray(x.result.content)) return [];
+    return x.result.content.flatMap((b) => {
+      if (b.type !== 'text') return [];
+      try {
+        const parsed = JSON.parse(b.text) as { node?: unknown };
+        return [parsed.node ?? parsed];
+      } catch {
+        return [];
+      }
+    });
+  });
+}
+
+/**
+ * The server-side check due when the model ends a turn, if any: first the design-system check
+ * (Story 10.5) of layers changed since the last one, then the self-check render (Story 4.3).
+ * Both are calls out to the tab with no model step.
+ */
+function dueCheck(
+  c: RunContent,
+  run: TurnRun,
+  designSystem: TurnDesignSystem | null | undefined,
+  maxSelfChecks: number,
+): (Pick<TurnRun, 'check' | 'design'> & { calls: ToolCallState[] }) | null {
+  const design = run.design ?? { rounds: 0, dirty: false };
+  const check = run.check ?? { frames: [], rounds: 0 };
+  if (designSystem && design.dirty && design.rounds < MAX_DESIGN_CHECKS) {
+    const only = checkedLayers(c.changes ?? []);
+    const frames = [
+      ...new Set(
+        (c.changes ?? []).flatMap((x) => (only.has(x.id) && x.frame !== null ? [x.frame] : [])),
+      ),
+    ].slice(0, MAX_CHECK_FRAMES);
+    if (frames.length) {
+      const rounds = design.rounds + 1;
+      return {
+        check,
+        design: { rounds, dirty: false },
+        calls: frames.map((id, i) => ({
+          id: `${DESIGN_CHECK_ID}${rounds}_${i}`,
+          name: 'get_node',
+          input: { id, depth: 8, fields: [...CHECK_FIELDS] },
+          state: 'queued' as const,
+        })),
+      };
+    }
+  }
+  if (check.frames.length && check.rounds < maxSelfChecks) {
+    const rounds = check.rounds + 1;
+    return {
+      design,
+      check: { frames: [], rounds },
+      calls: [
+        {
+          id: `${SELF_CHECK_ID}${rounds}`,
+          name: 'render',
+          input: { ids: check.frames.slice(0, MAX_CHECK_FRAMES), scale: SELF_CHECK_SCALE },
+          state: 'queued',
+        },
+      ],
+    };
+  }
+  return null;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -229,6 +332,7 @@ async function claimStep(
   messageId: string,
   load: LoadTurnInputs,
   now: Date,
+  maxSelfChecks: number,
 ): Promise<Claim> {
   return db.transaction(async (tx) => {
     const row = await lockMessage(tx, actor, messageId);
@@ -240,6 +344,54 @@ async function claimStep(
     if (row.status === 'pending') {
       step = 1;
       inputs = await load(row);
+    } else if (
+      row.status === 'streaming' &&
+      c.run?.phase === 'ready' &&
+      c.run.pending?.step === null &&
+      c.run.pending.calls[0]?.id.startsWith(DESIGN_CHECK_ID)
+    ) {
+      // The design-system check's reads came back (Story 10.5): check them on the server.
+      inputs = await load(row);
+      const rules = inputs.designSystem?.rules;
+      const rounds = c.run.design?.rounds ?? 1;
+      const found = rules
+        ? checkLayers(readNodes(c.run.pending.calls), rules, checkedLayers(c.changes ?? []))
+        : [];
+      if (rules)
+        c.designCheck = {
+          system: rules.name,
+          rounds,
+          found: c.designCheck?.found ?? found,
+          left: found,
+        };
+      step = c.run.step + 1;
+      if (!rules || !found.length || rounds >= MAX_DESIGN_CHECKS || step > MAX_STEPS) {
+        // Nothing to fix (or no rounds left): go on to the self-check, or end the turn.
+        const next = dueCheck(c, c.run, null, maxSelfChecks);
+        await tx
+          .update(agentMessages)
+          .set(
+            next
+              ? {
+                  content: {
+                    ...c,
+                    run: {
+                      ...c.run,
+                      phase: 'tools',
+                      check: next.check,
+                      design: next.design,
+                      pending: { step: null, calls: next.calls },
+                      at: iso(now),
+                      seenAt: iso(now),
+                    },
+                  } satisfies RunContent,
+                }
+              : { status: 'complete', content: finished(c) },
+          )
+          .where(eq(agentMessages.id, row.id));
+        return { kind: 'none' };
+      }
+      turns.push({ role: 'user', content: [{ type: 'text', text: checkPrompt(rules, found) }] });
     } else if (
       row.status === 'streaming' &&
       c.run?.phase === 'ready' &&
@@ -267,7 +419,7 @@ async function claimStep(
       const recorded = recordStep(c, pending.calls);
       c.changes = recorded.changes;
       c.undoLabels = recorded.undoLabels;
-      c.run = { ...c.run, check: recorded.check };
+      c.run = { ...c.run, check: recorded.check, design: recorded.design };
       const blocks = stepResults(pendingStep, results);
       if (pendingStep.questions) {
         // ask_followup ends the turn (Story 4.4): its result is the user's answers, sent later.
@@ -310,6 +462,7 @@ async function claimStep(
         scope: inputs.scope,
         pending: null,
         check: c.run?.check ?? { frames: [], rounds: 0 },
+        design: c.run?.design ?? { rounds: 0, dirty: false },
         at: iso(now),
         seenAt: c.run?.seenAt ?? iso(now),
       },
@@ -385,7 +538,7 @@ async function runStep(
           deps.proxy,
         ),
       model: inputs.model,
-      prefix: buildPrefix('interactive', prefixCacheTtl()),
+      prefix: buildPrefix('interactive', prefixCacheTtl(), inputs.designSystem?.prompt),
       messages: [...inputs.messages, ...content.turns],
       runtime: 'interactive',
       signal: controller.signal,
@@ -404,33 +557,20 @@ async function runStep(
       jobSuggestion: step.jobSuggestion ?? content.jobSuggestion ?? null,
       stopReason: step.stopReason,
     };
-    const check = run.check ?? { frames: [], rounds: 0 };
-    if (
-      step.kind === 'final' &&
-      step.stopReason === 'end_turn' &&
-      check.frames.length &&
-      check.rounds < (deps.maxSelfChecks ?? MAX_SELF_CHECKS) &&
-      run.step < MAX_STEPS
-    ) {
-      // The turn changed a frame and nobody looked at it since: the tab renders it (Story 4.3).
-      const rounds = check.rounds + 1;
+    const next =
+      step.kind === 'final' && step.stopReason === 'end_turn' && run.step < MAX_STEPS
+        ? dueCheck(base, run, inputs.designSystem, deps.maxSelfChecks ?? MAX_SELF_CHECKS)
+        : null;
+    if (next) {
+      // The turn changed layers nobody checked since: the tab reads or renders them.
       content = {
         ...base,
         run: {
           ...run,
           phase: 'tools',
-          check: { frames: [], rounds },
-          pending: {
-            step: null,
-            calls: [
-              {
-                id: `${SELF_CHECK_ID}${rounds}`,
-                name: 'render',
-                input: { ids: check.frames.slice(0, MAX_CHECK_FRAMES), scale: SELF_CHECK_SCALE },
-                state: 'queued',
-              },
-            ],
-          },
+          check: next.check,
+          design: next.design,
+          pending: { step: null, calls: next.calls },
           at: iso(now()),
           seenAt: iso(now()),
         },
@@ -497,7 +637,14 @@ export async function advanceTurn(
   const started = Date.now();
   try {
     for (;;) {
-      const claim = await claimStep(db, actor, messageId, load, deps.now?.() ?? new Date());
+      const claim = await claimStep(
+        db,
+        actor,
+        messageId,
+        load,
+        deps.now?.() ?? new Date(),
+        deps.maxSelfChecks ?? MAX_SELF_CHECKS,
+      );
       if (claim.kind === 'none') return;
       const again = await runStep(db, actor, claim, deps);
       if (!again || Date.now() - started > ADVANCE_DEADLINE_MS) return;
