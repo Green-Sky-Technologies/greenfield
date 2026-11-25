@@ -31,10 +31,13 @@ type Hex = string;
 /**
  * One thing a review keeps or drops (Story 10.3), read from the library file. `key` is stable
  * for the file: `colours:<collection id>` (the colour variables of one variable collection),
- * `colours:styles/<folder>` (paint styles in one folder), `type:<style id>`, `component:<node id>`.
+ * `colours:styles/<folder>` (paint styles in one folder), `spacing:<collection id>` (the number
+ * variables of one collection: spacing, radius and other scales), `type:<style id>`,
+ * `component:<node id>`.
  */
 export type DesignSystemItem =
   | { key: string; kind: 'colours'; name: string; colours: { name: string; hex: Hex | null }[] }
+  | { key: string; kind: 'spacing'; name: string; values: { name: string; value: number }[] }
   | {
       key: string;
       kind: 'type';
@@ -44,6 +47,11 @@ export type DesignSystemItem =
       fontSize: number;
     }
   | { key: string; kind: 'component'; name: string; variants: number };
+
+/** A source a system was built from (Story 10.2), kept so a rebuild can read it again (10.6). */
+export type DesignSystemSource =
+  | { kind: 'github'; owner: string; repo: string; ref: string | null }
+  | { kind: 'upload'; names: string[] };
 
 export const designSystems = pgTable(
   'design_systems',
@@ -60,6 +68,8 @@ export const designSystems = pgTable(
     ),
     /** At most one per workspace: attached to every new file (Story 10.4). */
     isDefault: boolean('is_default').notNull().default(false),
+    /** Where it was built from (Story 10.2); empty for an uploaded library file. */
+    sources: jsonb('sources').$type<DesignSystemSource[]>().notNull().default([]),
     createdBy: text('created_by').notNull(),
     ...timestamps,
   },

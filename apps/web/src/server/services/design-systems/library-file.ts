@@ -113,7 +113,19 @@ function componentRoots(doc: FigcraftDocument): Json[] {
   return roots;
 }
 
-/** What a review offers: colour groups, type styles and components, in file order. */
+/** A number variable's value in its collection's first mode, following aliases. */
+function variableNumber(doc: FigcraftDocument, v: Json, depth = 0): number | null {
+  const first = isRecord(v.values) ? Object.values(v.values)[0] : null;
+  if (!isRecord(first)) return null;
+  if (first.type === 'number' && typeof first.value === 'number') return first.value;
+  if (first.type === 'alias' && depth < 8) {
+    const target = variablesOf(doc).find((x) => x.id === first.value);
+    return target ? variableNumber(doc, target, depth + 1) : null;
+  }
+  return null;
+}
+
+/** What a review offers: colour groups, scales, type styles and components, in file order. */
 export function libraryItems(doc: FigcraftDocument): DesignSystemItem[] {
   const items: DesignSystemItem[] = [];
   for (const c of doc.variables?.collections ?? []) {
@@ -122,6 +134,16 @@ export function libraryItems(doc: FigcraftDocument): DesignSystemItem[] {
       .map((v) => ({ name: str(v.name), hex: variableHex(doc, v) }));
     if (colours.length)
       items.push({ key: `colours:${str(c.id)}`, kind: 'colours', name: str(c.name), colours });
+  }
+  for (const c of doc.variables?.collections ?? []) {
+    const values = variablesOf(doc)
+      .filter((v) => v.collection === c.id && v.resolvedType === 'number')
+      .flatMap((v) => {
+        const value = variableNumber(doc, v);
+        return value === null ? [] : [{ name: str(v.name), value }];
+      });
+    if (values.length)
+      items.push({ key: `spacing:${str(c.id)}`, kind: 'spacing', name: str(c.name), values });
   }
   const paintFolders = new Map<string, { name: string; hex: string | null }[]>();
   for (const s of stylesOf(doc).filter((s) => s.type === 'paint')) {
@@ -177,9 +199,10 @@ export function dropItems(doc: FigcraftDocument, dropped: ReadonlySet<string>): 
       const f = rest.slice('styles/'.length);
       for (const s of stylesOf(out))
         if (s.type === 'paint' && folder(str(s.name)) === f) goneStyles.add(s.id);
-    } else if (kind === 'colours') {
+    } else if (kind === 'colours' || kind === 'spacing') {
+      const type = kind === 'colours' ? 'color' : 'number';
       for (const v of variablesOf(out))
-        if (v.collection === rest && v.resolvedType === 'color') goneVariables.add(v.id);
+        if (v.collection === rest && v.resolvedType === type) goneVariables.add(v.id);
     } else if (kind === 'type') goneStyles.add(rest);
     else if (kind === 'component') goneComponents.add(Number(rest));
   }
@@ -222,8 +245,11 @@ export function dropItems(doc: FigcraftDocument, dropped: ReadonlySet<string>): 
     for (const [mode, value] of Object.entries(v.values))
       if (isRecord(value) && value.type === 'alias' && goneVariables.has(value.value)) {
         const target = variablesOf(doc).find((x) => x.id === value.value);
-        const resolved = target && variableHex(doc, target);
+        if (!target) continue;
+        const resolved = variableHex(doc, target);
+        const n = variableNumber(doc, target);
         if (resolved) v.values[mode] = { type: 'color', value: rgba(resolved) };
+        else if (n !== null) v.values[mode] = { type: 'number', value: n };
       }
   }
   return out;

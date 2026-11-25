@@ -1,0 +1,1 @@
+ALTER TABLE "design_systems" ADD COLUMN "sources" jsonb DEFAULT '[]'::jsonb NOT NULL;

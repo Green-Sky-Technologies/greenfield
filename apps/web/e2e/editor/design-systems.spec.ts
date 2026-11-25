@@ -81,12 +81,12 @@ test('an admin reviews, publishes and defaults a system; a new file starts with 
   // 10.3: every colour group, type style and component is offered; drop the accents.
   await expect(admin.getByRole('heading', { name: `Review · ${name}` })).toBeVisible();
   const items = admin.getByTestId('review-item');
-  await expect(items).toHaveCount(8);
-  await expect(admin.getByText('8 kept · 0 dropped')).toBeVisible();
+  await expect(items).toHaveCount(9);
+  await expect(admin.getByText('9 kept · 0 dropped')).toBeVisible();
   const accents = admin.getByRole('region', { name: 'Colours' }).getByLabel('Accents');
   await accents.getByRole('button', { name: 'Drop' }).click();
   await expect(accents).toHaveAttribute('data-dropped', 'true');
-  await expect(admin.getByText('7 kept · 1 dropped')).toBeVisible();
+  await expect(admin.getByText('8 kept · 1 dropped')).toBeVisible();
   await admin.screenshot({ path: testInfo.outputPath('10.3-review.png'), fullPage: true });
   await admin.getByLabel('Guide for Claude').fill('Ink on paper. Rubric only for emphasis.');
   await admin.getByRole('button', { name: 'Publish' }).click();

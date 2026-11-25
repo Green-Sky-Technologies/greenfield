@@ -31,6 +31,7 @@ import {
   MAX_DESIGN_FILE_BYTES,
   type DesignFileStorage,
 } from '../design-files';
+import { designSystemForTurn } from '../design-systems/follow';
 import { createJob, jobActor } from '../jobs';
 import { getModelSettings } from './model-settings';
 import { issueJobToken, JobTokenError, verifyJobToken } from './job-tokens';
@@ -152,6 +153,7 @@ export async function prepareAgentJob(
   const actor = await jobActor(db, row);
   const file = await loadDesignFile(db, actor, storage, { projectId: row.projectId });
   const settings = await getModelSettings(db, row.workspaceId);
+  const designSystem = await designSystemForTurn(db, actor, row.projectId);
   // Valid past the job's own timeout: the reaper ends the job (and revokes it) first.
   const { token } = await issueJobToken(db, job.jobId, job.timeoutSeconds + 300);
   return {
@@ -160,7 +162,9 @@ export async function prepareAgentJob(
     smallModel: resolveModel(settings, 'utility'),
     spec: {
       prompt: jobPrompt(job.kind, job.input),
-      systemPrompt: systemPromptFor('job'),
+      systemPrompt: designSystem
+        ? `${systemPromptFor('job')}\n\n${designSystem.prompt}`
+        : systemPromptFor('job'),
       tools: jobTools(),
       maxTurns: JOB_MAX_TURNS,
       cli,

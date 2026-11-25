@@ -41,6 +41,13 @@ import {
 import { showOnCanvasIds, type LayerChange } from '@greenfield/contracts';
 import { z } from 'zod';
 import { getProject } from './projects';
+import {
+  describeFix,
+  fixedFindings,
+  type DesignCheck,
+  type Violation,
+} from './design-systems/check';
+import { designSystemForTurn } from './design-systems/follow';
 import { getModelSettings } from './agent/model-settings';
 import { settleStaleMessages } from './agent/stale';
 import {
@@ -96,6 +103,8 @@ export interface StoredAssistantContent {
   undoLabels?: string[];
   /** Set once the user reverted the turn ("Undo all"). */
   reverted?: TurnRevert | null;
+  /** Story 10.5: the design-system check of what the turn changed. */
+  designCheck?: DesignCheck;
 }
 
 export interface TurnRevert {
@@ -161,6 +170,11 @@ export interface MessageView {
   showOnCanvas: number[];
   undoLabels: string[];
   reverted: TurnRevert | null;
+  /**
+   * Story 10.5: the reply was checked against the file's design system ("Checked against
+   * Voirdire · 2 fixed · 0 left"): what the agent fixed, in words, and what is still off.
+   */
+  designCheck: DesignCheckView | null;
   jobId: string | null;
   attachments: Attachment[];
   error: string | null;
@@ -171,6 +185,17 @@ const TERMINAL = new Set<AgentMessageRow['status']>(['complete', 'error', 'cance
 
 function blocksText(blocks: (string | Anthropic.ContentBlockParam)[]): string[] {
   return blocks.map((b) => (typeof b === 'string' ? b : b.type === 'text' ? b.text : ''));
+}
+
+export interface DesignCheckView {
+  system: string;
+  fixed: string[];
+  left: Violation[];
+}
+
+function designCheckView(c: DesignCheck | undefined): DesignCheckView | null {
+  if (!c) return null;
+  return { system: c.system, fixed: fixedFindings(c).map(describeFix), left: c.left };
 }
 
 export function toMessageView(row: AgentMessageRow): MessageView {
@@ -206,6 +231,7 @@ export function toMessageView(row: AgentMessageRow): MessageView {
       showOnCanvas: [],
       undoLabels: [],
       reverted: null,
+      designCheck: null,
     };
   }
   const c = (row.content ?? { v: 1, turns: [] }) as StoredAssistantContent;
@@ -239,6 +265,7 @@ export function toMessageView(row: AgentMessageRow): MessageView {
     showOnCanvas: showOnCanvasIds(c.changes ?? []),
     undoLabels: c.undoLabels ?? [],
     reverted: c.reverted ?? null,
+    designCheck: designCheckView(c.designCheck),
   };
 }
 
@@ -570,6 +597,7 @@ function turnInputs(db: Db, actor: Actor): LoadTurnInputs {
     if (!userRow || userRow.role !== 'user') throw new ValidationError('Missing user message');
     const stored = userRow.content as StoredUserContent;
     const history = await historyBefore(db, conv.id, userRow.seq);
+    const designSystem = await designSystemForTurn(db, actor, conv.projectId);
     return {
       model:
         row.model ?? resolveModel(await getModelSettings(db, actor.workspace.id), 'interactive'),
@@ -577,6 +605,7 @@ function turnInputs(db: Db, actor: Actor): LoadTurnInputs {
       conversationId: conv.id,
       scope: stored.context?.scope ?? null,
       messages: [...history, ...stored.turns],
+      designSystem,
     };
   };
 }

@@ -48,6 +48,19 @@ describe('cached prefix', () => {
     expect(buildPrefix('job').tools.map((t) => t.name)).not.toContain('suggest_generation_job');
   });
 
+  it('adds a file’s design system as its own cached block after the shared prompt', () => {
+    const shared = buildPrefix('interactive');
+    const p = buildPrefix('interactive', '1h', '<design_system name="Voirdire">…');
+    expect(p.system).toHaveLength(2);
+    expect(p.system[0]).toEqual(shared.system[0]);
+    expect(p.system[1]).toEqual({
+      type: 'text',
+      text: '<design_system name="Voirdire">…',
+      cache_control: { type: 'ephemeral', ttl: '1h' },
+    });
+    expect(p.tools).toEqual(shared.tools);
+  });
+
   it('carries no HTML-model prompt', () => {
     expect(prefixBytes(buildPrefix('interactive'))).not.toMatch(/DesignDoc|patch_nodes|slider/);
   });
