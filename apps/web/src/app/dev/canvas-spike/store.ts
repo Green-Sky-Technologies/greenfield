@@ -203,7 +203,10 @@ export class Syncer {
 
   /** The selected layer's numbers: one `node.get`. */
   private async readNode(id: number): Promise<SelectedNode | null> {
-    const raw = (await this.editor.getNode(id, { depth: 0, fields: NODE_FIELDS as never })) as RawNode | null;
+    const raw = (await this.editor.getNode(id, {
+      depth: 0,
+      fields: NODE_FIELDS as never,
+    })) as RawNode | null;
     if (!raw) return null;
     return {
       id: raw.id,
@@ -305,4 +308,3 @@ export class Syncer {
     this.stops = [];
   }
 }
-

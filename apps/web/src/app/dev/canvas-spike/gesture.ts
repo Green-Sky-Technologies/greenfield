@@ -57,12 +57,17 @@ export class Scrub {
       this.inFlight++;
       perf.log('scrub-sent', { seq });
       const call = this.gestures
-        ? this.editor.execute('edit.preview' as never, {
-            commands: [{ command: 'node.set', params: { ids: [this.id], ...props } }],
-          } as never)
+        ? this.editor.execute(
+            'edit.preview' as never,
+            {
+              commands: [{ command: 'node.set', params: { ids: [this.id], ...props } }],
+            } as never,
+          )
         : this.editor.execute('node.set', { ids: [this.id], ...props } as never);
       void call
-        .catch((e: unknown) => perf.log('scrub-error', { message: e instanceof Error ? e.message : String(e) }))
+        .catch((e: unknown) =>
+          perf.log('scrub-error', { message: e instanceof Error ? e.message : String(e) }),
+        )
         .finally(() => {
           this.inFlight--;
           perf.log('scrub-applied', { seq, callMs: performance.now() - t0 });

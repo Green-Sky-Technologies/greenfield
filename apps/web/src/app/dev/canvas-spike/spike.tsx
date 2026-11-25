@@ -162,7 +162,8 @@ function SpikeBody() {
       // The host knows about its own writes: read back once each one lands (not the previews
       // of a scrub; the inspector shows the scrubbed value itself).
       const sy = syncer;
-      const wrap = <A extends unknown[]>(fn: (...a: A) => Promise<unknown>, skip?: (a: A) => boolean) =>
+      const wrap =
+        <A extends unknown[]>(fn: (...a: A) => Promise<unknown>, skip?: (a: A) => boolean) =>
         async (...a: A) => {
           try {
             return await fn(...a);
@@ -173,8 +174,13 @@ function SpikeBody() {
       const exec0 = editor.execute.bind(editor);
       const req0 = editor.request.bind(editor);
       const batch0 = editor.batch.bind(editor);
-      editor.execute = wrap(exec0 as never, (a) => String((a as unknown[])[0]).startsWith('select.')) as never;
-      editor.request = wrap(req0 as never, (a) => (a as unknown[])[0] !== 'engine.execute') as never;
+      editor.execute = wrap(exec0 as never, (a) =>
+        String((a as unknown[])[0]).startsWith('select.'),
+      ) as never;
+      editor.request = wrap(
+        req0 as never,
+        (a) => (a as unknown[])[0] !== 'engine.execute',
+      ) as never;
       editor.batch = wrap(batch0 as never) as never;
       store_.kick = () => sy.request('kick');
       const h: Handle = { editor, iframe: el, store: store_, syncer, commands };
@@ -189,7 +195,10 @@ function SpikeBody() {
         if (ev.source !== el.contentWindow && m.name !== 'spike.ping') return;
         perf.log('event', { name: m.name });
         const seen = store_.current.eventsSeen;
-        store_.set({ eventsSeen: { ...seen, [m.name]: (seen[m.name] ?? 0) + 1 }, lastEvent: JSON.stringify(m).slice(0, 160) });
+        store_.set({
+          eventsSeen: { ...seen, [m.name]: (seen[m.name] ?? 0) + 1 },
+          lastEvent: JSON.stringify(m).slice(0, 160),
+        });
         if (m.name === 'spike.ping') {
           store_.set({ ping: (m.data as { t0: number }).t0 });
         } else if (m.name.startsWith('agent.presence')) {
@@ -312,7 +321,9 @@ function SpikeBody() {
           </button>
           <span
             className="px-2 py-1"
-            style={state.agentActive ? { background: 'var(--ember)', color: 'var(--ember-ink)' } : {}}
+            style={
+              state.agentActive ? { background: 'var(--ember)', color: 'var(--ember-ink)' } : {}
+            }
           >
             Claude {state.agentActive ? 'editing' : 'idle'}
           </span>
@@ -323,7 +334,11 @@ function SpikeBody() {
         <div className="border-b border-border px-4 py-3 text-xs uppercase tracking-wider text-muted">
           Layers · {state.layers.length}
         </div>
-        <LayersList layers={state.layers} selected={state.selection} onSelect={(id) => exec('select.set', { ids: [id] })} />
+        <LayersList
+          layers={state.layers}
+          selected={state.selection}
+          onSelect={(id) => exec('select.set', { ids: [id] })}
+        />
       </aside>
 
       <main className="relative overflow-hidden bg-bg">
@@ -371,7 +386,15 @@ function LayersList({
   const last = Math.min(layers.length, first + Math.ceil(height / ROW_H) + 10);
   useEffect(() => {
     // Paint mark for the sync measurement: the list is on screen with `layers.length` rows.
-    afterPaint(() => perf.log('layers-painted', { rows: layers.length, sig: layers.slice(0, 3).map((l) => l.name).join('|') }));
+    afterPaint(() =>
+      perf.log('layers-painted', {
+        rows: layers.length,
+        sig: layers
+          .slice(0, 3)
+          .map((l) => l.name)
+          .join('|'),
+      }),
+    );
   }, [layers]);
   return (
     <div
@@ -394,7 +417,9 @@ function LayersList({
               height: ROW_H,
               paddingLeft: 16 + l.depth * 14,
               background: selected.includes(l.id) ? 'var(--raise)' : undefined,
-              borderLeft: selected.includes(l.id) ? '2px solid var(--field)' : '2px solid transparent',
+              borderLeft: selected.includes(l.id)
+                ? '2px solid var(--field)'
+                : '2px solid transparent',
               opacity: l.visible ? 1 : 0.4,
             }}
           >
@@ -421,7 +446,9 @@ function Inspector({
     // Paint mark for the click-to-inspector measurement.
     afterPaint(() =>
       perf.log('inspector-painted', {
-        sig: node ? `${node.id}:${node.x},${node.y},${node.width},${node.height},${node.fill}` : 'none',
+        sig: node
+          ? `${node.id}:${node.x},${node.y},${node.width},${node.height},${node.fill}`
+          : 'none',
         id: node?.id ?? null,
       }),
     );
@@ -449,11 +476,15 @@ function Inspector({
   return (
     <div data-testid="inspector" data-node={node.id}>
       <div className="flex items-baseline justify-between border-b border-border px-4 py-3">
-        <span className="text-sm font-medium" data-testid="inspector-name">{node.name}</span>
+        <span className="text-sm font-medium" data-testid="inspector-name">
+          {node.name}
+        </span>
         <span className="text-xs text-muted">{node.type}</span>
       </div>
       <div className="border-b border-border p-4">
-        <div className="mb-2 font-mono text-[11px] uppercase tracking-wider text-muted">Position</div>
+        <div className="mb-2 font-mono text-[11px] uppercase tracking-wider text-muted">
+          Position
+        </div>
         <div className="grid grid-cols-2 gap-2">
           {field('x', 'X')}
           {field('y', 'Y')}
@@ -468,7 +499,9 @@ function Inspector({
             data-testid="field-fill"
             type="color"
             value={node.fill ?? '#000000'}
-            onChange={(e) => editor?.execute('node.set', { ids: [node.id], fill: e.target.value } as never)}
+            onChange={(e) =>
+              editor?.execute('node.set', { ids: [node.id], fill: e.target.value } as never)
+            }
           />
           <span className="font-mono">{node.fill ?? 'none'}</span>
         </label>

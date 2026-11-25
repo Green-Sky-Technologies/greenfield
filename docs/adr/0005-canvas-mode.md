@@ -49,13 +49,13 @@ Fork patches by the Rust lane, each on its own branch and PR (stacked; none merg
 stack: 25,738,621 B (budget 26,214,400, headroom 475,779 B). Two clean builds from the pinned image give the
 same wasm sha256 (`1668239248bf7239fb5a39a0673d0ab82cee75a93a30201538b644821d7dedc0`) and the same dist tree.
 
-| Story | Patch | PR | What it does |
-|---|---|---|---|
-| 2.11 | `0008-canvas-mode` | #19 | `view.canvasMode {on?}` and `?canvas` (`?canvas=0` off). On: no tab bar, rail, panels, toolbar, menus or home screen; handles, size label, overlays and shortcuts stay. Turning it off redraws the panels the next frame, no reload. The editor posts `ui.request {kind, screen, data}` to the host instead of opening a context menu (`contextMenu`, with the selection ids), a colour picker (`colorPicker`, with its target), the comment tool (`comment.new`, page point) and keyboard-raised dialogs; and `canvas.mode {on}`. |
-| 2.12 | `0009-gesture-commands` | #20 | `edit.begin {label}`, `edit.preview {commands}`, `edit.commit`, `edit.cancel`, on the engine's interaction functions. A preview resets the document to the gesture start, then runs its commands, so values are absolute. Commit gives one undo step (none when the values end where they began). `edit.undo` and `edit.redo` refuse while a gesture is open. |
-| 2.4 | `0010-agent-presence` | #21 | The agent colour is a theme token: `#ff9a4d` dark, `#a54a0f` light (a test checks 3:1 contrast). `agent.presence {name, active}` holds the avatar and outline for the whole turn, no 8 s linger until released. Host event `agent.presence {active, name, held, layers}`. `command.batch` already carried `agent` to every step through `engine.execute`; the gap was the page API, so `window.figcraft.executeAs(agent, command, params)` is new. |
-| 2.3 | `0011-host-events` | #22 | `selection.changed {document, page, ids}` and `document.changed {document, revision, undoDepth}`, at most once a frame. Fires on content change (edit, undo, redo, gesture preview), not on zoom or pan. |
-| 8.1 | workflow + `fetch-editor.mjs` | #18 | Publishes the built site on push to `main`. Not part of this spike's measurements. |
+| Story | Patch                         | PR  | What it does                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+| ----- | ----------------------------- | --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2.11  | `0008-canvas-mode`            | #19 | `view.canvasMode {on?}` and `?canvas` (`?canvas=0` off). On: no tab bar, rail, panels, toolbar, menus or home screen; handles, size label, overlays and shortcuts stay. Turning it off redraws the panels the next frame, no reload. The editor posts `ui.request {kind, screen, data}` to the host instead of opening a context menu (`contextMenu`, with the selection ids), a colour picker (`colorPicker`, with its target), the comment tool (`comment.new`, page point) and keyboard-raised dialogs; and `canvas.mode {on}`. |
+| 2.12  | `0009-gesture-commands`       | #20 | `edit.begin {label}`, `edit.preview {commands}`, `edit.commit`, `edit.cancel`, on the engine's interaction functions. A preview resets the document to the gesture start, then runs its commands, so values are absolute. Commit gives one undo step (none when the values end where they began). `edit.undo` and `edit.redo` refuse while a gesture is open.                                                                                                                                                                      |
+| 2.4   | `0010-agent-presence`         | #21 | The agent colour is a theme token: `#ff9a4d` dark, `#a54a0f` light (a test checks 3:1 contrast). `agent.presence {name, active}` holds the avatar and outline for the whole turn, no 8 s linger until released. Host event `agent.presence {active, name, held, layers}`. `command.batch` already carried `agent` to every step through `engine.execute`; the gap was the page API, so `window.figcraft.executeAs(agent, command, params)` is new.                                                                                 |
+| 2.3   | `0011-host-events`            | #22 | `selection.changed {document, page, ids}` and `document.changed {document, revision, undoDepth}`, at most once a frame. Fires on content change (edit, undo, redo, gesture preview), not on zoom or pan.                                                                                                                                                                                                                                                                                                                           |
+| 8.1   | workflow + `fetch-editor.mjs` | #18 | Publishes the built site on push to `main`. Not part of this spike's measurements.                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
 
 Events travel as `window.parent.postMessage({type: 'figcraft:event', name, data})`.
 
@@ -64,9 +64,9 @@ Events travel as `window.parent.postMessage({type: 'figcraft:event', name, data}
 - **Browsers.** Chrome 158 (headed, Apple M4 Pro GPU, 120 Hz display), Playwright WebKit (Safari's engine,
   headless, Apple GPU), Playwright Firefox (headless). Real input through Playwright, so pointer and key events
   reach the page like a person's.
-- **Files.** *Small*: a generated 14-node document. *Large*: `examples/ridgeline-studio-dashboard.figcraft`
+- **Files.** _Small_: a generated 14-node document. _Large_: `examples/ridgeline-studio-dashboard.figcraft`
   from FigCraft v0.18.1, 269 nodes, the biggest example at the pinned ref (60 KB; none is truly large).
-  *Stress*: a generated 5,002-node document, Chrome only. The e2e spec's 20 MB case is one big image, which
+  _Stress_: a generated 5,002-node document, Chrome only. The e2e spec's 20 MB case is one big image, which
   tests saving, not layers.
 - **Build.** `next build` and `next start`, not the dev server. Each run starts with the machine at 75% CPU
   idle or more; a Docker build on the same machine had wrecked the first runs.
@@ -75,24 +75,24 @@ Events travel as `window.parent.postMessage({type: 'figcraft:event', name, data}
 - **Added over the canvas** = our panel painted minus the end of the first editor frame after the input. It is
   an upper bound on what the editor's own panel would beat us by, since the editor frame ends before the
   browser presents it.
-- **Sync modes.** *poll*: `document.inspect` every 100 ms (today's detector polls every 400 ms).
-  *pointer*: editor input as a hint, read one frame later. *events*: the 2.3 events, then one `node.get`.
-  *floor*: an event posted from inside an editor frame to our React tree painted, with no read back.
+- **Sync modes.** _poll_: `document.inspect` every 100 ms (today's detector polls every 400 ms).
+  _pointer_: editor input as a hint, read one frame later. _events_: the 2.3 events, then one `node.get`.
+  _floor_: an event posted from inside an editor frame to our React tree painted, with no read back.
 - Up to 20 trials per cell (60 pointer moves for the scrub). p50 / p95 in ms.
 
 ## Numbers
 
 **Canvas click to inspector.** Added over the canvas, p50 / p95 ms. Target: under 16.
 
-| Browser | File | poll 100 ms | pointer hint | events (2.3 as shipped) | floor (event with data) |
-|---|---|---|---|---|---|
-| Chrome | small (14) | 68 / 76 | 43 / 49 | 26 / 50 | 9.0 / 10.3 |
-| Chrome | large (269) | 66 / 109 | 43 / 44 | 26 / 27 | 9.1 / 10.3 |
-| Chrome | stress (5,002) | n/a | 51 / 75 | 51 / 53 | 9.1 / 10.8 |
-| Firefox | small | 74 / 120 | 49 / 72 | 24 / 35 | 10 / 14 |
-| Firefox | large | 71 / 140 | 47 / 56 | 31 / 40 | 11 / 13 |
-| WebKit (headless) | small | 134 / 168 | 103 / 125 | 42 / 59 | 36 / 38 |
-| WebKit (headless) | large | 135 / 139 | 105 / 134 | 60 / 98 | 35 / 39 |
+| Browser           | File           | poll 100 ms | pointer hint | events (2.3 as shipped) | floor (event with data) |
+| ----------------- | -------------- | ----------- | ------------ | ----------------------- | ----------------------- |
+| Chrome            | small (14)     | 68 / 76     | 43 / 49      | 26 / 50                 | 9.0 / 10.3              |
+| Chrome            | large (269)    | 66 / 109    | 43 / 44      | 26 / 27                 | 9.1 / 10.3              |
+| Chrome            | stress (5,002) | n/a         | 51 / 75      | 51 / 53                 | 9.1 / 10.8              |
+| Firefox           | small          | 74 / 120    | 49 / 72      | 24 / 35                 | 10 / 14                 |
+| Firefox           | large          | 71 / 140    | 47 / 56      | 31 / 40                 | 11 / 13                 |
+| WebKit (headless) | small          | 134 / 168   | 103 / 125    | 42 / 59                 | 36 / 38                 |
+| WebKit (headless) | large          | 135 / 139   | 105 / 134    | 60 / 98                 | 35 / 39                 |
 
 Absolute click to inspector, Chrome, large: poll 70 ms, pointer 46 ms, events 32 ms. The editor frame itself
 finishes 3 to 8 ms after the click.
@@ -106,14 +106,14 @@ after `edit.begin` on a 269-node file takes 60 to 90 ms. On the 5,002-node file 
 
 **Canvas edit to layers list.** Cmd+D on the canvas to the list painted with the new rows, p50 / p95 ms.
 
-| Browser | File | pointer hint | events |
-|---|---|---|---|
-| Chrome | small | 85 / 95 | 49 / 61 |
-| Chrome | large | 318 / 325 (see below) | 40 / 44 |
-| Chrome | stress (5,002) | 107 / 113 | 76 / 86 |
-| Firefox | small | 74 / 95 | 41 / 54 |
-| Firefox | large | 83 / 130 | 54 / 57 |
-| WebKit (headless) | large | 147 / 158 | 88 / 89 |
+| Browser           | File           | pointer hint          | events  |
+| ----------------- | -------------- | --------------------- | ------- |
+| Chrome            | small          | 85 / 95               | 49 / 61 |
+| Chrome            | large          | 318 / 325 (see below) | 40 / 44 |
+| Chrome            | stress (5,002) | 107 / 113             | 76 / 86 |
+| Firefox           | small          | 74 / 95               | 41 / 54 |
+| Firefox           | large          | 83 / 130              | 54 / 57 |
+| WebKit (headless) | large          | 147 / 158             | 88 / 89 |
 
 A rename sent through the bridge (what the agent does) paints in 27 to 29 ms on Chrome and 34 to 37 ms on
 Firefox with events. Re-reading the whole layers outline costs 18 ms for 269 nodes and 64 ms for 5,002. So the
@@ -145,14 +145,14 @@ Full tables, with the controls: `spikes/5.0-canvas-spike/results/` and the Rust 
 Chrome on the large file, with Claude holding presence and a command run as `agent: "Claude"` (fill set to
 ember, outline and name tag in ember). Left: the mockup. Right: the spike.
 
-| Target | Spike (Chrome) |
-|---|---|
+| Target                                            | Spike (Chrome)                                                   |
+| ------------------------------------------------- | ---------------------------------------------------------------- |
 | ![The editor mockup](../brand/mockups/editor.png) | ![The spike in Chrome](0005-canvas-mode/spike-chrome-claude.png) |
 
 The same state in the other two engines, and the fallback (the editor's own panels back, no reload):
 
-| Safari engine | Firefox | Fallback (Chrome) |
-|---|---|---|
+| Safari engine                                       | Firefox                                               | Fallback (Chrome)                                             |
+| --------------------------------------------------- | ----------------------------------------------------- | ------------------------------------------------------------- |
 | ![WebKit](0005-canvas-mode/spike-webkit-claude.png) | ![Firefox](0005-canvas-mode/spike-firefox-claude.png) | ![Panels back](0005-canvas-mode/spike-chrome-panels-back.png) |
 
 The spike's chrome is the app's brand tokens, not the final design, and the layers list has no icons or
@@ -209,7 +209,7 @@ Not edited here.
    first preview on a big file can take 60 to 90 ms; `edit.begin` while a gesture is open fails; the host
    cancels a stale gesture. Add an event or a flag so the host knows the canvas has its own interaction open.
 6. **2.4** Record the as-built names: `agent.presence {name, active}` and the event `agent.presence {active,
-   name: "Claude (agent)", held, layers}`; `executeAs`.
+name: "Claude (agent)", held, layers}`; `executeAs`.
 7. **5.0** Replace "feels as fast as the editor's own panels (target: under one frame of added latency)" with
    the measured definition: added over the canvas, p50 under one frame at the browser's cadence, with events
    that carry data. Mark 5.0 done on the go in this ADR.
