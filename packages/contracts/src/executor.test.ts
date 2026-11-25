@@ -175,6 +175,30 @@ describe('executeTool: run_batch', () => {
     expect(agents).toEqual(['Claude', undefined]);
   });
 
+  it("keeps the user's selection when the batch creates layers", async () => {
+    const { editor, card } = await setup();
+    await editor.execute('select.set', { ids: [card] });
+    const r = ok(
+      await executeTool(
+        'run_batch',
+        {
+          label: 'Dark card with a heading',
+          commands: [
+            { command: 'node.set', params: { id: card, props: { fill: '#0B1F4D' } } },
+            {
+              command: 'node.create',
+              params: { type: 'text', parent: card, text: 'Hello', select: true },
+            },
+          ],
+        },
+        editor,
+        { runtime: 'interactive', scope: [card], agent: 'Claude' },
+      ),
+    );
+    expect(r.touched).toHaveLength(2);
+    expect((await editor.inspect({ depth: 0 })).selection).toEqual([card]);
+  });
+
   it('reports an editor refusal as a command error and changes nothing', async () => {
     const { editor, card } = await setup();
     const before = await editor.inspect();

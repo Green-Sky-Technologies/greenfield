@@ -32,7 +32,7 @@ import {
   type ParsedToolInput,
   type ToolOutput,
 } from './agent-tools';
-import { agentCommandBlocked } from './batch';
+import { agentCommandBlocked, keepSelection } from './batch';
 import { LAYOUT_DERIVED, layerChanges, topFrame, type LayerChange } from './changes';
 import { SUGGEST_JOB_RESULT, type JobSuggestion, type QuestionSet } from './followup';
 import { stableStringify } from './stable';
@@ -309,7 +309,7 @@ async function run<N extends AgentToolName>(
           if (why) throw new ToolFailure('validation', `Invalid input for run_batch: ${why}`);
         }
       const before = pageRecords(await editor.inspect({ depth: FULL_DEPTH }, call));
-      const results = await editor.batch(i.commands as unknown as BatchStep[], {
+      const results = await editor.batch(keepSelection(i.commands) as unknown as BatchStep[], {
         label: i.label,
         ...call,
         agent: ctx.agent,

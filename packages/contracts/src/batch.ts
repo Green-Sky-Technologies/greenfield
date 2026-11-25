@@ -60,6 +60,17 @@ export function agentCommandBlocked(
   return null;
 }
 
+/**
+ * The steps with `select: false` on every command that would select what it makes (`node.create`
+ * and the like select by default). The selection is the person's; Claude never moves it.
+ */
+export const keepSelection = (steps: readonly BatchStepInput[]): BatchStepInput[] =>
+  steps.map((s) =>
+    COMMAND_META.get(s.command)?.takes?.includes('select')
+      ? { ...s, params: { ...s.params, select: false } }
+      : s,
+  );
+
 /** Pinned command metadata (`takes`, `undoable`, the parameter doc). */
 export const commandInfo = (command: string): CommandInfo | undefined => COMMAND_META.get(command);
 

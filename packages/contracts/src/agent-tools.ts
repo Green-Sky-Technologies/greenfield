@@ -135,6 +135,7 @@ export const AGENT_TOOLS = {
       'The first failing command rolls the whole batch back and nothing changes. ' +
       'A step can name itself with `as`; later steps use its result with {"$ref": name} (its `id`) or {"$ref": name, "field": "ids/0"}, or by position with {"$step": n}. ' +
       'Set properties with node.set rather than deleting and rebuilding layers. ' +
+      "New layers are not selected (the selection is the user's): point later steps at them with references. " +
       "Returns each step's result and the layers that were added, removed or changed.",
     input: runBatchInput,
     output: runBatchOutput,
