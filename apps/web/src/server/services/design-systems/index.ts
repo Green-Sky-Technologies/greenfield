@@ -31,6 +31,8 @@ import {
   and,
   desc,
   designSystemAttachments,
+  editLocks,
+  gt,
   designSystems,
   designSystemSettings,
   designSystemVersions,
@@ -42,6 +44,7 @@ import {
   type Db,
   type DesignSystem,
   type DesignSystemItem,
+  type DesignSystemSource,
   type DesignSystemVersion,
   type Project,
 } from '@greenfield/db';
@@ -54,7 +57,9 @@ import {
   newDesignFileKey,
 } from '../design-files';
 import { createProject, getProject, newProjectValues, type NewProjectInput } from '../projects';
+import { EDIT_LOCK_TTL_MS } from '../locks';
 import { NotFoundError, ValidationError, type Actor } from '../types';
+import { buildGuide, buildLibraryDocument } from './build';
 import {
   dropItems,
   libraryItems,
@@ -62,6 +67,9 @@ import {
   startingDocument,
   writeLibraryFile,
 } from './library-file';
+import { parseGithubUrl, readGithubRepo, readUploads, type Upload } from './sources';
+import { extractTokens, type SourceFile } from './tokens';
+import { changeSummary, libraryChanges, updateDocument, type LibraryChange } from './update';
 
 export const designSystemPrefix = (workspaceId: string, systemId: string) =>
   `design-systems/${workspaceId}/${systemId}/`;
@@ -141,6 +149,15 @@ export interface DesignSystemSummary {
   usedIn: number;
   /** A few colours for the list's swatch. */
   swatches: string[];
+  /** Where it came from: "GitHub", "Uploads", or "Library file". */
+  sources: string;
+  /** A newer draft of a published system, waiting for review (Story 10.6). */
+  update: { version: number; summary: string; repo: string | null } | null;
+}
+
+function sourcesLabel(sources: DesignSystemSource[]): string {
+  if (!sources.length) return 'Library file';
+  return sources.map((s) => (s.kind === 'github' ? 'GitHub' : 'Uploads')).join(' · ');
 }
 
 async function findSystem(db: Db, actor: Actor, systemId: string): Promise<DesignSystem> {
@@ -163,6 +180,9 @@ async function latestVersion(db: Db, system: DesignSystem): Promise<DesignSystem
   if (!v) throw new NotFoundError('Design system not found');
   return v;
 }
+
+/** What a version's review keeps. */
+const keptItems = (v: DesignSystemVersion) => v.items.filter((i) => !v.dropped.includes(i.key));
 
 const swatches = (items: DesignSystemItem[]) =>
   items
@@ -196,6 +216,15 @@ export async function listDesignSystems(db: Db, actor: Actor): Promise<DesignSys
     const latest = mine[0];
     if (!latest) return [];
     const published = mine.find((v) => v.id === s.publishedVersionId);
+    const repo = s.sources.find((x) => x.kind === 'github');
+    const update =
+      published && !latest.publishedAt && latest.version > published.version
+        ? {
+            version: latest.version,
+            summary: changeSummary(libraryChanges(published.summary ?? [], keptItems(latest))),
+            repo: repo ? `${repo.owner}/${repo.repo}` : null,
+          }
+        : null;
     return [
       {
         id: s.id,
@@ -209,6 +238,8 @@ export async function listDesignSystems(db: Db, actor: Actor): Promise<DesignSys
         },
         usedIn: usage.find((u) => u.id === s.id)?.n ?? 0,
         swatches: swatches(published?.summary ?? latest.items),
+        sources: sourcesLabel(s.sources),
+        update,
       },
     ];
   });
@@ -242,14 +273,33 @@ export async function createDesignSystem(
   assertCan(actor.role, 'design_system:edit');
   const name = parse(nameSchema, input.name, 'name');
   const guide = parse(guideSchema, input.guide ?? '', 'guide');
-  if (input.bytes.byteLength === 0) throw new ValidationError('Empty file');
-  if (input.bytes.byteLength > MAX_DESIGN_FILE_BYTES) throw new ValidationError('File too large');
-  const items = libraryItems((await readLibraryFile(input.bytes)).doc);
+  const items = await uploadedItems(input.bytes);
+  return insertSystem(db, actor, storage, { name, guide, items, bytes: input.bytes, sources: [] });
+}
+
+async function uploadedItems(bytes: Uint8Array): Promise<DesignSystemItem[]> {
+  if (bytes.byteLength === 0) throw new ValidationError('Empty file');
+  if (bytes.byteLength > MAX_DESIGN_FILE_BYTES) throw new ValidationError('File too large');
+  const items = libraryItems((await readLibraryFile(bytes)).doc);
   if (!items.length)
     throw new ValidationError(
       'That file has no colour variables, styles or components to build a system from.',
     );
+  return items;
+}
 
+async function insertSystem(
+  db: Db,
+  actor: Actor,
+  storage: DesignFileStorage,
+  input: {
+    name: string;
+    guide: string;
+    items: DesignSystemItem[];
+    bytes: Uint8Array;
+    sources: DesignSystemSource[];
+  },
+): Promise<DesignSystemDetail> {
   const systemId = randomUUID();
   const sourceKey = objectKey(actor.workspace.id, systemId);
   await storage.put(sourceKey, input.bytes);
@@ -257,7 +307,13 @@ export async function createDesignSystem(
     return await db.transaction(async (tx) => {
       const [system] = await tx
         .insert(designSystems)
-        .values({ id: systemId, workspaceId: actor.workspace.id, name, createdBy: actor.userId })
+        .values({
+          id: systemId,
+          workspaceId: actor.workspace.id,
+          name: input.name,
+          sources: input.sources,
+          createdBy: actor.userId,
+        })
         .returning();
       const [version] = await tx
         .insert(designSystemVersions)
@@ -266,8 +322,8 @@ export async function createDesignSystem(
           designSystemId: systemId,
           version: 1,
           sourceKey,
-          guide,
-          items,
+          guide: input.guide,
+          items: input.items,
           createdBy: actor.userId,
         })
         .returning();
@@ -277,6 +333,378 @@ export async function createDesignSystem(
     await storage.delete(sourceKey).catch(() => {});
     throw e;
   }
+}
+
+// ---- building from sources (Story 10.2) ----
+
+/** One line of a build's progress, as the build page shows it. */
+export interface BuildStep {
+  step: 'sources' | 'colours' | 'type' | 'scales' | 'components' | 'guide';
+  text: string;
+}
+
+export interface BuildSources {
+  /** A public GitHub repository URL. */
+  repo?: unknown;
+  uploads?: Upload[];
+}
+
+export interface BuildOptions {
+  fetch?: typeof fetch;
+  onStep?: (s: BuildStep) => void | Promise<void>;
+}
+
+interface BuiltSystem {
+  bytes: Uint8Array;
+  guide: string;
+  items: DesignSystemItem[];
+  sources: DesignSystemSource[];
+}
+
+const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** Read the sources and write the library file and guide. No database writes. */
+async function buildFromSources(
+  name: string,
+  input: BuildSources,
+  opts: BuildOptions,
+): Promise<BuiltSystem> {
+  const step = async (s: BuildStep) => opts.onStep?.(s);
+  const repoUrl = typeof input.repo === 'string' && input.repo.trim() ? input.repo : null;
+  const uploads = input.uploads ?? [];
+  if (!repoUrl && !uploads.length)
+    throw new ValidationError('Add a GitHub repository or upload some files.');
+  const repo = repoUrl ? parseGithubUrl(repoUrl) : null;
+
+  const files: SourceFile[] = [];
+  const sources: DesignSystemSource[] = [];
+  const origins: string[] = [];
+  if (repo) {
+    files.push(...(await readGithubRepo(repo, opts.fetch)));
+    sources.push({ kind: 'github', ...repo });
+    origins.push(`github.com/${repo.owner}/${repo.repo}${repo.ref ? ` (${repo.ref})` : ''}`);
+  }
+  const uploaded = await readUploads(uploads);
+  files.push(...uploaded.files);
+  if (uploads.length) {
+    sources.push({ kind: 'upload', names: uploads.map((u) => u.name).slice(0, 50) });
+    origins.push(plural(uploads.length, 'uploaded file'));
+  }
+  const tokens = extractTokens(files);
+  uploaded.svgColours.forEach((hex, i) =>
+    tokens.colours.push({ name: `logo/${i + 1}`, group: 'Logo', hex }),
+  );
+  const what = [
+    tokens.read.some((p) => /tailwind\.config/.test(p)) ? 'Tailwind config' : null,
+    tokens.read.some((p) => /\.(css|scss|pcss)$/.test(p)) ? 'CSS variables' : null,
+    tokens.components.length ? plural(tokens.components.length, 'React component') : null,
+  ].filter(Boolean);
+  await step({
+    step: 'sources',
+    text: `Read ${origins.join(' and ')}${what.length ? `: ${what.join(', ')}` : ''}${
+      uploaded.unread.length ? `. Not read yet: ${uploaded.unread.join(', ')}` : ''
+    }`,
+  });
+  if (!tokens.colours.length && !tokens.type.length && !tokens.components.length)
+    throw new ValidationError(
+      'No colours, type or components were found. Point at the code that holds the Tailwind config or CSS variables.',
+    );
+
+  const groups = new Set(tokens.colours.map((c) => c.group)).size;
+  await step({
+    step: 'colours',
+    text: `Colours: ${plural(groups, 'group')}, ${plural(tokens.colours.length, 'value')}`,
+  });
+  const families = new Set([tokens.fonts.sans, tokens.fonts.heading].filter(Boolean)).size;
+  await step({
+    step: 'type',
+    text: `Type: ${plural(Math.max(families, 1), 'family', 'families')}, ${plural(Math.max(tokens.type.length, 1), 'style')}`,
+  });
+  await step({
+    step: 'scales',
+    text: `Spacing and radius scales: ${plural(tokens.spacing.length, 'step')}, ${plural(tokens.radius.length, 'radius', 'radii')}`,
+  });
+  const built = buildLibraryDocument(name, tokens);
+  await step({
+    step: 'components',
+    text: `Components: ${built.components.join(', ')}${
+      tokens.components.length ? ` (${tokens.components.length} in the code)` : ''
+    }`,
+  });
+  const guide = buildGuide(name, tokens, origins.join(' and '), built.components);
+  await step({ step: 'guide', text: 'Wrote the guide for Claude' });
+  const bytes = await writeLibraryFile({ doc: built.doc, entries: [] });
+  return { bytes, guide, items: libraryItems(built.doc), sources };
+}
+
+/**
+ * Story 10.2: build a draft system from a GitHub repository or uploaded files: colour, spacing
+ * and radius variables, text styles, the core components (Button, Input, Card, Nav) and a guide.
+ * It lands in the review page (10.3) like an uploaded library file.
+ */
+export async function buildDesignSystem(
+  db: Db,
+  actor: Actor,
+  storage: DesignFileStorage,
+  input: BuildSources & { name: unknown },
+  opts: BuildOptions = {},
+): Promise<DesignSystemDetail> {
+  assertCan(actor.role, 'design_system:edit');
+  const name = parse(nameSchema, input.name, 'name');
+  const built = await buildFromSources(name, input, opts);
+  return insertSystem(db, actor, storage, { name, ...built });
+}
+
+// ---- new versions (Story 10.6) ----
+
+/**
+ * A new version of a system, for review. When the newest version is still a draft it is replaced
+ * instead (one draft at a time). What the previous version's review dropped stays dropped (by
+ * name), and its guide carries over.
+ */
+async function addVersion(
+  db: Db,
+  actor: Actor,
+  storage: DesignFileStorage,
+  system: DesignSystem,
+  input: { bytes: Uint8Array; items: DesignSystemItem[] },
+): Promise<DesignSystemVersion> {
+  const latest = await latestVersion(db, system);
+  const droppedNames = new Set(
+    latest.items.filter((i) => latest.dropped.includes(i.key)).map((i) => `${i.kind}:${i.name}`),
+  );
+  const dropped = input.items
+    .filter((i) => droppedNames.has(`${i.kind}:${i.name}`))
+    .map((i) => i.key);
+  const sourceKey = objectKey(actor.workspace.id, system.id);
+  await storage.put(sourceKey, input.bytes);
+  const values = {
+    sourceKey,
+    items: input.items,
+    dropped,
+    guide: latest.guide,
+    createdBy: actor.userId,
+  };
+  try {
+    if (!latest.publishedAt) {
+      const [row] = await db
+        .update(designSystemVersions)
+        .set(values)
+        .where(eq(designSystemVersions.id, latest.id))
+        .returning();
+      await storage.delete(latest.sourceKey).catch(() => {});
+      return row!;
+    }
+    const [row] = await db
+      .insert(designSystemVersions)
+      .values({
+        ...values,
+        workspaceId: actor.workspace.id,
+        designSystemId: system.id,
+        version: latest.version + 1,
+      })
+      .returning();
+    return row!;
+  } catch (e) {
+    await storage.delete(sourceKey).catch(() => {});
+    throw e;
+  }
+}
+
+/** A new version from an uploaded library file. */
+export async function uploadDesignSystemVersion(
+  db: Db,
+  actor: Actor,
+  storage: DesignFileStorage,
+  input: { systemId: string; bytes: Uint8Array },
+): Promise<DesignSystemVersion> {
+  assertCan(actor.role, 'design_system:edit');
+  const system = await findSystem(db, actor, input.systemId);
+  const items = await uploadedItems(input.bytes);
+  return addVersion(db, actor, storage, system, { bytes: input.bytes, items });
+}
+
+/** A new version built again from the system's GitHub repository (Story 10.2's source). */
+export async function rebuildDesignSystem(
+  db: Db,
+  actor: Actor,
+  storage: DesignFileStorage,
+  input: { systemId: string },
+  opts: BuildOptions = {},
+): Promise<DesignSystemVersion> {
+  assertCan(actor.role, 'design_system:edit');
+  const system = await findSystem(db, actor, input.systemId);
+  const repo = system.sources.find((s) => s.kind === 'github');
+  if (!repo) throw new ValidationError('This system was not built from a repository.');
+  const built = await buildFromSources(
+    system.name,
+    { repo: `github.com/${repo.owner}/${repo.repo}${repo.ref ? `/tree/${repo.ref}` : ''}` },
+    opts,
+  );
+  return addVersion(db, actor, storage, system, built);
+}
+
+export interface VersionChanges {
+  /** The version it's compared with (the published one), or null for a first version. */
+  from: { version: number } | null;
+  to: { version: number; published: boolean };
+  /** The version new files start from (and files update to), if any. */
+  published: number | null;
+  changes: LibraryChange[];
+}
+
+/** What the newest version changes against the published one (the update's review). */
+export async function designSystemChanges(
+  db: Db,
+  actor: Actor,
+  input: { systemId: string },
+): Promise<VersionChanges> {
+  const { system, version } = await getDesignSystem(db, actor, input.systemId);
+  const versions = await db
+    .select()
+    .from(designSystemVersions)
+    .where(eq(designSystemVersions.designSystemId, system.id))
+    .orderBy(desc(designSystemVersions.version));
+  const base =
+    versions.find((v) => v.id === system.publishedVersionId && v.id !== version.id) ??
+    versions.find((v) => v.version < version.version && v.publishedAt);
+  return {
+    from: base ? { version: base.version } : null,
+    to: { version: version.version, published: version.publishedAt !== null },
+    published: versions.find((v) => v.id === system.publishedVersionId)?.version ?? null,
+    changes: base
+      ? libraryChanges(base.summary ?? keptItems(base), version.summary ?? keptItems(version))
+      : [],
+  };
+}
+
+// ---- updating files (Story 10.6) ----
+
+export interface SystemFile {
+  projectId: string;
+  projectName: string;
+  version: number;
+}
+
+/** Files that use the system, and the version each is on. */
+export async function designSystemFiles(
+  db: Db,
+  actor: Actor,
+  input: { systemId: string },
+): Promise<SystemFile[]> {
+  assertCan(actor.role, 'design_system:read');
+  const system = await findSystem(db, actor, input.systemId);
+  return db
+    .select({
+      projectId: projects.id,
+      projectName: projects.name,
+      version: designSystemVersions.version,
+    })
+    .from(designSystemAttachments)
+    .innerJoin(files, eq(files.id, designSystemAttachments.fileId))
+    .innerJoin(projects, eq(projects.id, files.projectId))
+    .innerJoin(designSystemVersions, eq(designSystemVersions.id, designSystemAttachments.versionId))
+    .where(
+      and(
+        eq(designSystemAttachments.designSystemId, system.id),
+        eq(designSystemAttachments.workspaceId, actor.workspace.id),
+      ),
+    )
+    .orderBy(projects.name);
+}
+
+export interface FileUpdateResult {
+  updated: string[];
+  /** Files left as they were, and why (open in the editor, archived, missing). */
+  skipped: { projectName: string; reason: string }[];
+}
+
+/**
+ * Bring every file on an older version of the system up to the published one (Story 10.6). A
+ * file open in the editor (a live edit lock) is skipped, so a tab never saves over the update;
+ * it can be updated once it's closed. Each file's update is all or nothing.
+ */
+export async function updateDesignSystemFiles(
+  db: Db,
+  actor: Actor,
+  storage: DesignFileStorage,
+  input: { systemId: string },
+  now: () => Date = () => new Date(),
+): Promise<FileUpdateResult> {
+  await assertManage(db, actor, 'design_system:publish');
+  const system = await findSystem(db, actor, input.systemId);
+  if (!system.publishedVersionId) throw new ValidationError('Publish the system first.');
+  const [published] = await db
+    .select()
+    .from(designSystemVersions)
+    .where(eq(designSystemVersions.id, system.publishedVersionId));
+  const library = published?.libraryKey ? await readAll(storage, published.libraryKey) : null;
+  if (!published || !library) throw new NotFoundError('The library file is missing');
+  const libraryDoc = (await readLibraryFile(library)).doc;
+
+  const rows = await db
+    .select({ file: files, project: projects })
+    .from(designSystemAttachments)
+    .innerJoin(files, eq(files.id, designSystemAttachments.fileId))
+    .innerJoin(projects, eq(projects.id, files.projectId))
+    .where(
+      and(
+        eq(designSystemAttachments.designSystemId, system.id),
+        eq(designSystemAttachments.workspaceId, actor.workspace.id),
+        sql`${designSystemAttachments.versionId} <> ${published.id}`,
+      ),
+    );
+  const result: FileUpdateResult = { updated: [], skipped: [] };
+  for (const { file, project } of rows) {
+    if (project.archivedAt) {
+      result.skipped.push({ projectName: project.name, reason: 'archived' });
+      continue;
+    }
+    const bytes = await readAll(storage, file.blobKey);
+    if (!bytes) {
+      result.skipped.push({ projectName: project.name, reason: 'its file is missing' });
+      continue;
+    }
+    const current = await readLibraryFile(bytes);
+    const next = await writeLibraryFile({
+      ...current,
+      doc: updateDocument(current.doc, libraryDoc, system.name),
+    });
+    const key = newDesignFileKey(actor.workspace.id, project.id);
+    await storage.put(key, next);
+    const committed = await db.transaction(async (tx) => {
+      const [lock] = await tx
+        .select({ projectId: editLocks.projectId })
+        .from(editLocks)
+        .where(
+          and(
+            eq(editLocks.projectId, project.id),
+            gt(editLocks.heartbeatAt, new Date(now().getTime() - EDIT_LOCK_TTL_MS)),
+          ),
+        )
+        .for('update');
+      if (lock) return false;
+      const moved = await tx
+        .update(files)
+        .set({ blobKey: key, size: next.byteLength, updatedBy: actor.userId, updatedAt: now() })
+        .where(and(eq(files.id, file.id), eq(files.blobKey, file.blobKey)))
+        .returning({ id: files.id });
+      if (!moved.length) return false;
+      await tx
+        .update(designSystemAttachments)
+        .set({ versionId: published.id })
+        .where(eq(designSystemAttachments.fileId, file.id));
+      return true;
+    });
+    if (committed) {
+      await storage.delete(file.blobKey).catch(() => {});
+      result.updated.push(project.name);
+    } else {
+      await storage.delete(key).catch(() => {});
+      result.skipped.push({ projectName: project.name, reason: 'open in the editor' });
+    }
+  }
+  return result;
 }
 
 /** The review's choices for an unpublished version ("Save draft"), and its guide. */

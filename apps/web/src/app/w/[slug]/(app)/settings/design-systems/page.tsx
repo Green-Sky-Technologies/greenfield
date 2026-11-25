@@ -13,7 +13,10 @@ function age(d: Date): string {
   return `${Math.floor(days / 7)} weeks ago`;
 }
 
-/** Story 10.4: the workspace's design systems, which is published and the default, and who manages them. */
+/**
+ * Story 10.4: the workspace's design systems, which is published and the default, and who
+ * manages them. Story 10.6: a newer draft of a published system shows as an update to review.
+ */
 export default async function DesignSystemsPage({
   params,
 }: PageProps<'/w/[slug]/settings/design-systems'>) {
@@ -34,6 +37,24 @@ export default async function DesignSystemsPage({
           </Link>
         )}
       </div>
+
+      {systems
+        .filter((s) => s.update)
+        .map((s) => (
+          <div
+            key={s.id}
+            role="note"
+            className="mb-4 flex items-center justify-between gap-4 border-l-2 border-accent bg-surface px-4 py-3 text-sm"
+          >
+            <p>
+              <span className="font-medium">Update ready for {s.name}</span> · {s.update!.summary}
+              {s.update!.repo ? ` in ${s.update!.repo}` : ''}
+            </p>
+            <Link href={`${base}/${s.id}`} className="btn-ghost">
+              Review update
+            </Link>
+          </div>
+        ))}
 
       {systems.length === 0 ? (
         <p className="card p-6 text-sm text-muted">
@@ -71,7 +92,7 @@ export default async function DesignSystemsPage({
                       )}
                     </div>
                   </td>
-                  <td className="px-4 py-3 text-muted">Upload</td>
+                  <td className="px-4 py-3 text-muted">{s.sources}</td>
                   <td className="px-4 py-3 font-mono text-xs text-muted">
                     v{s.latest.version} ·{' '}
                     {s.latest.publishedAt ? age(s.latest.publishedAt) : 'draft'}

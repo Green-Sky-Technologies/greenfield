@@ -10,6 +10,8 @@ import {
   setDefaultDesignSystem,
   setDesignSystemPolicy,
   unpublishDesignSystem,
+  updateDesignSystemFiles,
+  type FileUpdateResult,
 } from '../services/design-systems';
 import type { Actor } from '../services/types';
 import { run, type ActionResult } from './result';
@@ -56,4 +58,14 @@ export async function deleteDesignSystemAction(systemId: string): Promise<Action
 
 export async function setPolicyAction(managers: string): Promise<ActionResult> {
   return act((actor) => setDesignSystemPolicy(db(), actor, { managers }));
+}
+
+/** Story 10.6: bring the files on older versions up to the published one. */
+export async function updateFilesAction(systemId: string): Promise<ActionResult<FileUpdateResult>> {
+  const actor = await requireActor();
+  const res = await run(() =>
+    updateDesignSystemFiles(db(), actor, defaultDesignFileStorage(), { systemId }),
+  );
+  revalidatePath(`/w/${actor.workspace.slug}/settings/design-systems`, 'layout');
+  return res;
 }
