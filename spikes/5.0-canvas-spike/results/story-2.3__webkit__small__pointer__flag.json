@@ -1,0 +1,208 @@
+{
+  "build": "story-2.3",
+  "browser": "webkit",
+  "channel": null,
+  "headless": true,
+  "file": "small",
+  "nodes": 14,
+  "sync": "pointer",
+  "canvas": "flag",
+  "loadMs": 1465,
+  "env": {
+    "ua": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Safari/605.1.15",
+    "renderer": "Apple GPU",
+    "dpr": 1,
+    "webgpu": true
+  },
+  "trials": 20,
+  "framePeriod": {
+    "frames": 41,
+    "periodP50": 33,
+    "workP50": 2,
+    "workP95": 3
+  },
+  "canvasInfo": {
+    "rect": [
+      0,
+      0,
+      828,
+      829
+    ],
+    "zoom": 0.4861111111111111,
+    "panels": {
+      "left": 240,
+      "leftCollapsed": false,
+      "minimized": false,
+      "right": 240
+    }
+  },
+  "eventFloor": {
+    "postMessageHop": {
+      "n": 40,
+      "p50": 1,
+      "p95": 3,
+      "max": 8,
+      "min": 0
+    },
+    "postToPaint": {
+      "n": 40,
+      "p50": 36,
+      "p95": 38,
+      "max": 38,
+      "min": 32
+    }
+  },
+  "clickToInspector": {
+    "samples": 20,
+    "clickToInspector": {
+      "n": 20,
+      "p50": 117,
+      "p95": 134,
+      "max": 134,
+      "min": 109
+    },
+    "canvasFrameEnd": {
+      "n": 20,
+      "p50": 13,
+      "p95": 29,
+      "max": 29,
+      "min": 5
+    },
+    "addedOverCanvas": {
+      "n": 20,
+      "p50": 103,
+      "p95": 125,
+      "max": 125,
+      "min": 94
+    },
+    "inputToSyncRequest": {
+      "n": 20,
+      "p50": 14,
+      "p95": 31,
+      "max": 31,
+      "min": 9
+    },
+    "gateMs": {
+      "n": 20,
+      "p50": 34,
+      "p95": 68,
+      "max": 68,
+      "min": 33
+    },
+    "stateSetToPaint": {
+      "n": 20,
+      "p50": 33,
+      "p95": 39,
+      "max": 39,
+      "min": 20
+    }
+  },
+  "gestures": true,
+  "scrub": {
+    "target": "leaf",
+    "moves": 60,
+    "previewsApplied": 60,
+    "moveToApplied": {
+      "n": 60,
+      "p50": 33,
+      "p95": 35,
+      "max": 44,
+      "min": 16
+    },
+    "moveToCanvasFrameEnd": {
+      "n": 60,
+      "p50": 28,
+      "p95": 33,
+      "max": 41,
+      "min": 3
+    },
+    "previewCallMs": {
+      "n": 60,
+      "p50": 33,
+      "p95": 35,
+      "max": 44,
+      "min": 16
+    },
+    "editorFramesDuringScrub": 45,
+    "undoStepsAdded": 1,
+    "startValue": 20,
+    "endValue": 140
+  },
+  "escCancel": {
+    "gestures": true,
+    "startValue": 140,
+    "xAfterEsc": 140,
+    "restored": true,
+    "undoStepsAdded": 0
+  },
+  "editToLayers": {
+    "duplicate": {
+      "n": 8,
+      "keyToLayers": {
+        "n": 8,
+        "p50": 152,
+        "p95": 160,
+        "max": 160,
+        "min": 143
+      },
+      "addedOverCanvas": {
+        "n": 8,
+        "p50": 135,
+        "p95": 137,
+        "max": 137,
+        "min": 130
+      },
+      "treeMs": {
+        "n": 8,
+        "p50": 35,
+        "p95": 37,
+        "max": 37,
+        "min": 19
+      },
+      "rows": 14
+    },
+    "delete": {
+      "n": 8,
+      "keyToLayers": {
+        "n": 8,
+        "p50": 123,
+        "p95": 125,
+        "max": 125,
+        "min": 109
+      }
+    },
+    "controlEdit": {
+      "n": 0,
+      "editToLayers": {
+        "n": 0,
+        "p50": null,
+        "p95": null,
+        "max": null,
+        "min": null
+      }
+    }
+  },
+  "dragSettle": {
+    "n": 6,
+    "upToFinalInspector": {
+      "n": 6,
+      "p50": 161,
+      "p95": 195,
+      "max": 195,
+      "min": 116
+    },
+    "inspectorPaintsPerDrag": {
+      "n": 6,
+      "p50": 4,
+      "p95": 4,
+      "max": 4,
+      "min": 4
+    }
+  },
+  "cpuIdle": {
+    "start": 86.48,
+    "end": 80.92,
+    "quietMin": 75
+  },
+  "problems": []
+}

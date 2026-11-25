@@ -57,6 +57,11 @@ const nextConfig: NextConfig = {
         headers: [{ key: 'Content-Security-Policy', value: EMBEDDING_PAGE_CSP }],
       },
       {
+        // The canvas-mode spike (Story 5.0, throwaway) embeds the editor too.
+        source: '/dev/canvas-spike',
+        headers: [{ key: 'Content-Security-Policy', value: EMBEDDING_PAGE_CSP }],
+      },
+      {
         source: '/editor/:file(.*\\.(?:wasm|js))',
         headers: [{ key: 'Cache-Control', value: 'public, max-age=31536000, immutable' }],
       },
