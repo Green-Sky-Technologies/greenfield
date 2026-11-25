@@ -55,6 +55,8 @@ function mount(nodes: NodeFields[]) {
     onDirty: () => () => {},
     onReady: () => () => {},
     execute: (command: string, params: unknown) => {
+      // The styles section (5.9) reads the file's styles and variables on mount; record edits only.
+      if (command.endsWith('.list')) return Promise.resolve([]);
       calls.push({ command, params });
       return Promise.resolve(null);
     },
