@@ -13,6 +13,7 @@
  */
 import {
   blurEditor,
+  editorHasFocus,
   focusEditor,
   interceptEditorKeys,
   platformFromUserAgent,
@@ -164,8 +165,15 @@ function Shell({
     const onFocusIn = (e: FocusEvent) => {
       if (handle && e.target !== handle.iframe) blurEditor(handle.iframe);
     };
+    // A press in the shell while the editor has focus: the editor lets go first, or Firefox
+    // keeps focus in its frame and the text box pressed never gets the keyboard.
+    const onPointerDown = (e: PointerEvent) => {
+      if (handle && e.target !== handle.iframe && editorHasFocus(handle.iframe))
+        blurEditor(handle.iframe);
+    };
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('focusin', onFocusIn);
+    document.addEventListener('pointerdown', onPointerDown, true);
     const offEditor = handle
       ? interceptEditorKeys(handle.iframe, (e) => {
           const a = shellKeyAction(e, 'canvas', platform, context());
@@ -176,6 +184,7 @@ function Shell({
     return () => {
       document.removeEventListener('keydown', onKeyDown);
       document.removeEventListener('focusin', onFocusIn);
+      document.removeEventListener('pointerdown', onPointerDown, true);
       offEditor();
     };
   }, [handle, store]);

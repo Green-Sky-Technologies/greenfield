@@ -115,13 +115,11 @@ async function recordEditorEvents(page: Page) {
 
 const send = async (page: Page, text: string) => {
   const box = page.getByRole('textbox', { name: 'Message Claude' });
-  // Firefox: just after the file opens, the editor takes focus back once (base behaviour).
-  await expect(async () => {
-    await box.fill(text);
-    await expect(box).toHaveValue(text, { timeout: 500 });
-    await expect(box).toBeFocused({ timeout: 500 });
-  }).toPass();
-  await box.press('Enter');
+  // Typed as a person would: the first click into the box keeps the keyboard.
+  await box.click();
+  await page.keyboard.type(text);
+  await expect(box).toHaveValue(text);
+  await page.keyboard.press('Enter');
 };
 
 const replies = (page: Page) =>
