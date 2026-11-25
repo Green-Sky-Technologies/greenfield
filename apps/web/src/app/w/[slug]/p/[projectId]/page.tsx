@@ -3,7 +3,7 @@ import { currentUser } from '@clerk/nextjs/server';
 import { notFound } from 'next/navigation';
 import { ProjectShell } from '@/features/shell/project-shell';
 import { db, requireActor } from '@/server/context';
-import { listMentionableMembers } from '@/server/services/comments';
+import { workspaceMembers } from '@/server/members';
 import { documentName } from '@/server/services/design-files';
 import { getProject } from '@/server/services/projects';
 import { NotFoundError } from '@/server/services/types';
@@ -28,7 +28,7 @@ export default async function ProjectPage({
   const webgl = (await searchParams).webgl !== undefined;
   const archived = !!project.archivedAt;
 
-  const people = await listMentionableMembers(db(), actor);
+  const people = await workspaceMembers(actor, user);
 
   return (
     <ProjectShell

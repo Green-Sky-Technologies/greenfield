@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
         id: u.id,
         email: primary?.email_address ?? null,
         name: [u.first_name, u.last_name].filter(Boolean).join(' ') || null,
-        imageUrl: u.image_url,
+        imageUrl: u.has_image ? u.image_url : null,
       });
       break;
     }

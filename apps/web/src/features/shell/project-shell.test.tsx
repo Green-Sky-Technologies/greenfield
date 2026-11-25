@@ -134,10 +134,10 @@ describe('top bar', () => {
 
   it('zooms through the bridge', async () => {
     await mount();
-    await act(async () => byName('Zoom in')!.click());
-    await act(async () => byName('Zoom out')!.click());
-    await act(async () => byName('Zoom level 150%, zoom options')!.click());
-    await act(async () => byName('Zoom to fit')!.click());
+    for (const item of ['Zoom in', 'Zoom out', 'Zoom to fit']) {
+      await act(async () => byName('Zoom level 150%, zoom options')!.click());
+      await act(async () => byName(item)!.click());
+    }
     expect(executed).toEqual(
       expect.arrayContaining(['view.zoomIn', 'view.zoomOut', 'view.zoomFit']),
     );
@@ -194,7 +194,7 @@ describe('keys and focus', () => {
     const where = () => {
       const a = document.activeElement as HTMLElement;
       if (a === iframe) return 'canvas';
-      return `${a.closest('[aria-label]:is(header, aside)')?.getAttribute('aria-label')}: ${a.textContent}`;
+      return `${a.closest('[aria-label]:is(header, aside)')?.getAttribute('aria-label')}: ${a.getAttribute('aria-label') ?? a.textContent}`;
     };
     const seen: string[] = [];
     await act(async () => iframe.focus()); // a key in the editor means its iframe has focus
@@ -229,7 +229,7 @@ describe('keys and focus', () => {
     await press(iframe.contentWindow!.document.body, { key: '\\', code: 'Backslash', [mod]: true });
     expect(panel.hidden).toBe(true);
     await press(iframe.contentWindow!.document.body, { key: 'F6' });
-    expect(document.activeElement?.textContent).toBe('All projects');
+    expect(document.activeElement?.getAttribute('aria-label')).toBe('All projects');
     await press(document.body, { key: '\\', code: 'Backslash', [mod]: true });
     expect(panel.hidden).toBe(false);
   });

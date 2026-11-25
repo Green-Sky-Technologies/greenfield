@@ -63,18 +63,25 @@ function Claude() {
 }
 
 function Avatar({ person, me }: { person: Person; me: boolean }) {
-  const ring = me ? 'outline-2 outline-user z-10 relative' : 'outline-1 outline-surface';
   if (person.imageUrl)
     return (
       // eslint-disable-next-line @next/next/no-img-element -- Clerk avatars, 28 px
-      <img src={person.imageUrl} alt="" className={`size-7 object-cover ${ring} outline`} />
+      <img
+        src={person.imageUrl}
+        alt=""
+        className={`size-7 object-cover outline ${me ? 'relative z-10 outline-2 outline-user' : 'outline-1 outline-surface'}`}
+      />
     );
-  const initial = (person.name ?? '?').trim().charAt(0).toUpperCase() || '?';
   return (
     <span
-      className={`flex size-7 items-center justify-center bg-surface-2 text-xs font-medium text-text outline ${ring}`}
+      className={`flex size-7 items-center justify-center text-xs font-semibold ${
+        me ? 'bg-user text-user-ink' : 'bg-surface-2 text-text'
+      }`}
     >
-      {initial}
+      {initial(person.name)}
     </span>
   );
 }
+
+/** The first letter of a name (or an email address); a dot for a member Clerk can't name. */
+const initial = (name: string | null) => name?.trim().charAt(0).toUpperCase() || '·';

@@ -145,7 +145,7 @@ function Shell({
           setEditPanel((v) => !v);
           break;
         case 'save':
-          handle?.editor.save().catch(() => {}); // the status bar shows save errors
+          handle?.editor.save().catch(() => {}); // a failed save shows above the canvas
           break;
       }
     };
