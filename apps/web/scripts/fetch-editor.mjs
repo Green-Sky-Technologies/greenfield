@@ -3,8 +3,9 @@
  * Download the figcraft-web release pinned in packages/bridge/editor-release.json, verify its sha256 and unpack it into
  * apps/web/public/editor/ (gitignored), so the app serves the editor at /editor/. Runs before
  * `dev` and `build` (package.json `predev`/`prebuild`, scripts/vercel-build.mjs) and does
- * nothing when the pinned version is already there. Epic 2 swaps the release for the fork's
- * CI bundle.
+ * nothing when the pinned version is already there. The pin is a public download `url` (the
+ * fork's CI release, Story 8.1, or an upstream release) plus the sha256 of the zip. The zip holds
+ * the site at its root (the fork's) or inside one top-level folder (upstream's).
  *
  *   node scripts/fetch-editor.mjs          # from apps/web; skip if already there
  *   node scripts/fetch-editor.mjs --force  # re-download
@@ -25,7 +26,7 @@ const pin = JSON.parse(
 );
 const VERSION = pin.version;
 const SHA256 = pin.sha256;
-const URL_ = `https://github.com/storytold/figcraft/releases/download/v${VERSION}/figcraft-web-${VERSION}.zip`;
+const URL_ = pin.url;
 const dest = path.join(root, 'public/editor');
 const stamp = path.join(dest, '.figcraft-version');
 
@@ -49,8 +50,11 @@ try {
   fs.writeFileSync(zipPath, zip);
   const out = path.join(tmp, 'out');
   execFileSync('unzip', ['-q', zipPath, '-d', out], { stdio: 'inherit' });
-  const top = path.join(out, `figcraft-web-${VERSION}`);
-  if (!fs.existsSync(path.join(top, 'index.html'))) throw new Error('Unexpected archive layout');
+  const top = [out, ...fs.readdirSync(out).map((d) => path.join(out, d))].find((d) =>
+    fs.existsSync(path.join(d, 'index.html')),
+  );
+  if (!top)
+    throw new Error('Unexpected archive layout: no index.html at the root or one level down');
   fs.rmSync(dest, { recursive: true, force: true });
   fs.mkdirSync(path.dirname(dest), { recursive: true });
   fs.cpSync(top, dest, { recursive: true });
