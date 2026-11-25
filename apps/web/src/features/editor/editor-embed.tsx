@@ -35,8 +35,9 @@ declare global {
 }
 
 /**
- * FigCraft's file tab strip (home, file tabs, new tab, theme) is this tall. Until the fork can hide
- * it (Story 2.6), the iframe is pulled up under the app's top bar so the strip is covered.
+ * FigCraft's file tab strip (home, file tabs, new tab, theme) is this tall. Canvas mode (2.11) hides
+ * it; while the editor's own panels are back (5.13) the iframe is pulled up under the app's top bar
+ * so the strip is covered.
  */
 const EDITOR_TAB_STRIP_PX = 40;
 
@@ -45,6 +46,8 @@ interface Props {
   author: string;
   canEdit: boolean;
   webgl?: boolean;
+  /** The editor draws only the canvas (it starts that way: `?canvas`). */
+  canvasMode: boolean;
   onEditor?: (handle: EditorHandle | null) => void;
 }
 
@@ -66,7 +69,7 @@ async function whenVisible<T>(run: () => Promise<T>): Promise<T> {
   }
 }
 
-export function EditorEmbed({ projectId, author, canEdit, webgl, onEditor }: Props) {
+export function EditorEmbed({ projectId, author, canEdit, webgl, canvasMode, onEditor }: Props) {
   const iframe = useRef<HTMLIFrameElement>(null);
   const [status, setStatus] = useState<Status>('loading');
   const [dirty, setDirty] = useState(false);
@@ -102,7 +105,7 @@ export function EditorEmbed({ projectId, author, canEdit, webgl, onEditor }: Pro
     const editor: Editor = createBridge({
       iframe: el,
       author,
-      query: webgl ? { webgl: true } : {},
+      query: webgl ? { canvas: true, webgl: true } : { canvas: true },
     });
     const handle = { editor, iframe: el };
     if (process.env.NODE_ENV !== 'production') window.__greenfieldBridge = handle;
@@ -203,7 +206,11 @@ export function EditorEmbed({ projectId, author, canEdit, webgl, onEditor }: Pro
           ref={iframe}
           title="Design canvas"
           className="absolute inset-x-0 bottom-0 w-full border-0"
-          style={{ top: -EDITOR_TAB_STRIP_PX, height: `calc(100% + ${EDITOR_TAB_STRIP_PX}px)` }}
+          style={
+            canvasMode
+              ? { top: 0, height: '100%' }
+              : { top: -EDITOR_TAB_STRIP_PX, height: `calc(100% + ${EDITOR_TAB_STRIP_PX}px)` }
+          }
           allow="fullscreen; clipboard-read; clipboard-write"
         />
       </div>

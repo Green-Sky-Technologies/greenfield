@@ -188,13 +188,84 @@ describe('keys and focus', () => {
     expect(composer()).toBeTruthy(); // Esc on the canvas is the editor's, not the shell's
   });
 
-  it('F6 moves focus from the canvas to the top bar and back', async () => {
+  it('F6 and Shift+F6 cycle the top bar, left panel, canvas and edit panel', async () => {
     await mount();
     const { iframe } = embed.handle!;
+    const where = () => {
+      const a = document.activeElement as HTMLElement;
+      if (a === iframe) return 'canvas';
+      return `${a.closest('[aria-label]:is(header, aside)')?.getAttribute('aria-label')}: ${a.textContent}`;
+    };
+    const seen: string[] = [];
+    await act(async () => iframe.focus()); // a key in the editor means its iframe has focus
+    await press(iframe.contentWindow!.document.body, { key: 'F6' });
+    for (let i = 0; i < 4; i++) {
+      seen.push(where());
+      await press(
+        document.activeElement === iframe
+          ? iframe.contentWindow!.document.body
+          : document.activeElement!,
+        { key: 'F6' },
+      );
+    }
+    expect(seen).toEqual([
+      'Edit panel: Design',
+      'Project: All projects',
+      'Left panel: Layers',
+      'canvas',
+    ]);
+    expect(where()).toBe('Edit panel: Design'); // round again
+    await press(document.activeElement!, { key: 'F6', shiftKey: true });
+    expect(where()).toBe('canvas');
+    await press(iframe.contentWindow!.document.body, { key: 'F6', shiftKey: true });
+    expect(where()).toBe('Left panel: Layers');
+  });
+
+  it('the edit panel chord hides the edit panel, and F6 skips it then', async () => {
+    await mount();
+    const panel = $('aside[aria-label="Edit panel"]')!;
+    const mod = platformFromUserAgent(navigator.userAgent) === 'mac' ? 'metaKey' : 'ctrlKey';
+    const { iframe } = embed.handle!;
+    await press(iframe.contentWindow!.document.body, { key: '\\', code: 'Backslash', [mod]: true });
+    expect(panel.hidden).toBe(true);
     await press(iframe.contentWindow!.document.body, { key: 'F6' });
     expect(document.activeElement?.textContent).toBe('All projects');
-    await press(document.activeElement!, { key: 'F6' });
-    expect(document.activeElement).toBe(iframe);
+    await press(document.body, { key: '\\', code: 'Backslash', [mod]: true });
+    expect(panel.hidden).toBe(false);
+  });
+});
+
+describe('panels read the editor store', () => {
+  it('a selection on the canvas shows in the Layers and Design stubs', async () => {
+    await mount();
+    await act(async () => {
+      await editor.userExecute('node.create', { type: 'frame', name: 'Hero' });
+    });
+    const doc = await editor.inspect({ depth: 0, fields: [] });
+    await act(async () => {
+      editor.postEvent('selection.changed', {
+        document: doc.id,
+        page: doc.currentPage,
+        ids: doc.selection,
+      });
+      editor.postEvent('document.changed', { document: doc.id, revision: 2, undoDepth: 1 });
+    });
+    await act(async () => {}); // the reads the ids-only events need
+    expect($('[data-testid="layers-summary"]')!.textContent).toContain('1 layers · 1 selected');
+    expect($('[data-testid="design-tab-name"]')!.textContent).toBe('Hero');
+    expect(document.activeElement).not.toBe(null);
+  });
+
+  it('"Editor panels" turns canvas mode off; ours hide until it comes back on', async () => {
+    await mount();
+    await act(async () => byName('Use editor panels')!.click());
+    expect(executed).toContain('view.canvasMode');
+    await act(async () => editor.postEvent('canvas.mode', { on: false }));
+    expect($('aside[aria-label="Left panel"]')!.hidden).toBe(true);
+    expect($('aside[aria-label="Edit panel"]')!.hidden).toBe(true);
+    expect(byName('Use editor panels')!.getAttribute('aria-pressed')).toBe('true');
+    await act(async () => editor.postEvent('canvas.mode', { on: true }));
+    expect($('aside[aria-label="Edit panel"]')!.hidden).toBe(false);
   });
 
   it('routes the platform Save chord in the shell to the editor', async () => {

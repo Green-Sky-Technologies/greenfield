@@ -1,9 +1,10 @@
 'use client';
 
 /**
- * The minimum needed to drive an interactive agent turn (Story 4.2): a prompt box, the replies,
- * and the tool runner. The real agent pane (layer-by-layer changes, Undo all, question cards)
- * is Story 5.2; it should reuse `ToolRunner` and the send/stream flow here.
+ * The Agent tab (stub for lane W2-F, Stories 5.2 and 5.5): until then, Story 4.2's minimum to
+ * drive an interactive agent turn: a prompt box, the replies, and the tool runner. The real agent
+ * pane (layer-by-layer changes, Undo all, question cards) should reuse `ToolRunner` and the
+ * send/stream flow here.
  *
  * Per message: build the turn context from the editor (Story 4.1), POST it, follow the reply's
  * SSE stream, and run its tool calls through the editor as they arrive. Leaving the page
@@ -22,7 +23,7 @@ interface Props {
 
 const ACTIVE = new Set(['pending', 'streaming']);
 
-export function AgentPanel({ projectId, editor }: Props) {
+export function AgentPane({ projectId, editor }: Props) {
   const [messages, setMessages] = useState<MessageView[]>([]);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [prompt, setPrompt] = useState('');
@@ -141,9 +142,9 @@ export function AgentPanel({ projectId, editor }: Props) {
   }
 
   return (
-    <aside
+    <section
       data-testid="agent-panel"
-      className="flex w-80 shrink-0 flex-col border-r text-sm"
+      className="flex min-h-0 flex-1 flex-col text-sm"
       aria-label="Agent"
     >
       <ol className="min-h-0 flex-1 space-y-3 overflow-y-auto p-3">
@@ -193,6 +194,6 @@ export function AgentPanel({ projectId, editor }: Props) {
           Send
         </button>
       </form>
-    </aside>
+    </section>
   );
 }

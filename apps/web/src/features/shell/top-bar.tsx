@@ -1,9 +1,10 @@
 'use client';
 
 /**
- * The project's top bar (Story 5.1): where you are (projects, project, file), "Comment or ask",
- * who has access, zoom and Share. Square corners and hairlines (brand); green marks the user's own
- * actions and presence, ember the agent (D24).
+ * The project's top bar (Story 5.1): where you are (projects, project, file), the tools,
+ * "Comment or ask", who has access, the switch to the editor's own panels (5.13), zoom and Share.
+ * Square corners and hairlines (brand); green marks the user's own actions and presence, ember the
+ * agent (D24).
  */
 import type { Editor } from '@greenfield/bridge';
 import Link from 'next/link';
@@ -12,6 +13,7 @@ import { ExportMenu } from '@/features/export/export-menu';
 import { People, type Person } from './people';
 import type { ShellMenu } from './project-shell';
 import { ShareMenu } from './share-menu';
+import { ToolRow } from './tool-row';
 import { ZoomControl } from './zoom-control';
 
 export interface TopBarProps {
@@ -26,6 +28,9 @@ export interface TopBarProps {
   editor: Editor | null;
   menu: ShellMenu;
   onMenu: (menu: ShellMenu) => void;
+  /** False while the editor's own panels are back (Story 5.13). */
+  canvasMode: boolean;
+  onCanvasMode: (on: boolean) => void;
   barRef?: Ref<HTMLElement>;
 }
 
@@ -40,6 +45,8 @@ export function TopBar({
   editor,
   menu,
   onMenu,
+  canvasMode,
+  onCanvasMode,
   barRef,
 }: TopBarProps) {
   const toggle = (m: Exclude<ShellMenu, null>) => onMenu(menu === m ? null : m);
@@ -73,23 +80,36 @@ export function TopBar({
         )}
       </nav>
 
-      <button
-        type="button"
-        onClick={() => toggle('comment')}
-        aria-expanded={menu === 'comment'}
-        aria-keyshortcuts="C"
-        aria-label="Comment or ask Claude"
-        className="shell-focus group flex h-8 w-[min(22rem,40vw)] items-center gap-2 border border-border bg-bg px-2.5 text-left text-muted hover:border-muted aria-expanded:border-user"
-      >
-        <span aria-hidden className="size-1.5 shrink-0 bg-agent" />
-        <span className="flex-1 truncate">Comment or ask</span>
-        <kbd className="border border-border px-1 font-sans text-[11px] leading-4 text-muted">
-          C
-        </kbd>
-      </button>
+      <div className="flex items-center gap-2">
+        <ToolRow />
+        <button
+          type="button"
+          onClick={() => toggle('comment')}
+          aria-expanded={menu === 'comment'}
+          aria-keyshortcuts="C"
+          aria-label="Comment or ask Claude"
+          className="shell-focus group flex h-8 w-[min(22rem,40vw)] items-center gap-2 border border-border bg-bg px-2.5 text-left text-muted hover:border-muted aria-expanded:border-user"
+        >
+          <span aria-hidden className="size-1.5 shrink-0 bg-agent" />
+          <span className="flex-1 truncate">Comment or ask</span>
+          <kbd className="border border-border px-1 font-sans text-[11px] leading-4 text-muted">
+            C
+          </kbd>
+        </button>
+      </div>
 
       <div className="flex items-center justify-end gap-2">
         <People people={people} meId={meId} />
+        <button
+          type="button"
+          onClick={() => onCanvasMode(!canvasMode)}
+          aria-pressed={!canvasMode}
+          aria-label="Use editor panels"
+          title="Turn the editor’s own panels on, for anything these panels don’t cover yet"
+          className="shell-focus h-7 border border-border px-2 text-xs whitespace-nowrap text-muted hover:bg-surface-2 hover:text-text aria-pressed:border-user aria-pressed:text-text"
+        >
+          Editor panels
+        </button>
         <ZoomControl editor={editor} open={menu === 'zoom'} onToggle={() => toggle('zoom')} />
         {canExport && editor && <ExportMenu editor={editor} />}
         <ShareMenu
