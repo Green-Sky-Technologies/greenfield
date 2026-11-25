@@ -46,23 +46,30 @@ export async function getProject(db: Db, actor: Actor, projectId: string): Promi
   return p;
 }
 
-export async function createProject(
-  db: Db,
-  actor: Actor,
-  input: { name: unknown; description?: unknown },
-): Promise<Project> {
+export interface NewProjectInput {
+  name: unknown;
+  description?: unknown;
+}
+
+/** A new project's row in the actor's workspace, checked (`project:create`) and validated. */
+export function newProjectValues(actor: Actor, input: NewProjectInput) {
   assertCan(actor.role, 'project:create');
   const name = parse(nameSchema, input.name, 'name');
   const description = parse(descriptionSchema, input.description || undefined, 'description');
-  const [p] = await db
-    .insert(projects)
-    .values({
-      workspaceId: actor.workspace.id,
-      name,
-      description: description ?? null,
-      createdBy: actor.userId,
-    })
-    .returning();
+  return {
+    workspaceId: actor.workspace.id,
+    name,
+    description: description ?? null,
+    createdBy: actor.userId,
+  } satisfies typeof projects.$inferInsert;
+}
+
+export async function createProject(
+  db: Db,
+  actor: Actor,
+  input: NewProjectInput,
+): Promise<Project> {
+  const [p] = await db.insert(projects).values(newProjectValues(actor, input)).returning();
   return p!;
 }
 

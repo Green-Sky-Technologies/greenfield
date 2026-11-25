@@ -9,8 +9,8 @@
  * FigCraft-published library snapshot (`library/*`) is left out, since it would still hold what
  * the review dropped.
  */
+import { readZip, writeZip } from '@greenfield/bridge/file';
 import type { DesignSystemItem } from '@greenfield/db';
-import { deflateRawSync, inflateRawSync } from 'node:zlib';
 import { ValidationError } from '../types';
 
 type Json = Record<string, unknown>;
@@ -36,8 +36,8 @@ export interface LibraryFile {
 const DOCUMENT = 'document.json';
 const NOT_A_LIBRARY = 'That is not a FigCraft file (.figcraft).';
 
-export function readLibraryFile(bytes: Uint8Array): LibraryFile {
-  const zip = readZip(bytes);
+export async function readLibraryFile(bytes: Uint8Array): Promise<LibraryFile> {
+  const zip = await readZip(bytes);
   const json = zip?.get(DOCUMENT);
   if (!zip || !json) throw new ValidationError(NOT_A_LIBRARY);
   let doc: unknown;
@@ -58,7 +58,7 @@ export function readLibraryFile(bytes: Uint8Array): LibraryFile {
   return { doc: doc as FigcraftDocument, entries };
 }
 
-export function writeLibraryFile(file: LibraryFile): Uint8Array {
+export function writeLibraryFile(file: LibraryFile): Promise<Uint8Array> {
   return writeZip([
     [DOCUMENT, new TextEncoder().encode(JSON.stringify(file.doc))],
     ...file.entries,
@@ -273,103 +273,4 @@ export function startingDocument(doc: FigcraftDocument, systemName: string): Fig
   out.next_id = pageId + 1;
   out.comments = [];
   return out;
-}
-
-// ---- a minimal zip reader and writer (stored or deflated entries) ----
-
-const EOCD = 0x06054b50;
-const CENTRAL = 0x02014b50;
-const LOCAL = 0x04034b50;
-
-function readZip(zip: Uint8Array): Map<string, Uint8Array> | null {
-  const buf = Buffer.from(zip.buffer, zip.byteOffset, zip.byteLength);
-  const u32 = (at: number) => (at >= 0 && at + 4 <= buf.length ? buf.readUInt32LE(at) : -1);
-  const u16 = (at: number) => (at >= 0 && at + 2 <= buf.length ? buf.readUInt16LE(at) : -1);
-  let eocd = -1;
-  for (let i = buf.length - 22; i >= Math.max(0, buf.length - 22 - 0xffff); i--)
-    if (u32(i) === EOCD) {
-      eocd = i;
-      break;
-    }
-  if (eocd < 0) return null;
-  const out = new Map<string, Uint8Array>();
-  let at = u32(eocd + 16);
-  for (let n = u16(eocd + 10); n > 0; n--) {
-    if (u32(at) !== CENTRAL) return null;
-    const method = u16(at + 10);
-    const size = u32(at + 20);
-    const nameLen = u16(at + 28);
-    const local = u32(at + 42);
-    const name = buf.subarray(at + 46, at + 46 + nameLen).toString('utf8');
-    at += 46 + nameLen + u16(at + 30) + u16(at + 32);
-    if (u32(local) !== LOCAL) return null;
-    const start = local + 30 + u16(local + 26) + u16(local + 28);
-    if (start + size > buf.length) return null;
-    const data = buf.subarray(start, start + size);
-    try {
-      if (method === 0) out.set(name, new Uint8Array(data));
-      else if (method === 8) out.set(name, new Uint8Array(inflateRawSync(data)));
-      else return null;
-    } catch {
-      return null;
-    }
-  }
-  return out;
-}
-
-const CRC_TABLE = Array.from({ length: 256 }, (_, n) => {
-  let c = n;
-  for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
-  return c >>> 0;
-});
-
-function crc32(bytes: Uint8Array): number {
-  let c = 0xffffffff;
-  for (const b of bytes) c = CRC_TABLE[(c ^ b) & 0xff]! ^ (c >>> 8);
-  return (c ^ 0xffffffff) >>> 0;
-}
-
-function writeZip(entries: [string, Uint8Array][]): Uint8Array {
-  const parts: Buffer[] = [];
-  const central: Buffer[] = [];
-  let offset = 0;
-  for (const [name, raw] of entries) {
-    const fileName = Buffer.from(name, 'utf8');
-    const data = deflateRawSync(raw);
-    const crc = crc32(raw);
-    const header = (size: number, sig: number) => {
-      const h = Buffer.alloc(size);
-      h.writeUInt32LE(sig, 0);
-      return h;
-    };
-    const local = header(30, LOCAL);
-    local.writeUInt16LE(20, 4);
-    local.writeUInt16LE(0x0800, 6); // UTF-8 names
-    local.writeUInt16LE(8, 8);
-    local.writeUInt32LE(crc, 14);
-    local.writeUInt32LE(data.length, 18);
-    local.writeUInt32LE(raw.length, 22);
-    local.writeUInt16LE(fileName.length, 26);
-    const dir = header(46, CENTRAL);
-    dir.writeUInt16LE(20, 4);
-    dir.writeUInt16LE(20, 6);
-    dir.writeUInt16LE(0x0800, 8);
-    dir.writeUInt16LE(8, 10);
-    dir.writeUInt32LE(crc, 16);
-    dir.writeUInt32LE(data.length, 20);
-    dir.writeUInt32LE(raw.length, 24);
-    dir.writeUInt16LE(fileName.length, 28);
-    dir.writeUInt32LE(offset, 42);
-    parts.push(local, fileName, data);
-    central.push(dir, fileName);
-    offset += local.length + fileName.length + data.length;
-  }
-  const size = central.reduce((n, b) => n + b.length, 0);
-  const end = Buffer.alloc(22);
-  end.writeUInt32LE(EOCD, 0);
-  end.writeUInt16LE(entries.length, 8);
-  end.writeUInt16LE(entries.length, 10);
-  end.writeUInt32LE(size, 12);
-  end.writeUInt32LE(offset, 16);
-  return new Uint8Array(Buffer.concat([...parts, ...central, end]));
 }

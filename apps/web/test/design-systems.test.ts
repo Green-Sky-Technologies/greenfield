@@ -3,10 +3,9 @@ import os from 'node:os';
 import path from 'node:path';
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
-import { designSystemAttachments, eq } from '@greenfield/db';
 import {
-  attachDefaultDesignSystem,
   createDesignSystem,
+  createProjectWithDefaultSystem,
   deleteDesignSystem,
   getDesignSystem,
   getFileDesignSystem,
@@ -19,7 +18,6 @@ import {
 } from '@/server/services/design-systems';
 import { libraryItems, readLibraryFile } from '@/server/services/design-systems/library-file';
 import { loadDesignFile, localFsStorage } from '@/server/services/design-files';
-import { createProject } from '@/server/services/projects';
 import { NotFoundError, ValidationError, type Actor } from '@/server/services/types';
 import { figcraftFile } from './fakes/figcraft';
 import { makeActor, reset, testDb } from './helpers';
@@ -149,7 +147,7 @@ describe('review (10.3)', () => {
       'Input',
       'Card',
     ]);
-    const file = readLibraryFile(
+    const file = await readLibraryFile(
       new Uint8Array(fs.readFileSync(path.join(dir, published.libraryKey!))),
     );
     expect(libraryItems(file.doc)).toEqual(published.summary);
@@ -236,7 +234,7 @@ describe('publish and default (10.4)', () => {
   });
 
   it('a new project starts from the default system, and the file records it', async () => {
-    const { admin, editor, outsider } = await setup();
+    const { admin, editor, viewer, outsider } = await setup();
     const { system, version } = await create(admin);
     await saveDesignSystemReview(db, admin, {
       systemId: system.id,
@@ -244,22 +242,17 @@ describe('publish and default (10.4)', () => {
       guide: 'Use ink on paper.',
     });
 
-    const before = await createProject(db, editor, { name: 'Before' });
-    expect(
-      await attachDefaultDesignSystem(db, editor, storage, { projectId: before.id }),
-    ).toBeNull();
+    const before = await createProjectWithDefaultSystem(db, editor, storage, { name: 'Before' });
     expect(await loadDesignFile(db, editor, storage, { projectId: before.id })).toBeNull();
 
     await publishDesignSystem(db, admin, storage, { systemId: system.id });
     await setDefaultDesignSystem(db, admin, { systemId: system.id });
-    const p = await createProject(db, editor, { name: 'Landing' });
-    expect(await attachDefaultDesignSystem(db, editor, storage, { projectId: p.id })).toEqual({
-      systemId: system.id,
-      versionId: version.id,
-    });
+    const p = await createProjectWithDefaultSystem(db, editor, storage, { name: 'Landing' });
+    expect(p).toMatchObject({ name: 'Landing', workspaceId: editor.workspace.id });
 
     const file = await loadDesignFile(db, editor, storage, { projectId: p.id });
-    const { doc } = readLibraryFile(file!.bytes);
+    expect(file!.name).toBe('Landing.figcraft');
+    const { doc } = await readLibraryFile(file!.bytes);
     expect(doc.pages.map((id) => doc.nodes[String(id)]!.name)).toEqual(['Page 1', 'Voirdire']);
     expect(doc.current_page).toBe(doc.pages[0]);
     expect(libraryItems(doc).map((i) => i.name)).toEqual([
@@ -285,14 +278,9 @@ describe('publish and default (10.4)', () => {
       NotFoundError,
     );
     expect((await listDesignSystems(db, admin))[0]!.usedIn).toBe(1);
-
-    // Attaching again leaves the document alone.
-    expect(await attachDefaultDesignSystem(db, editor, storage, { projectId: p.id })).toBeNull();
-    const rows = await db
-      .select()
-      .from(designSystemAttachments)
-      .where(eq(designSystemAttachments.designSystemId, system.id));
-    expect(rows).toHaveLength(1);
+    await expect(
+      createProjectWithDefaultSystem(db, viewer, storage, { name: 'Nope' }),
+    ).rejects.toBeInstanceOf(ForbiddenError);
   });
 
   it('deleting a system removes its stored files', async () => {

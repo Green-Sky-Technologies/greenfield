@@ -37,11 +37,13 @@ import {
   eq,
   files,
   inArray,
+  projects,
   sql,
   type Db,
   type DesignSystem,
   type DesignSystemItem,
   type DesignSystemVersion,
+  type Project,
 } from '@greenfield/db';
 import { randomUUID } from 'node:crypto';
 import { z } from 'zod';
@@ -51,7 +53,7 @@ import {
   MAX_DESIGN_FILE_BYTES,
   newDesignFileKey,
 } from '../design-files';
-import { getProject } from '../projects';
+import { createProject, getProject, newProjectValues, type NewProjectInput } from '../projects';
 import { NotFoundError, ValidationError, type Actor } from '../types';
 import {
   dropItems,
@@ -242,7 +244,7 @@ export async function createDesignSystem(
   const guide = parse(guideSchema, input.guide ?? '', 'guide');
   if (input.bytes.byteLength === 0) throw new ValidationError('Empty file');
   if (input.bytes.byteLength > MAX_DESIGN_FILE_BYTES) throw new ValidationError('File too large');
-  const items = libraryItems(readLibraryFile(input.bytes).doc);
+  const items = libraryItems((await readLibraryFile(input.bytes)).doc);
   if (!items.length)
     throw new ValidationError(
       'That file has no colour variables, styles or components to build a system from.',
@@ -326,12 +328,12 @@ export async function publishDesignSystem(
 
   const source = await readAll(storage, version.sourceKey);
   if (!source) throw new NotFoundError('The library file is missing');
-  const file = readLibraryFile(source);
+  const file = await readLibraryFile(source);
   const published = { ...file, doc: dropItems(file.doc, new Set(version.dropped)) };
   const summary = libraryItems(published.doc);
   if (!summary.length) throw new ValidationError('Keep at least one item to publish.');
   const libraryKey = objectKey(actor.workspace.id, system.id);
-  await storage.put(libraryKey, writeLibraryFile(published));
+  await storage.put(libraryKey, await writeLibraryFile(published));
 
   const row = await db.transaction(async (tx) => {
     const [v] = await tx
@@ -426,18 +428,19 @@ export async function deleteDesignSystem(
 // ---- files that use a system ----
 
 /**
- * Start a new project's document from the workspace's default system, if there is one
- * (see "What attached means" above). Call it right after creating the project; a project that
- * already has a document is left alone. Returns the system version attached, or null.
+ * Create a project whose document starts from the workspace's default system, when one is
+ * published (see "What attached means" above); otherwise a project with no document yet.
+ * All or nothing: the document is stored under a fresh key first, then the project, its file row
+ * and the attachment are inserted in one transaction. If that fails, no row is left and the
+ * stored document is deleted (best effort).
  */
-export async function attachDefaultDesignSystem(
+export async function createProjectWithDefaultSystem(
   db: Db,
   actor: Actor,
   storage: DesignFileStorage,
-  input: { projectId: string },
-): Promise<{ systemId: string; versionId: string } | null> {
-  assertCan(actor.role, 'project:create');
-  const project = await getProject(db, actor, input.projectId);
+  input: NewProjectInput,
+): Promise<Project> {
+  const values = newProjectValues(actor, input); // project:create
   const [found] = await db
     .select({ system: designSystems, version: designSystemVersions })
     .from(designSystems)
@@ -445,44 +448,48 @@ export async function attachDefaultDesignSystem(
     .where(
       and(eq(designSystems.workspaceId, actor.workspace.id), eq(designSystems.isDefault, true)),
     );
-  if (!found?.version.libraryKey) return null;
-  const library = await readAll(storage, found.version.libraryKey);
-  if (!library) return null;
-  const file = readLibraryFile(library);
-  const bytes = writeLibraryFile({
+  const library = found?.version.libraryKey
+    ? await readAll(storage, found.version.libraryKey)
+    : null;
+  if (!found || !library) return createProject(db, actor, input);
+
+  const file = await readLibraryFile(library);
+  const bytes = await writeLibraryFile({
     ...file,
     doc: startingDocument(file.doc, found.system.name),
   });
-  const key = newDesignFileKey(actor.workspace.id, project.id);
+  const projectId = randomUUID();
+  const key = newDesignFileKey(actor.workspace.id, projectId);
   await storage.put(key, bytes);
-
-  const attached = await db.transaction(async (tx) => {
-    const [row] = await tx
-      .insert(files)
-      .values({
+  try {
+    return await db.transaction(async (tx) => {
+      const [project] = await tx
+        .insert(projects)
+        .values({ ...values, id: projectId })
+        .returning();
+      const [row] = await tx
+        .insert(files)
+        .values({
+          workspaceId: actor.workspace.id,
+          projectId,
+          name: documentName(values.name),
+          blobKey: key,
+          size: bytes.byteLength,
+          updatedBy: actor.userId,
+        })
+        .returning({ id: files.id });
+      await tx.insert(designSystemAttachments).values({
+        fileId: row!.id,
         workspaceId: actor.workspace.id,
-        projectId: project.id,
-        name: documentName(project.name),
-        blobKey: key,
-        size: bytes.byteLength,
-        updatedBy: actor.userId,
-      })
-      .onConflictDoNothing({ target: files.projectId })
-      .returning({ id: files.id });
-    if (!row) return false;
-    await tx.insert(designSystemAttachments).values({
-      fileId: row.id,
-      workspaceId: actor.workspace.id,
-      designSystemId: found.system.id,
-      versionId: found.version.id,
+        designSystemId: found.system.id,
+        versionId: found.version.id,
+      });
+      return project!;
     });
-    return true;
-  });
-  if (!attached) {
+  } catch (e) {
     await storage.delete(key).catch(() => {});
-    return null;
+    throw e;
   }
-  return { systemId: found.system.id, versionId: found.version.id };
 }
 
 export interface FileDesignSystem {
