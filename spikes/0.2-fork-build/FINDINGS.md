@@ -1,5 +1,11 @@
 # Story 0.2 spike: fork build in CI (findings)
 
+> **History.** The editor is now built from our fork,
+> [`Green-Sky-Technologies/greenfield-editor`](https://github.com/Green-Sky-Technologies/greenfield-editor):
+> the patches below are commits there, and its `greenfield/build.sh`, `UPSTREAM.md` and CI replace
+> this spike's scripts and `.github/workflows/figcraft-web.yml`, which were removed (Phase 3a, W1-A).
+> The scripts and paths named below no longer exist in this repo.
+
 Built `figcraft-web` from source at **v0.18.1** (`4acc293c2ec941ac1400837ee7e3ab51780399f8`) with
 the pinned craft-libs and egui-fork revisions, applied one theme patch, and showed the change in
 the editor embedded with `?host=parent&control&author=`. Date: 2026-11-23.

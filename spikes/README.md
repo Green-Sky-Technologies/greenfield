@@ -11,6 +11,6 @@ runnable at the Phase 0 merge commit `ef05c3b`: Story 1.2 removed the HTML-model
 | Spike                                          | What it answered                                     |
 | ---------------------------------------------- | ---------------------------------------------------- |
 | [`0.1-embed`](0.1-embed/FINDINGS.md)           | FigCraft embedded in the Next.js app, saving to Blob |
-| [`0.2-fork-build`](0.2-fork-build/FINDINGS.md) | Building `figcraft-web` from source in CI            |
+| [`0.2-fork-build`](0.2-fork-build/FINDINGS.md) | Building `figcraft-web` from source in CI (now the greenfield-editor fork) |
 | [`0.3-agent`](0.3-agent/FINDINGS.md)           | Can Claude draw with FigCraft commands?              |
 | [`0.4-browser`](0.4-browser/FINDINGS.md)       | Real-browser pixels, change detection, large files   |

@@ -375,7 +375,7 @@ below:
 *Demo: the editor looks like Greenfield, shows no ArtCraft marks, and reports changes and
 selection to the host.* Lives in its own repository (`green-sky-technologies/greenfield-editor`).
 Keep each patch small and isolated; offer upstream anything generic (2.3, 2.5, 2.8).
-Start from `spikes/0.2-fork-build` (`build.sh`, the theme patch and the CI workflow).
+The fork is [`Green-Sky-Technologies/greenfield-editor`](https://github.com/Green-Sky-Technologies/greenfield-editor) (its `UPSTREAM.md` covers the build, releases and the upstream sync); `spikes/0.2-fork-build/FINDINGS.md` is how it started.
 
 - **2.1 Greenfield theme (canvas only).** In canvas mode only what the canvas draws needs
   theming: the canvas background, selection and hover outlines, handles, size badges, frame

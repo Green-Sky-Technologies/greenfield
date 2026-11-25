@@ -1,9 +1,0 @@
-# Upstream clone, local toolchain and build output are never committed.
-/figcraft/
-/.toolchain/
-/dist/
-/node_modules/
-# The root .gitignore ignores out/; the before/after screenshots here are evidence, keep them.
-!/out/
-/craft-fonts/
-/build-fonts.log
