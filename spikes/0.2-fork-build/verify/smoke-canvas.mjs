@@ -49,7 +49,7 @@ try {
   const messages = () => page.evaluate(() => window.hostMessages.splice(0));
   const shot = (name) => page.screenshot({ path: join(out, `${name}.png`) });
   const has = new Set((await frame.evaluate(() => window.figcraft.commands())).map((c) => c.id));
-  const px = async () => (await page.screenshot({ clip: { x: 200, y: 200, width: 800, height: 500 } })).toString('base64');
+  const px = async () => (await page.screenshot()).toString('base64');
 
   // 2.11 -----------------------------------------------------------------------------------------
   if (has.has('view.canvasMode')) {
