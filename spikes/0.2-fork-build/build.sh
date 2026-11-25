@@ -62,6 +62,18 @@ if [[ "$APPLY_PATCHES" == "1" ]]; then
   done
 fi
 
+# 2b. Greenfield's files that are not text patches (Stories 2.1, 2.2): the chrome fonts, the app
+#     icons and the in-UI mark. Upstream's chameleon app icons go; the brand SVGs come from the
+#     app's public dir (the one copy of them). Then the marks check on the patched source.
+if [[ "$APPLY_PATCHES" == "1" ]]; then
+  rm -rf "$SRC/assets/app-icon"
+  cp -R "$HERE/overlay/." "$SRC/"
+  for svg in greenfield-favicon greenfield-mark-small greenfield-mark-small-on-light; do
+    cp "$HERE/../../apps/web/public/$svg.svg" "$SRC/apps/figcraft-web/"
+  done
+  "$HERE/check-marks.sh" src "$SRC"
+fi
+
 # 3. Upstream's web recipe (packaging/web/package.sh): trunk build --release in apps/figcraft-web,
 #    with craft-fonts embedded as in upstream's release builds. index.html selects the web-release
 #    profile and wasm-opt -Oz. Fixed build metadata keeps the output byte-for-byte reproducible.
@@ -102,6 +114,12 @@ for wasm in "$SITE"/*.wasm; do
 done
 [[ "$count" -gt 0 ]] || { echo "error: no .wasm in $SITE" >&2; exit 1; }
 
+# 4b. Marks check on the built site (page, glue, wasm, icons), then its negative controls.
+if [[ "$APPLY_PATCHES" == "1" ]]; then
+  "$HERE/check-marks.sh" site "$SITE"
+  "$HERE/check-marks.sh" self-test "$SRC" "$SITE"
+fi
+
 # 5. Site plus licences: FigCraft's MIT/Apache texts and NOTICE, and every craft-fonts family's
 #    OFL text as OFL-<family-dir>.txt (upstream's copy_font_licences in packaging/env.sh).
 rm -rf "$OUT"
@@ -111,6 +129,10 @@ for f in LICENSE-MIT LICENSE-APACHE NOTICE ATTRIBUTION.md; do cp "$SRC/$f" "$OUT
 for lic in "$FONTS"/fonts/*/OFL.txt; do
   cp "$lic" "$OUT/OFL-$(basename "$(dirname "$lic")").txt"
 done
+# The chrome fonts' OFL texts (IBM Plex, Cormorant Garamond; Story 2.1).
+if [[ "$APPLY_PATCHES" == "1" ]]; then
+  for lic in "$HERE"/overlay/assets/fonts/OFL-*.txt; do cp "$lic" "$OUT/"; done
+fi
 sums="$(cd "$OUT" && find . -type f | LC_ALL=C sort | while read -r f; do echo "$(sha256 "$f")  $f"; done)"
 echo "$sums" >"$OUT/SHA256SUMS"
 echo "dist: $(find "$OUT" -type f | wc -l | tr -d ' ') files, $(du -sk "$OUT" | cut -f1) KiB, SHA256SUMS sha256 $(sha256 "$OUT/SHA256SUMS")"
