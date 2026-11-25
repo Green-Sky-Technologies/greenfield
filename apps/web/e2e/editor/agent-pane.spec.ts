@@ -173,7 +173,7 @@ test('a turn on the selection: its changes listed, shown on the canvas and undon
   expect(node.name).toBe('Card (ember)');
   expect(node.fills.map((f) => f.color.toLowerCase())).toEqual([STUB_FILL]);
   await expect(reply.getByTestId('change-row')).toHaveText([
-    `Card (ember) · fills #FFFFFF → ${formatValue(node.fills)}`,
+    `Card (ember) · fill #FFFFFF → ${formatValue(node.fills)}`,
     'Card (ember) · name Card → Card (ember)',
   ]);
   await expect(reply.getByTestId('change-summary')).toHaveText('2 changes · one undo step');

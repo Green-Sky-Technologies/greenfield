@@ -37,6 +37,43 @@ describe('change rows (Story 4.7)', () => {
     expect(new Set(rows.map((r) => r.key)).size).toBe(rows.length);
   });
 
+  it('names properties as the inspector does, and lists auto layout and sizing by part', () => {
+    const rows = changeRows([
+      {
+        id: 2,
+        name: 'Hero',
+        kind: 'changed',
+        frame: 2,
+        fields: [
+          { field: 'fills', before: [{ color: '#16170F' }], after: [{ color: '#FF9A4D' }] },
+          { field: 'fontSize', before: 52, after: 46 },
+          { field: 'maxWidth', before: null, after: 480 },
+          {
+            field: 'layout',
+            before: { mode: 'vertical', gap: 32, padding: [0, 0, 0, 0] },
+            after: { mode: 'vertical', gap: 24, padding: [16, 16, 16, 16] },
+          },
+          { field: 'sizing', before: { horizontal: 'fixed' }, after: { horizontal: 'hug' } },
+          { field: 'opacity', before: 1, after: 0.5 },
+          { field: 'visible', before: true, after: false },
+          { field: 'characters', before: 'Hi', after: 'Hello' },
+        ],
+      },
+    ]);
+    expect(rows.map((r) => r.what)).toEqual([
+      'fill #16170F → #FF9A4D',
+      'size 52 → 46',
+      'max width none → 480',
+      'gap 32 → 24',
+      'padding 0 → 16',
+      'width fixed → hug',
+      'opacity 100% → 50%',
+      'visibility shown → hidden',
+      'text “Hi” → “Hello”',
+    ]);
+    expect(new Set(rows.map((r) => r.key)).size).toBe(rows.length);
+  });
+
   it('keeps values short: paint lists by colour, rounded numbers, clipped text', () => {
     expect(formatValue([{ type: 'SOLID', color: '#ff9a4d' }])).toBe('#ff9a4d');
     expect(formatValue(12.3456)).toBe('12.35');
