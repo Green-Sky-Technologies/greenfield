@@ -8,8 +8,8 @@ export const EDITOR_VERSION = '0.18.1';
 export const EDITOR_RELEASE_SHA256 =
   '2fbeb93f5022b0a7cc9d8528f1ed7e2b54c94d213ef79e65128aa898c399f02b';
 /** sha256 of `figcraft.commands()` in canonical form (see scripts/command-types.ts). */
-export const COMMANDS_HASH = '14104b31712737f6053074fad1b0eb4bc89a01fb1ea6beba60286574d15f8770';
-export const COMMAND_COUNT = 643;
+export const COMMANDS_HASH = 'dda89c2e8a58f1829d201db9492eb30d29c3b06b960f8409cd0aafff08fdbe26';
+export const COMMAND_COUNT = 644;
 
 /** Layer keys `document.inspect` and `node.get` accept in `fields`. */
 export const NODE_FIELDS = [
@@ -8854,6 +8854,16 @@ export interface CommandParamsMap {
     id?: number | string;
   };
   /**
+   * Canvas mode
+   *
+   * `{on?}  draw only the canvas and its overlays: no navigation bar, sidebars, tab bar, toolbar, home screen or menus. Right-clicks, dialogs, popovers and the Comment tool's click go to the host as 'ui.request' events ('?canvas' on the page starts in it). Off brings the editor's own panels back`
+   */
+  'view.canvasMode': {
+    on?: unknown;
+    ids?: (number | string)[];
+    id?: number | string;
+  };
+  /**
    * Comments [View] (Shift+C)
    *
    * `{on?}`
@@ -15199,6 +15209,16 @@ export const COMMANDS: readonly CommandInfo[] = [
     shortcut: 'Alt+2',
     undoable: false,
     takes: [],
+  },
+  {
+    id: 'view.canvasMode',
+    label: 'Canvas mode',
+    menu: null,
+    params:
+      "{on?}  draw only the canvas and its overlays: no navigation bar, sidebars, tab bar, toolbar, home screen or menus. Right-clicks, dialogs, popovers and the Comment tool's click go to the host as `ui.request` events (`?canvas` on the page starts in it). Off brings the editor's own panels back",
+    shortcut: null,
+    undoable: false,
+    takes: ['on'],
   },
   {
     id: 'view.comments',
