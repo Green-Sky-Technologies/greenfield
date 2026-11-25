@@ -30,7 +30,7 @@ export default async function Page({
           <a
             key={d}
             href={`?days=${d}`}
-            className={`rounded px-2 py-1 ${d === summary.days ? 'bg-surface-2 font-medium' : 'text-muted'}`}
+            className={`px-2 py-1 ${d === summary.days ? 'bg-surface-2 font-medium' : 'text-muted'}`}
           >
             {d} days
           </a>

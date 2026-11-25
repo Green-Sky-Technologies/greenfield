@@ -1,27 +1,78 @@
 @import 'tailwindcss';
 
 /*
- * App chrome tokens: Solarized Light (https://ethanschoonover.com/solarized/).
- * These style the app itself; a user's design tokens live in their design files and render
- * inside the editor independently of this theme.
+ * App chrome tokens: the Greenfield brand (docs/brand/README.md). Dark is the default; light is
+ * chosen by `data-theme="light"` on <html>, or by the OS under `data-theme="system"` (the theme
+ * cookie, features/theme). These style the app itself; a user's design tokens live in their design
+ * files and render inside the editor independently of this theme.
+ *
+ * Contrast is checked from this file by src/features/theme/contrast.test.ts: keep the dark block,
+ * the light block and the system block in step, and keep every token as a 6-digit hex.
  */
 :root {
+  color-scheme: dark;
+  --ground: #0b0c0a;
+  --panel: #121410;
+  --raise: #1b1e18;
+  --rule: rgba(236, 232, 222, 0.12);
+  --ink: #ece8de;
+  --body: #b9b5ac;
+  --field: #3fd67f; /* you: selection, focus, primary action */
+  --ember: #ff9a4d; /* the agent */
+  --ember-ink: #0b0c0a; /* text on ember fills: ground */
+  --danger: #f2554f; /* not in the brand sheet; see docs/brand/README.md */
+}
+
+:root[data-theme='light'] {
   color-scheme: light;
-  --bg: #fdf6e3; /* base3 */
-  --surface: #fdf6e3; /* base3 */
-  --surface-2: #eee8d5; /* base2: hovers, canvas backdrop, badges */
-  --border: #e0d9c3; /* between base2 and base1 */
-  --text: #586e75; /* base01: body text, 5.2:1 on base3 */
-  --muted: #657b83; /* base00: secondary text */
-  --accent: #cb4b16; /* orange: keeps the "greenfield" accent */
-  --accent-ink: #fdf6e3; /* base3 */
-  --danger: #dc322f; /* red */
-  --ok: #859900; /* green */
-  --focus: #268bd2; /* blue: focus rings and links */
+  --ground: #f3f0e8;
+  --panel: #fbf9f4;
+  --raise: #e8e4da;
+  --rule: rgba(20, 21, 15, 0.12);
+  --ink: #14150f;
+  --body: #55534c;
+  --field: #1b733f;
+  --ember: #a54a0f;
+  --ember-ink: #f3f0e8;
+  --danger: #8c1515;
+}
+
+/* System: the server can't know the OS setting, so CSS picks (no flash, no script). */
+@media (prefers-color-scheme: light) {
+  :root[data-theme='system'] {
+    color-scheme: light;
+    --ground: #f3f0e8;
+    --panel: #fbf9f4;
+    --raise: #e8e4da;
+    --rule: rgba(20, 21, 15, 0.12);
+    --ink: #14150f;
+    --body: #55534c;
+    --field: #1b733f;
+    --ember: #a54a0f;
+    --ember-ink: #f3f0e8;
+    --danger: #8c1515;
+  }
+}
+:root[data-theme='system'] {
+  color-scheme: light dark;
+}
+
+/* Names the components use, mapped to the brand tokens. */
+:root {
+  --bg: var(--ground);
+  --surface: var(--panel);
+  --surface-2: var(--raise);
+  --border: var(--rule);
+  --text: var(--ink);
+  --muted: var(--body);
+  --accent: var(--field);
+  --accent-ink: var(--ground);
+  --ok: var(--field);
+  --focus: var(--field);
   /* D24: green marks the user (their primary actions, their presence); ember marks the agent. */
-  --user: #627200; /* Solarized green, darkened to 5:1 under base3 text */
-  --user-ink: #fdf6e3; /* base3 */
-  --agent: #cb4b16; /* ember (Solarized orange): marks only, not body text */
+  --user: var(--field);
+  --user-ink: var(--ground);
+  --agent: var(--ember);
 }
 
 @theme inline {
@@ -38,8 +89,11 @@
   --color-user: var(--user);
   --color-user-ink: var(--user-ink);
   --color-agent: var(--agent);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-ember: var(--ember);
+  --color-ember-ink: var(--ember-ink);
+  --font-sans: var(--font-plex-sans);
+  --font-mono: var(--font-plex-mono);
+  --font-wordmark: var(--font-cormorant);
 }
 
 body {
@@ -48,15 +102,49 @@ body {
 }
 
 ::selection {
-  background: #eee8d5; /* base2 */
-  color: #073642; /* base02 */
+  background: var(--field);
+  color: var(--ground);
 }
 
+/* Pixel-art marks: whole-multiple sizes, never smoothed. */
+.pixel {
+  image-rendering: pixelated;
+}
+/* The mark has a dark-ground and a light-ground file; show the one for the theme in effect. */
+.mark-on-light {
+  display: none;
+}
+:root[data-theme='light'] .mark-on-light {
+  display: inline-block;
+}
+:root[data-theme='light'] .mark-on-dark {
+  display: none;
+}
+@media (prefers-color-scheme: light) {
+  :root[data-theme='system'] .mark-on-light {
+    display: inline-block;
+  }
+  :root[data-theme='system'] .mark-on-dark {
+    display: none;
+  }
+}
+
+/* Labels: Plex Mono, 11px, uppercase, 0.1em tracking, tabular numbers. */
+@utility type-label {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  line-height: 1.4;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Square: no radius in the app chrome. Radius belongs to the user's designs. */
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-md px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-2 px-3 py-1.5 text-sm font-medium transition-colors disabled:cursor-not-allowed disabled:opacity-50;
 }
 @utility btn-primary {
-  @apply btn bg-accent text-accent-ink hover:brightness-95;
+  @apply btn bg-accent text-accent-ink hover:brightness-110;
 }
 @utility btn-ghost {
   @apply btn border border-border bg-surface hover:bg-surface-2;
@@ -66,10 +154,10 @@ body {
 }
 /* Small inline text action (Cancel, Retry, Undo…): underlined, with a hover and focus state. */
 @utility btn-link {
-  @apply cursor-pointer rounded px-1 underline decoration-border underline-offset-2 transition-colors hover:bg-surface-2 hover:text-text hover:decoration-current focus-visible:outline-2 focus-visible:outline-[var(--focus)] disabled:cursor-not-allowed disabled:opacity-50;
+  @apply cursor-pointer px-1 underline decoration-border underline-offset-2 transition-colors hover:bg-surface-2 hover:text-text hover:decoration-current focus-visible:outline-2 focus-visible:outline-[var(--focus)] disabled:cursor-not-allowed disabled:opacity-50;
 }
 @utility input {
-  @apply w-full rounded-md border border-border bg-surface px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-[var(--focus)] focus:ring-2 focus:ring-[var(--focus)]/20;
+  @apply w-full border border-border bg-surface px-3 py-2 text-sm outline-none placeholder:text-muted focus:border-[var(--focus)] focus:ring-1 focus:ring-[var(--focus)];
 }
 @utility label {
   @apply mb-1 block text-sm font-medium;
@@ -79,5 +167,5 @@ body {
   @apply cursor-pointer outline-none focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-user;
 }
 @utility card {
-  @apply rounded-lg border border-border bg-surface;
+  @apply border border-border bg-surface;
 }

@@ -32,16 +32,17 @@ They load the mark files from `apps/web/public/` and fonts from Google Fonts.
 
 Two app themes. Dark is the default; light follows the system setting when the user picks it.
 
-| Token    | Dark                     | Light                 | Use                                        |
-| -------- | ------------------------ | --------------------- | ------------------------------------------ |
-| `ground` | `#0b0c0a`                | `#f3f0e8`             | Canvas backdrop and app ground             |
-| `panel`  | `#121410`                | `#fbf9f4`             | Side panels and bars                       |
-| `raise`  | `#1b1e18`                | `#e8e4da`             | Hover, inputs, menus, cards inside chat    |
-| `rule`   | `rgba(236,232,222,0.12)` | `rgba(20,21,15,0.12)` | Hairlines between panels and sections      |
-| `ink`    | `#ece8de`                | `#14150f`             | Headings, values, primary text             |
-| `body`   | `#b9b5ac`                | `#55534c`             | Labels and secondary text                  |
-| `field`  | `#3fd67f`                | `#1b733f`             | You: selection, focus, primary action      |
-| `ember`  | `#ff9a4d`                | `#a54a0f`             | The agent: its edits, its cursor, its turn |
+| Token    | Dark                     | Light                 | Use                                                                         |
+| -------- | ------------------------ | --------------------- | --------------------------------------------------------------------------- |
+| `ground` | `#0b0c0a`                | `#f3f0e8`             | Canvas backdrop and app ground                                              |
+| `panel`  | `#121410`                | `#fbf9f4`             | Side panels and bars                                                        |
+| `raise`  | `#1b1e18`                | `#e8e4da`             | Hover, inputs, menus, cards inside chat                                     |
+| `rule`   | `rgba(236,232,222,0.12)` | `rgba(20,21,15,0.12)` | Hairlines between panels and sections                                       |
+| `ink`    | `#ece8de`                | `#14150f`             | Headings, values, primary text                                              |
+| `body`   | `#b9b5ac`                | `#55534c`             | Labels and secondary text                                                   |
+| `field`  | `#3fd67f`                | `#1b733f`             | You: selection, focus, primary action                                       |
+| `ember`  | `#ff9a4d`                | `#a54a0f`             | The agent: its edits, its cursor, its turn                                  |
+| `danger` | `#f2554f`                | `#8c1515`             | Errors and destructive actions (not on the brand sheet; added in Story 5.3) |
 
 - Text on `field` or `ember` fills is `ground` (dark) for contrast, as in the mockup's Share and
   "Ask Claude" buttons.

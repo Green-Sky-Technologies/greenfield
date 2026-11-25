@@ -21,7 +21,7 @@ export default async function Home() {
         </div>
       </header>
       <section className="flex flex-1 flex-col justify-center py-24">
-        <p className="mb-4 font-mono text-xs uppercase tracking-widest text-accent">Private beta</p>
+        <p className="mb-4 type-label text-accent">Private beta</p>
         <h1 className="max-w-3xl text-5xl font-semibold leading-[1.05] tracking-tight sm:text-6xl">
           Describe it. Watch it build. Ship the code.
         </h1>

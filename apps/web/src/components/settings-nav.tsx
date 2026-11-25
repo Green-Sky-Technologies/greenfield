@@ -22,7 +22,7 @@ export function SettingsNav({
             key={href}
             href={href}
             aria-current={active ? 'page' : undefined}
-            className={`rounded-md px-2.5 py-1.5 ${active ? 'bg-surface-2 font-medium text-text' : 'text-muted hover:bg-surface-2 hover:text-text'}`}
+            className={`px-2.5 py-1.5 ${active ? 'bg-surface-2 font-medium text-text' : 'text-muted hover:bg-surface-2 hover:text-text'}`}
           >
             {item.label}
           </Link>

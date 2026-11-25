@@ -48,12 +48,12 @@ export function ProjectCard({ href, project, canManage, canDuplicate }: Props) {
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="grid w-1/2 gap-2 opacity-40">
-              <div className="h-3 rounded bg-border" />
-              <div className="h-8 rounded bg-border" />
+              <div className="h-3 bg-border" />
+              <div className="h-8 bg-border" />
               <div className="grid grid-cols-3 gap-2">
-                <div className="h-6 rounded bg-border" />
-                <div className="h-6 rounded bg-border" />
-                <div className="h-6 rounded bg-border" />
+                <div className="h-6 bg-border" />
+                <div className="h-6 bg-border" />
+                <div className="h-6 bg-border" />
               </div>
             </div>
           </div>
