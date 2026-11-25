@@ -21,6 +21,7 @@ import type {
   BatchOptions,
   BatchStepResult,
   CallOptions,
+  ExecuteOptions,
   ChangeSet,
   CommandInfo,
   DocumentInfo,
@@ -261,7 +262,7 @@ export class RemoteEditor implements Editor {
   execute<C extends CommandId>(
     command: C,
     params?: CommandParams<C>,
-    opts?: CallOptions,
+    opts?: ExecuteOptions,
   ): Promise<unknown> {
     return this.call('execute', [command, params, opts]);
   }

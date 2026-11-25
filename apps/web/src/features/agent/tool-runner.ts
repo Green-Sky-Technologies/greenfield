@@ -7,7 +7,8 @@
  *   so a repeated view (SSE reconnects) never starts it again. Posting the result is retried;
  *   the server accepts a repeat from the same tab as a duplicate.
  * - Calls run in order, one at a time, through `executeTool` with the turn's scope: a batch that
- *   leaves the scope is undone and comes back as an error (`@greenfield/contracts`).
+ *   leaves the scope is undone and comes back as an error (`@greenfield/contracts`). Edits run
+ *   as Claude, so the editor outlines the layers they change in Claude's colour.
  * - Hidden tab: the bridge fails fast with `EditorHiddenError` (nothing ran). The runner keeps
  *   the claim, waits until the tab is shown and runs the call then: the turn pauses.
  * - A turn that ended (cancelled, closed tab) runs nothing more.
@@ -100,6 +101,7 @@ export class ToolRunner {
       const r = await executeTool(call.name, call.input, editor, {
         runtime: 'interactive',
         scope: view.scope,
+        agent: 'Claude',
       });
       if (!r.ok && r.error.kind === 'hidden') {
         await this.o.whenVisible();

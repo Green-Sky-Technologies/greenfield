@@ -36,6 +36,7 @@ import type {
   BatchOptions,
   BatchStepResult,
   CallOptions,
+  ExecuteOptions,
   ChangeDetectorOptions,
   ChangeSet,
   CommandInfo,
@@ -276,7 +277,7 @@ export class MockEditor implements Editor {
   execute<C extends CommandId>(
     command: C,
     params?: CommandParams<C>,
-    _opts?: CallOptions,
+    _opts?: ExecuteOptions,
   ): Promise<unknown> {
     this.detector.noteControlEdit();
     return this.guard('engine.execute', async () => this.runTop(command, params ?? {}), command);

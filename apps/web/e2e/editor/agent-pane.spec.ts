@@ -87,6 +87,32 @@ async function addCard(editor: RemoteEditor): Promise<number> {
   return card.id;
 }
 
+/** Collect the editor's events on the page: Claude's presence and the patches made as an agent. */
+async function recordEditorEvents(page: Page) {
+  await page.evaluate(() => {
+    const w = window as unknown as { editorEvents: { name: string; data: unknown }[] };
+    w.editorEvents = [];
+    window.addEventListener('message', (e: MessageEvent) => {
+      const m = e.data as { type?: string; name: string; data: unknown } | null;
+      if (m?.type === 'figcraft:event') w.editorEvents.push({ name: m.name, data: m.data });
+    });
+  });
+  return async () => {
+    const all = await page.evaluate(
+      () => (window as unknown as { editorEvents: { name: string; data: unknown }[] }).editorEvents,
+    );
+    return {
+      presence: all.flatMap((e) =>
+        e.name === 'agent.presence' ? [e.data as { active: boolean; layers: number[] }] : [],
+      ),
+      agentEdits: all.flatMap((e) => {
+        const d = e.data as { agent: string | null; nodes: { id: number }[] };
+        return e.name === 'document.changed' && d.agent ? [d.nodes.map((n) => n.id)] : [];
+      }),
+    };
+  };
+}
+
 const send = async (page: Page, text: string) => {
   const box = page.getByRole('textbox', { name: 'Message Claude' });
   // Firefox: just after the file opens, the editor takes focus back once (base behaviour).
@@ -113,6 +139,7 @@ test('a turn on the selection: its changes listed, shown on the canvas and undon
   await connectModel(await as('admin'), run.org.slug);
   const page = await as('editor');
   const { editor, pane } = await openProject(page, run.org.slug, 'Agent');
+  const events = await recordEditorEvents(page);
   const card = await addCard(editor);
   await expect(pane.getByTestId('selection-chip')).toHaveText('Card');
 
@@ -125,6 +152,10 @@ test('a turn on the selection: its changes listed, shown on the canvas and undon
       if (el.getAttribute('data-active') === 'true') w.claudeRinged = true;
     }).observe(el, { attributes: true });
   });
+
+  // The user's own edit (adding the card) is not Claude's: no outline, no agent on the patch.
+  expect((await events()).presence.some((p) => p.layers.includes(card))).toBe(false);
+  expect((await events()).agentEdits).toEqual([]);
 
   const calls = stub.calls;
   await send(page, 'Make the card ember');
@@ -148,6 +179,10 @@ test('a turn on the selection: its changes listed, shown on the canvas and undon
     'Card (ember) · name Card → Card (ember)',
   ]);
   await expect(reply.getByTestId('change-summary')).toHaveText('2 changes · one undo step');
+  // Feature 2: the edit ran as Claude, so the editor outlines the card in Claude's colour.
+  const seen = await events();
+  expect(seen.presence.some((p) => p.active && p.layers.includes(card))).toBe(true);
+  expect(seen.agentEdits.flat()).toContain(card);
   await page.screenshot({
     path: `${testInfo.project.outputDir}/agent-changes-${testInfo.project.name}.png`,
   });

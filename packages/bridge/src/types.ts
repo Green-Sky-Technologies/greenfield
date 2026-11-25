@@ -142,7 +142,15 @@ export interface CallOptions {
   timeoutMs?: number;
 }
 
-export interface BatchOptions extends CallOptions {
+export interface ExecuteOptions extends CallOptions {
+  /**
+   * Run as this agent (`figcraft.executeAs`): the editor attributes the change to it
+   * (`document.changed.agent`) and draws its presence on the layers it changed.
+   */
+  agent?: string;
+}
+
+export interface BatchOptions extends ExecuteOptions {
   /** The undo step's label. */
   label?: string;
 }
@@ -181,7 +189,7 @@ export interface Editor {
   execute<C extends CommandId>(
     command: C,
     params?: CommandParams<C>,
-    opts?: CallOptions,
+    opts?: ExecuteOptions,
   ): Promise<unknown>;
   /**
    * Several commands as one undo step (`command.batch`). Steps may name themselves (`as`) and

@@ -112,6 +112,11 @@ export interface ToolContext {
   /** Passed to every bridge call (timeouts). */
   call?: CallOptions;
   /**
+   * Run edits as this agent (`run_batch`, comment replies): the editor outlines
+   * the layers they change with the agent's presence (Story 2.4). Unset: they run as the user.
+   */
+  agent?: string;
+  /**
    * Layers a scoped request may change, with their descendants (Story 4.2). A `run_batch` that
    * adds, removes or changes anything else is undone (`edit.undo`) and fails with `scope`.
    */
@@ -307,6 +312,7 @@ async function run<N extends AgentToolName>(
       const results = await editor.batch(i.commands as unknown as BatchStep[], {
         label: i.label,
         ...call,
+        agent: ctx.agent,
       });
       // The batch has applied: from here on, never report a failure (the model would retry it).
       const after = await editor
@@ -399,7 +405,7 @@ async function run<N extends AgentToolName>(
         await editor.execute(
           'comment.reply',
           { id: i.threadId, text: i.reply, author: ctx.author ?? 'Claude' },
-          call,
+          { ...call, agent: ctx.agent },
         );
       return { output: { thread, replied: i.reply !== undefined } };
     }

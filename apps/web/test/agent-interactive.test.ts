@@ -163,10 +163,17 @@ describe('interactive turn (Story 4.2)', () => {
     const msg = parseSse(frames).find((e) => e.event === 'message')!;
     expect((JSON.parse(msg.data) as MessageView).toolCalls[0]!.id).toBe('tu_1');
 
-    // The tab runs it through the bridge and posts the result; the next step runs.
+    // The tab runs it through the bridge, as Claude, and posts the result; the next step runs.
+    const agents: (string | undefined)[] = [];
+    const batch = s.editor.batch.bind(s.editor);
+    s.editor.batch = (steps, opts) => {
+      agents.push(opts?.agent);
+      return batch(steps, opts);
+    };
     const a = api(s);
     await runner(s, a).handle(v1);
     expect(a.log).toEqual(['claim tu_1 ok', 'result tu_1 ok']);
+    expect(agents).toEqual(['Claude']);
     expect(await s.editor.getNode(button)).toMatchObject({
       padding: [12, 24, 12, 24],
     });

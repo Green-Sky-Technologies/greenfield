@@ -157,6 +157,24 @@ describe('executeTool: run_batch', () => {
     expect((await editor.inspect({ depth: 0 })).history.undo).toEqual(['Add a badge', 'Setup']);
   });
 
+  it('runs the batch as the agent named in the context (its presence outlines the layers)', async () => {
+    const { editor, title } = await setup();
+    const agents: (string | undefined)[] = [];
+    const batch = editor.batch.bind(editor);
+    editor.batch = (steps, opts) => {
+      agents.push(opts?.agent);
+      return batch(steps, opts);
+    };
+    const steps = [{ command: 'text.set', params: { id: title, characters: 'Hi' } }];
+    ok(
+      await executeTool('run_batch', { label: 'As Claude', commands: steps }, editor, {
+        agent: 'Claude',
+      }),
+    );
+    ok(await executeTool('run_batch', { label: 'Unnamed', commands: steps }, editor));
+    expect(agents).toEqual(['Claude', undefined]);
+  });
+
   it('reports an editor refusal as a command error and changes nothing', async () => {
     const { editor, card } = await setup();
     const before = await editor.inspect();
