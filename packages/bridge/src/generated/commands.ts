@@ -6,7 +6,7 @@ import type { CommandInfo, NodeId } from '../types';
 export const EDITOR_VERSION = '0.18.1';
 /** sha256 of the pinned release archive. */
 export const EDITOR_RELEASE_SHA256 =
-  '2fbeb93f5022b0a7cc9d8528f1ed7e2b54c94d213ef79e65128aa898c399f02b';
+  '94d69e1f429f95368c2a1e7cca44efa5ca8e836cd5cafc652a50b6e5e367e7bd';
 /** sha256 of `figcraft.commands()` in canonical form (see scripts/command-types.ts). */
 export const COMMANDS_HASH = '6ccd1d4e3941be83f2a519cce14fa2cfb1c52e2806be220ea7d327df973028dd';
 export const COMMAND_COUNT = 649;
