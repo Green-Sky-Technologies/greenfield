@@ -267,7 +267,7 @@ function Preview({ item }: { item: DesignSystemItem }) {
           {item.values.map((v) => (
             <li key={v.name} className="flex flex-col items-start gap-1">
               <span
-                className="block h-3 bg-surface-2"
+                className="block h-3 bg-muted"
                 style={{ width: Math.min(Math.max(v.value, 2), 160) }}
               />
               <span className="font-mono text-[11px] text-muted">

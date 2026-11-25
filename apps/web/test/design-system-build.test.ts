@@ -297,7 +297,7 @@ describe('building a system (10.2)', () => {
     const admin = await makeActor(db, 'admin');
     const viewer = await makeActor(db, 'viewer', admin.workspace);
     const uploads = repoFiles()
-      .filter((f) => /globals\.css|tailwind\.config|button\.tsx/.test(f.path))
+      .filter((f) => /globals\.css|tailwind\.config|button\.tsx|layout\.tsx/.test(f.path))
       .map((f) => ({ name: path.basename(f.path), bytes: new TextEncoder().encode(f.text) }));
     uploads.push({
       name: 'logo.svg',
@@ -313,6 +313,9 @@ describe('building a system (10.2)', () => {
       { onStep: (s) => void steps.push(s) },
     );
     expect(steps[0]!.text).toContain('Not read yet: deck.pdf');
+    // The loose layout.tsx is read for its fonts, not counted as a component.
+    expect(steps[0]!.text).toContain('1 React component');
+    expect(version.guide).toContain('Body: Inter Regular');
     expect(version.items.filter((i) => i.kind === 'colours').map((i) => i.name)).toContain('Logo');
     expect(system.sources).toEqual([{ kind: 'upload', names: uploads.map((u) => u.name) }]);
 

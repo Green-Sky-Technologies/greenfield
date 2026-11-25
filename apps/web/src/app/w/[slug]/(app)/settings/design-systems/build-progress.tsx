@@ -35,6 +35,8 @@ export function useBuild() {
       }
       const reader = res.body.pipeThrough(new TextDecoderStream()).getReader();
       let buffer = '';
+      let result: { id: string; version: number } | null = null;
+      // Read to the end of the stream (`done` is its last line), so it closes cleanly.
       for (;;) {
         const { done: end, value } = await reader.read();
         if (end) break;
@@ -45,10 +47,11 @@ export function useBuild() {
           buffer = buffer.slice(nl + 1);
           if (line.type === 'step') setDone((d) => ({ ...d, [line.step]: line.text }));
           else if (line.type === 'error') throw new Error(line.message);
-          else return { id: line.id, version: line.version };
+          else result = { id: line.id, version: line.version };
         }
       }
-      throw new Error('The build stopped before it finished.');
+      if (!result) throw new Error('The build stopped before it finished.');
+      return result;
     } catch (e) {
       setError(e instanceof Error ? e.message : 'The build failed.');
       return null;

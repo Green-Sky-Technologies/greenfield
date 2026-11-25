@@ -72,9 +72,11 @@ test('an admin reviews, publishes and defaults a system; a new file starts with 
     .getByRole('link', { name: 'Design systems' })
     .click();
   await admin.getByRole('link', { name: '+ New design system' }).click();
-  await admin.getByLabel('Name').fill(name);
-  await admin.getByLabel('Library file').setInputFiles(LIBRARY);
-  await admin.getByRole('button', { name: 'Upload and review' }).click();
+  await admin.getByText('Or upload a library file').click();
+  const adminUpload = admin.getByRole('form', { name: 'Upload a library file' });
+  await adminUpload.getByLabel('Name').fill(name);
+  await adminUpload.getByLabel('Library file').setInputFiles(LIBRARY);
+  await adminUpload.getByRole('button', { name: 'Upload and review' }).click();
   await admin.waitForURL(new RegExp(`${base}/[0-9a-f-]{36}$`));
   const systemUrl = new URL(admin.url()).pathname;
 
@@ -125,9 +127,11 @@ test('an admin reviews, publishes and defaults a system; a new file starts with 
   await expect(editorRow.getByRole('switch')).toBeDisabled();
   await expect(editor.getByRole('radio', { name: /Admins and Editors/ })).toBeDisabled();
   await editor.getByRole('link', { name: '+ New design system' }).click();
-  await editor.getByLabel('Name').fill(uniqueName('Draft'));
-  await editor.getByLabel('Library file').setInputFiles(LIBRARY);
-  await editor.getByRole('button', { name: 'Upload and review' }).click();
+  await editor.getByText('Or upload a library file').click();
+  const editorUpload = editor.getByRole('form', { name: 'Upload a library file' });
+  await editorUpload.getByLabel('Name').fill(uniqueName('Draft'));
+  await editorUpload.getByLabel('Library file').setInputFiles(LIBRARY);
+  await editorUpload.getByRole('button', { name: 'Upload and review' }).click();
   await editor.waitForURL(new RegExp(`${base}/[0-9a-f-]{36}$`));
   await expect(editor.getByRole('button', { name: 'Save draft' })).toBeEnabled();
   await expect(editor.getByRole('button', { name: 'Publish' })).toBeDisabled();

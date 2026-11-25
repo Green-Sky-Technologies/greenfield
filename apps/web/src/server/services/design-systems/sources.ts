@@ -176,7 +176,7 @@ export async function readUploads(uploads: Upload[]): Promise<ReadUploads> {
       files.push({
         // A loose component file is read as one: `button.tsx` → `components/button.tsx`.
         path:
-          /\.(tsx|jsx)$/i.test(lower) && !u.name.includes('/') ? `components/${u.name}` : u.name,
+          /\.(tsx|jsx)$/i.test(lower) && !keepSourcePath(u.name) ? `components/${u.name}` : u.name,
         text: decoder.decode(u.bytes).slice(0, MAX_FILE_CHARS),
       });
     else unread.push(u.name);
