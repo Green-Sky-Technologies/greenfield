@@ -276,7 +276,7 @@ describe('panels read the editor store', () => {
     });
     expect($('[data-testid="layers-summary"]')!.textContent).toContain('1 layers · 1 selected');
     expect($('[data-testid="design-tab-name"]')!.textContent).toBe('Hero');
-    expect($('[data-testid="design-width"]')!.textContent).toBe('320');
+    expect($<HTMLInputElement>('[data-testid="design-width"]')!.value).toBe('320');
   });
 
   it('"Editor panels" turns canvas mode off; ours hide until it comes back on', async () => {

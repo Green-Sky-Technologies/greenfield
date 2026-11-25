@@ -92,7 +92,7 @@ test('canvas mode: panels follow the canvas, F6 cycles the panes, the fallback r
   await expect(page.getByTestId('design-tab-name')).toHaveText('Swatch');
   await expect(summary).toContainText('1 selected');
   await expect(left.getByRole('list', { name: 'Selected layers' })).toHaveText('Swatch');
-  await expect(page.getByTestId('design-width')).toHaveText('160');
+  await expect(page.getByTestId('design-width')).toHaveValue('160');
   expect(await hostFocus(page)).toBe('canvas');
 
   // 5.4: F6 cycles the panes and Shift+F6 goes back; Esc returns to the canvas.
