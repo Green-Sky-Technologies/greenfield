@@ -24,6 +24,13 @@ pin values in the run summary. `node apps/web/scripts/fetch-editor.mjs` download
 generated `EDITOR_VERSION` and `EDITOR_RELEASE_SHA256` must match it (`test/csp.test.ts` fails
 otherwise). To upgrade, change the pin, fetch, then `generate`.
 
+The pin is either a public `url`, or `repo`, `tag` and `asset` for a release of the private
+`Green-Sky-Technologies/greenfield-editor` repo. The second form is read through the GitHub API and
+needs `EDITOR_RELEASE_TOKEN`: a fine-grained token with read-only Contents on that repo, set as a
+Vercel env var (Production, Preview, Development) and as a GitHub Actions secret of this repo. Without
+it `fetch-editor.mjs` stops and says so. `version` is the editor's reported `appVersion` (for example
+`0.18.1`), never the release tag: the bridge e2e asserts `info.appVersion === EDITOR_VERSION`.
+
 `@greenfield/bridge/csp` holds the content security policies for `/editor/` and the pages that
 embed it (Story 8.1); `next.config.ts` and the test server send the same ones.
 

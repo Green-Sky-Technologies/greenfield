@@ -10,8 +10,22 @@ describe('editor version pin', () => {
   it('fetch-editor.mjs and the generated bridge types pin the same release', () => {
     const pin = JSON.parse(
       readFileSync(new URL('../editor-release.json', import.meta.url), 'utf8'),
-    ) as { version: string; url: string; sha256: string };
-    expect(pin.url).toMatch(/^https:\/\/github\.com\/.+\.zip$/);
+    ) as {
+      version: string;
+      sha256: string;
+      url?: string;
+      repo?: string;
+      tag?: string;
+      asset?: string;
+    };
+    // A public url, or an asset of a private release (fetch-editor.mjs reads it with a token).
+    if (pin.repo) {
+      expect(pin.repo).toMatch(/^[\w.-]+\/[\w.-]+$/);
+      expect(pin.tag).toBeTruthy();
+      expect(pin.asset).toMatch(/\.zip$/);
+    } else {
+      expect(pin.url).toMatch(/^https:\/\/github\.com\/.+\.zip$/);
+    }
     expect({ version: EDITOR_VERSION, sha256: EDITOR_RELEASE_SHA256 }).toEqual({
       version: pin.version,
       sha256: pin.sha256,

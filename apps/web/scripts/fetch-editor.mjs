@@ -3,9 +3,11 @@
  * Download the figcraft-web release pinned in packages/bridge/editor-release.json, verify its sha256 and unpack it into
  * apps/web/public/editor/ (gitignored), so the app serves the editor at /editor/. Runs before
  * `dev` and `build` (package.json `predev`/`prebuild`, scripts/vercel-build.mjs) and does
- * nothing when the pinned version is already there. The pin is a public download `url` (the
- * fork's CI release, Story 8.1, or an upstream release) plus the sha256 of the zip. The zip holds
- * the site at its root (the fork's) or inside one top-level folder (upstream's).
+ * nothing when the pinned version is already there. The pin is either a public download `url` or
+ * a release asset (`repo`, `tag`, `asset`) of the private greenfield-editor repo, read with the
+ * EDITOR_RELEASE_TOKEN env var (Story 8.1; see scripts/editor-download.mjs), plus the sha256 of
+ * the zip. The zip holds the site at its root (the fork's) or inside one top-level folder
+ * (upstream's).
  *
  *   node scripts/fetch-editor.mjs          # from apps/web; skip if already there
  *   node scripts/fetch-editor.mjs --force  # re-download
@@ -18,6 +20,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { describePin, downloadEditorZip } from './editor-download.mjs';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..'); // apps/web
 // The one pin, shared with packages/bridge (its tests fail when its generated types disagree).
@@ -26,7 +29,6 @@ const pin = JSON.parse(
 );
 const VERSION = pin.version;
 const SHA256 = pin.sha256;
-const URL_ = pin.url;
 const dest = path.join(root, 'public/editor');
 const stamp = path.join(dest, '.figcraft-version');
 
@@ -38,11 +40,10 @@ if (!process.argv.includes('--force') && fs.existsSync(stamp)) {
 }
 
 const t0 = performance.now();
-const res = await fetch(URL_, { redirect: 'follow' });
-if (!res.ok) throw new Error(`Download failed: ${res.status} ${res.statusText}`);
-const zip = Buffer.from(await res.arrayBuffer());
+const zip = await downloadEditorZip(pin, process.env);
 const sha = createHash('sha256').update(zip).digest('hex');
-if (sha !== SHA256) throw new Error(`sha256 mismatch for ${URL_}: got ${sha}, want ${SHA256}`);
+if (sha !== SHA256)
+  throw new Error(`sha256 mismatch for ${describePin(pin)}: got ${sha}, want ${SHA256}`);
 
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'figcraft-web-'));
 try {
