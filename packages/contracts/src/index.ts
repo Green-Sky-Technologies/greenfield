@@ -1,5 +1,6 @@
 export * from './agent-tools';
 export * from './batch';
+export * from './changes';
 export * from './context';
 export * from './executor';
 export * from './followup';

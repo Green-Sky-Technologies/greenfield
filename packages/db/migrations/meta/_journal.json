@@ -57,6 +57,13 @@
       "when": 1795580706362,
       "tag": "0007_design_systems",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1795585078540,
+      "tag": "0008_agent_versions",
+      "breakpoints": true
     }
   ]
 }

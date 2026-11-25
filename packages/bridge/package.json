@@ -8,7 +8,8 @@
     "./file": "./src/file.ts",
     "./csp": "./src/csp.ts",
     "./playwright": "./src/playwright/index.ts",
-    "./playwright/server": "./src/playwright/server.ts"
+    "./playwright/server": "./src/playwright/server.ts",
+    "./editor-release.json": "./editor-release.json"
   },
   "scripts": {
     "typecheck": "tsc -p .",

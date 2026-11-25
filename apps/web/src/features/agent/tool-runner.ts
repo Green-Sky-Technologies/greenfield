@@ -13,7 +13,7 @@
  * - A turn that ended (cancelled, closed tab) runs nothing more.
  */
 import type { Editor } from '@greenfield/bridge';
-import { executeTool, type ToolContent } from '@greenfield/contracts';
+import { executeTool, type LayerChange, type ToolContent } from '@greenfield/contracts';
 
 export interface ToolCallInfo {
   id: string;
@@ -35,6 +35,9 @@ export interface ToolResultBody {
   content: ToolContent[];
   isError: boolean;
   touched: number[];
+  /** `run_batch`: what changed, property by property, and in which frames (Story 4.7). */
+  changes?: LayerChange[];
+  frames?: number[];
 }
 
 export interface ToolRunnerApi {
@@ -107,6 +110,7 @@ export class ToolRunner {
         content: this.fit(r.content),
         isError: r.isError,
         touched: r.touched,
+        ...(r.ok && r.changes ? { changes: r.changes, frames: r.frames } : {}),
       });
       return;
     }
