@@ -2,7 +2,7 @@
  * Scenario 3, workspace isolation: a signed-in user from another workspace can't open a project,
  * read it through the API (always 404, never 403, never data) or use a workspace-only share link.
  */
-import { createProject, pageFetch, uniqueName } from './support/app';
+import { createProject, pageFetch, putFile, uniqueName } from './support/app';
 import { expect, test } from './support/fixtures';
 
 test('an outsider can’t reach another workspace’s project, page or API', async ({ as, run }) => {
@@ -10,7 +10,7 @@ test('an outsider can’t reach another workspace’s project, page or API', asy
   const name = uniqueName('Isolated');
   const projectId = await createProject(editor, run.org.slug, name);
   const file = `/api/projects/${projectId}/file`;
-  expect((await pageFetch(editor, file, { method: 'PUT', bytes: [7, 7, 7] })).status).toBe(200);
+  expect((await putFile(editor, projectId, [7, 7, 7])).status).toBe(200);
 
   const outsider = await as('outsider');
   await outsider.goto(`/w/${run.org.slug}`);
@@ -36,7 +36,7 @@ test('an outsider can’t reach another workspace’s project, page or API', asy
     body: { sessionId: 'e2e-outsider' },
   });
   expect(lock.status).toBe(404);
-  expect((await pageFetch(outsider, file, { method: 'PUT', bytes: [1] })).status).toBe(404);
+  expect((await putFile(outsider, projectId, [1], { lock: false })).status).toBe(404);
 
   // A member of the workspace can read the same file (the 404 above isn't a broken route).
   const own = await pageFetch(editor, file);

@@ -34,7 +34,12 @@ export async function expectEditorReady(page: Page) {
 export async function pageFetch(
   page: Page,
   url: string,
-  init: { method?: string; body?: unknown; bytes?: number[] } = {},
+  init: {
+    method?: string;
+    body?: unknown;
+    bytes?: number[];
+    headers?: Record<string, string>;
+  } = {},
 ): Promise<{ status: number; body: string }> {
   return page.evaluate(
     async ({ url, init }) => {
@@ -47,16 +52,42 @@ export async function pageFetch(
       const r = await fetch(url, {
         method: init.method ?? 'GET',
         cache: 'no-store',
-        headers:
-          init.bytes !== undefined
+        headers: {
+          ...(init.bytes !== undefined
             ? { 'content-type': 'application/octet-stream' }
             : init.body === undefined
-              ? undefined
-              : { 'content-type': 'application/json' },
+              ? {}
+              : { 'content-type': 'application/json' }),
+          ...init.headers,
+        },
         body,
       });
       return { status: r.status, body: await r.text() };
     },
     { url, init },
   );
+}
+
+/**
+ * PUT the project's file from a fresh tab session. Saves need the edit lock (Story 3.1), so with
+ * `lock` (the default) the session takes it first and leaves afterwards; without it, the request
+ * still carries a session so the server's role and archived checks answer.
+ */
+export async function putFile(
+  page: Page,
+  projectId: string,
+  bytes: number[],
+  { lock = true }: { lock?: boolean } = {},
+): Promise<{ status: number; body: string }> {
+  const sessionId = `e2e-${Math.random().toString(36).slice(2, 10)}`;
+  const lockUrl = `/api/projects/${projectId}/lock`;
+  if (lock) await pageFetch(page, lockUrl, { method: 'POST', body: { sessionId } });
+  const r = await pageFetch(page, `/api/projects/${projectId}/file`, {
+    method: 'PUT',
+    bytes,
+    headers: { 'x-session-id': sessionId },
+  });
+  if (lock)
+    await pageFetch(page, `${lockUrl}?sessionId=${sessionId}&leave=1`, { method: 'DELETE' });
+  return r;
 }
