@@ -8,6 +8,7 @@ import type {
   DocumentChanged,
   EditorAction,
   EditorState,
+  Flow,
   NodeFields,
   NodeId,
   PageSummary,
@@ -17,6 +18,7 @@ export const INITIAL_STATE: EditorState = {
   document: null,
   pages: [],
   tree: EMPTY_TREE,
+  flows: [],
   selection: [],
   nodes: new Map(),
   tool: null,
@@ -82,6 +84,14 @@ function patchPages(pages: readonly PageSummary[], a: DocumentChanged): readonly
   return next;
 }
 
+/** The current page's flows after `a`: its page's `flows` field, when the change has one. */
+function patchFlows(state: EditorState, a: DocumentChanged): readonly Flow[] {
+  const page = state.tree.page;
+  const fields = a.nodes?.find((n) => n.id === page);
+  if (!fields || !('flows' in fields)) return state.flows;
+  return Array.isArray(fields.flows) ? (fields.flows as Flow[]) : [];
+}
+
 export function reduce(state: EditorState, action: EditorAction): EditorState {
   switch (action.type) {
     case 'document.loaded':
@@ -90,6 +100,7 @@ export function reduce(state: EditorState, action: EditorAction): EditorState {
         document: action.document,
         pages: action.pages,
         tree: treeFromLayers(action.pages.find((p) => p.current)?.id ?? 0, action.layers),
+        flows: action.flows ?? [],
         selection: action.selection,
         nodes: selectedNodes(
           action.document.id === state.document?.id ? state.nodes : new Map(),
@@ -121,6 +132,7 @@ export function reduce(state: EditorState, action: EditorAction): EditorState {
         document,
         pages: patchPages(state.pages, action),
         tree,
+        flows: patchFlows(state, action),
         selection: sameIds(selection, state.selection) ? state.selection : selection,
         nodes: selectedNodes(state.nodes, selection, action.nodes),
       };

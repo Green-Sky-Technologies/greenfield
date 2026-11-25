@@ -300,4 +300,26 @@ describe('reduce', () => {
     expect(s.tree).toBe(loaded.tree);
     expect(s.document?.undoDepth).toBe(4);
   });
+
+  it('follows the current page’s flows', () => {
+    const flow = { start: 2, name: 'Flow 1', description: '' };
+    const change = (nodes: { id: number; [k: string]: unknown }[]) =>
+      reduce(loaded, { type: 'document.changed', document: 1, revision: 2, undoDepth: 1, nodes });
+    expect(loaded.flows).toEqual([]);
+    const added = change([{ id: 1, flows: [flow] }]);
+    expect(added.flows).toEqual([flow]);
+    expect(
+      reduce(added, { type: 'document.changed', document: 1, revision: 3, undoDepth: 1 }).flows,
+    ).toBe(added.flows);
+    expect(change([{ id: 2, name: 'Card 2' }]).flows).toBe(loaded.flows);
+    expect(
+      reduce(added, {
+        type: 'document.changed',
+        document: 1,
+        revision: 3,
+        undoDepth: 2,
+        nodes: [{ id: 1, flows: null }],
+      }).flows,
+    ).toEqual([]);
+  });
 });
