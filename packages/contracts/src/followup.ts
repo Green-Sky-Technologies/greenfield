@@ -3,8 +3,6 @@
  * (the interactive loop ends the turn on `ask_followup`, and shows `suggest_generation_job` as an
  * offer); `executeTool` only validates them.
  *
- * - `ask_followup` (Story 4.4): the question cards carried over from CrunchDesign's
- *   `ask_questions` (multiple choice, an optional free-text "Other", and "You decide" = skip).
  * - `suggest_generation_job` (Story 4.5): hand a too-big request to a background job.
  *
  * Client-safe (zod only).

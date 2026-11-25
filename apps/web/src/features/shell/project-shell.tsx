@@ -16,6 +16,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AgentPanel } from '@/features/agent/agent-panel';
 import { EditorEmbed, type EditorHandle } from '@/features/editor/editor-embed';
+import { useEditorTheme } from '@/features/theme/use-editor-theme';
 import { CommentOrAsk } from './comment-or-ask';
 import { shellKeyAction, type ShellAction } from './keys';
 import { TopBar, type TopBarProps } from './top-bar';
@@ -36,6 +37,7 @@ export function ProjectShell({ author, canEdit, canRunAgent, webgl, ...bar }: Pr
   useEffect(() => {
     handleRef.current = handle;
   }, [handle]);
+  useEditorTheme(handle?.editor ?? null);
   const agentEditor = useCallback(() => handleRef.current?.editor ?? null, []);
   const [menu, setMenu] = useState<ShellMenu>(null);
   const barRef = useRef<HTMLElement>(null);

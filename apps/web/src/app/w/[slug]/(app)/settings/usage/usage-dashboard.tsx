@@ -66,7 +66,7 @@ function DailyCost({ rows }: { rows: UsageRow[] }) {
         {rows.map((r) => (
           <li
             key={r.key}
-            className="flex-1 rounded-t bg-accent/70"
+            className="flex-1 bg-accent/70"
             style={{ height: `${Math.max(2, (r.costMicros / max) * 100)}%` }}
             title={`${r.key}: ${formatUsd(r.costMicros)} · ${fmt.format(r.calls)} calls · ${pct(r.cacheHitRate)} cache hits`}
           />

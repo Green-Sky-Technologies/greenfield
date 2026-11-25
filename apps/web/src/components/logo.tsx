@@ -1,16 +1,18 @@
-export function Logo({ compact = false }: { compact?: boolean }) {
+import Image from 'next/image';
+
+export function Logo({ compact = false, size = 16 }: { compact?: boolean; size?: 16 | 32 }) {
+  const mark = (src: string, cls: string) => (
+    <Image src={src} alt="" width={size} height={size} className={`pixel ${cls}`} />
+  );
   return (
-    <span className="inline-flex items-center gap-2 font-semibold tracking-tight">
-      <svg width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="2" y="2" width="20" height="20" rx="5" fill="var(--accent)" />
-        <path
-          d="M7 8h7M7 12h10M7 16h5"
-          stroke="var(--accent-ink)"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-        />
-      </svg>
-      {!compact && <span>Greenfield</span>}
+    <span className="inline-flex items-center gap-2">
+      {mark('/greenfield-mark-small.svg', 'mark-on-dark')}
+      {mark('/greenfield-mark-small-on-light.svg', 'mark-on-light')}
+      {!compact && (
+        <span className="font-wordmark leading-none" style={{ fontSize: size === 32 ? 38 : 19 }}>
+          Greenfield
+        </span>
+      )}
     </span>
   );
 }

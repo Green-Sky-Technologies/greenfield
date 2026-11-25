@@ -95,7 +95,7 @@ function SharePanel({ projectId, canShare }: { projectId: string; canShare: bool
                 id="share-link"
                 readOnly
                 value={link}
-                className="input mt-2 rounded-none font-mono text-xs"
+                className="input mt-2 font-mono text-xs"
                 onFocus={(e) => e.currentTarget.select()}
               />
               <button

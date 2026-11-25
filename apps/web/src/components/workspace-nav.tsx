@@ -23,7 +23,7 @@ export function WorkspaceNav({
           <Link
             key={href}
             href={href}
-            className={`rounded-md px-2.5 py-1.5 ${active ? 'bg-surface-2 font-medium' : 'text-muted hover:text-text'}`}
+            className={`px-2.5 py-1.5 ${active ? 'bg-surface-2 font-medium' : 'text-muted hover:text-text'}`}
           >
             {item.label}
           </Link>

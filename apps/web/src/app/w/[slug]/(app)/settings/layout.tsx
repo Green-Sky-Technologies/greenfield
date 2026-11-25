@@ -10,6 +10,7 @@ export default async function SettingsLayout({
   const actor = await requireActor((await params).slug);
   const items = [
     { href: '/members', label: 'Members' },
+    { href: '/appearance', label: 'Appearance' },
     ...(can(actor.role, 'workspace:manage_credentials')
       ? [
           { href: '/credentials', label: 'Model access' },
@@ -20,9 +21,7 @@ export default async function SettingsLayout({
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-6 py-8 md:flex-row md:gap-10">
       <aside className="md:w-44 md:shrink-0">
-        <p className="mb-2 px-2.5 text-xs font-medium uppercase tracking-wide text-muted">
-          Settings
-        </p>
+        <p className="mb-2 px-2.5 type-label text-muted">Settings</p>
         <SettingsNav base={`/w/${actor.workspace.slug}`} items={items} />
       </aside>
       <div className="min-w-0 flex-1">{children}</div>

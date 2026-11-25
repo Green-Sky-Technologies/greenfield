@@ -76,7 +76,7 @@ export function CredentialManager({
         </dl>
       )}
       {cred.status === 'error' && cred.lastError && (
-        <p className="mt-4 rounded-md bg-surface-2 p-3 text-sm text-danger">{cred.lastError}</p>
+        <p className="mt-4 bg-surface-2 p-3 text-sm text-danger">{cred.lastError}</p>
       )}
       {cred.lastTestedAt && (
         <p className="mt-3 text-xs text-muted">
@@ -245,7 +245,7 @@ function CredentialForm({
           {OPTIONS.map((o) => (
             <label
               key={o.id}
-              className={`cursor-pointer rounded-md border p-3 text-sm ${provider === o.id ? 'border-accent ring-2 ring-accent/20' : 'border-border'}`}
+              className={`cursor-pointer border p-3 text-sm ${provider === o.id ? 'border-accent ring-2 ring-accent/20' : 'border-border'}`}
             >
               <input
                 type="radio"
@@ -328,12 +328,12 @@ function CredentialForm({
                   />
                   {err('roleArn')}
                 </div>
-                <div className="rounded-md bg-surface-2 p-3 text-sm">
+                <div className="bg-surface-2 p-3 text-sm">
                   <p className="mb-2">
                     Give the role <code className="font-mono">bedrock:InvokeModel*</code>{' '}
                     permissions and this trust policy. The external ID is unique to your workspace.
                   </p>
-                  <pre className="overflow-x-auto rounded bg-surface p-3 font-mono text-xs">
+                  <pre className="overflow-x-auto bg-surface p-3 font-mono text-xs">
                     {trustPolicy}
                   </pre>
                 </div>
@@ -435,7 +435,7 @@ function CredentialForm({
 
       {formError && <p className="mt-4 text-sm text-danger">{formError}</p>}
       {result && result.status === 'error' && (
-        <p className="mt-4 rounded-md bg-surface-2 p-3 text-sm text-danger">
+        <p className="mt-4 bg-surface-2 p-3 text-sm text-danger">
           Saved, but the connection test failed: {result.lastError}
         </p>
       )}

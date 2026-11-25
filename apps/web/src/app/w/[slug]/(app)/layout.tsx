@@ -28,7 +28,7 @@ export default async function WorkspaceLayout({ children, params }: LayoutProps<
             { href: '/settings', label: 'Settings' },
           ]}
         />
-        <span className="ml-auto rounded-full bg-surface-2 px-2 py-0.5 font-mono text-xs capitalize text-muted">
+        <span className="ml-auto bg-surface-2 px-2 py-0.5 font-mono text-xs capitalize text-muted">
           {actor.role}
         </span>
         <UserButton />
