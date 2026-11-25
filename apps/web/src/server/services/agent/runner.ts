@@ -2,18 +2,15 @@
  * Wires the Vercel Sandbox runner to the app. Nothing secret goes into a job spec; the job token
  * is the only credential the sandbox sees.
  */
-import type { JobRunner } from '@greenfield/contracts';
+import type { JobRunner, StartJob } from '@greenfield/contracts';
+import { getDb } from '@greenfield/db';
 import { VercelSandboxRunner, type PreparedJob, type SandboxApi } from '@greenfield/sandbox-runner';
-import { AgentUnavailableError } from '../types';
+import { defaultDesignFileStorage } from '../design-files';
+import { prepareAgentJob } from './agent-jobs';
 
-/**
- * Build a job's sandbox spec. Not available until Story 4.5: the jobs drove the HTML model's
- * DesignDoc through MCP tools served by the app (removed in Story 1.2); the new ones run
- * headless figcraft-cli on a copy of the file. Throwing here fails the job with a clear error
- * (startJob records it) instead of starting a sandbox that has no tools.
- */
-export async function prepareJob(): Promise<PreparedJob> {
-  throw new AgentUnavailableError('Agent jobs are not available yet. They return in Epic 4.');
+/** Build a job's sandbox spec (Story 4.5): a copy of the file, the CLI pin, the job token. */
+export function prepareJob(job: StartJob): Promise<PreparedJob> {
+  return prepareAgentJob(getDb(), defaultDesignFileStorage(), job);
 }
 
 /**
@@ -41,11 +38,11 @@ export function jobRunner(opts: { api?: SandboxApi } = {}): JobRunner {
       appUrl: appUrl(),
       api: opts.api,
       protectionBypassSecret: bypass(),
-      prepare: () => prepareJob(),
+      prepare: prepareJob,
     });
   return (g.__greenfieldJobRunner ??= new VercelSandboxRunner({
     appUrl: appUrl(),
     protectionBypassSecret: bypass(),
-    prepare: () => prepareJob(),
+    prepare: prepareJob,
   }));
 }

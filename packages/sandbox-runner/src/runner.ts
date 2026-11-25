@@ -2,15 +2,18 @@
  * JobRunner on Vercel Sandbox (Story 5.1). One Firecracker microVM per job.
  *
  * The sandbox gets: the entrypoint, a job spec (prompt + system prompt, no secrets), and an
- * allowlisted env with the LLM proxy URL and a job token. Egress is limited to the app and the
- * npm registry. Persistence of jobs and events lives in the app (services/jobs.ts).
+ * allowlisted env with the LLM proxy URL and a job token, plus a copy of the project's file.
+ * Egress is limited to the app, the npm registry and the host of the pinned editor CLI.
+ * Persistence of jobs and events lives in the app (services/jobs.ts).
  */
 import type { JobRunner, StartJob } from '@greenfield/contracts';
 import { assertNoSecrets, buildSandboxEnv } from './env';
 import {
   ENTRYPOINT_PATH,
   ENTRYPOINT_SOURCE,
+  JOB_INPUT_PATH,
   JOB_SPEC_PATH,
+  JOB_WORK_DIR,
   SANDBOX_DIR,
   SANDBOX_PACKAGE_JSON,
   type JobSpec,
@@ -64,6 +67,23 @@ export interface PreparedJob {
   model: string;
   smallModel: string;
   spec: Omit<JobSpec, 'jobId' | 'kind'>;
+  /** The copy of the project's file the job works on (none: a new, empty document). */
+  document: Uint8Array | null;
+}
+
+/** Hosts a GitHub release download goes through (the CLI pin's URL redirects to the second). */
+const RELEASE_HOSTS: Record<string, string[]> = {
+  'github.com': [
+    'github.com',
+    'release-assets.githubusercontent.com',
+    'objects.githubusercontent.com',
+  ],
+};
+
+/** The hosts the sandbox needs to download the pinned CLI. */
+export function cliHosts(url: string): string[] {
+  const host = new URL(url).host;
+  return RELEASE_HOSTS[host] ?? [host];
 }
 
 export interface VercelSandboxRunnerOptions {
@@ -134,6 +154,7 @@ export class VercelSandboxRunner implements JobRunner {
       { path: JOB_SPEC_PATH, content: JSON.stringify(spec) },
       { path: ENTRYPOINT_PATH, content: ENTRYPOINT_SOURCE },
     ];
+    // The document is the user's own file, so it isn't scanned; everything we wrote is.
     assertNoSecrets(env, files);
 
     const appHost = new URL(this.opts.appUrl).host;
@@ -145,20 +166,23 @@ export class VercelSandboxRunner implements JobRunner {
       env,
       networkPolicy: networkPolicyFor(
         appHost,
-        this.opts.allowHosts ?? [],
+        [...cliHosts(spec.cli.url), ...(this.opts.allowHosts ?? [])],
         this.opts.protectionBypassSecret,
       ),
       tags: { greenfieldJob: job.jobId, workspace: job.workspaceId },
     });
     try {
-      await sandbox.writeFiles(
-        files.map((f) => ({ path: f.path, content: Buffer.from(f.content) })),
-      );
+      await sandbox.writeFiles([
+        ...files.map((f) => ({ path: f.path, content: Buffer.from(f.content) })),
+        ...(prepared.document
+          ? [{ path: JOB_INPUT_PATH, content: Buffer.from(prepared.document) }]
+          : []),
+      ]);
       await sandbox.runCommand({
         cmd: 'bash',
         args: [
           '-c',
-          `cd ${SANDBOX_DIR} && npm install --no-audit --no-fund --silent && exec node ${ENTRYPOINT_PATH} run`,
+          `mkdir -p ${JOB_WORK_DIR} && cd ${SANDBOX_DIR} && npm install --no-audit --no-fund --silent && exec node ${ENTRYPOINT_PATH} run`,
         ],
         cwd: SANDBOX_DIR,
         detached: true,

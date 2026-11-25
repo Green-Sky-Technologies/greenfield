@@ -50,6 +50,13 @@
       "when": 1795562333107,
       "tag": "0006_comment_index",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1795581191145,
+      "tag": "0007_agent_versions",
+      "breakpoints": true
     }
   ]
 }

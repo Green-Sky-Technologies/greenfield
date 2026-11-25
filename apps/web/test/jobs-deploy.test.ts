@@ -86,7 +86,15 @@ describe('sandbox callback URL', () => {
         jobToken: 'cjt_x',
         model: 'claude-opus-5-5',
         smallModel: 'claude-haiku-5-5',
-        spec: { prompt: 'p', systemPrompt: 's', tools: [], maxTurns: 1 },
+        spec: {
+          prompt: 'p',
+          systemPrompt: 's',
+          tools: [],
+          maxTurns: 1,
+          cli: { url: 'https://cli.example.com/figcraft-cli', sha256: 'a'.repeat(64) },
+          newDocument: true,
+        },
+        document: null,
       }),
     });
     const { sandboxId } = await runner.start({
@@ -102,6 +110,7 @@ describe('sandbox callback URL', () => {
         { transform: [{ headers: { 'x-vercel-protection-bypass': 'bypass-SECRET-value' } }] },
       ],
       'registry.npmjs.org': [],
+      'cli.example.com': [],
     });
     const insideVm = JSON.stringify({
       env: rec.params.env,

@@ -23,6 +23,7 @@ import {
   and,
   asc,
   eq,
+  fileVersions,
   gt,
   inArray,
   isNull,
@@ -401,6 +402,17 @@ const reportBody = z
   })
   .strict();
 
+/** Whether `versionId` is the version this job saved (a sandbox can't claim another's). */
+async function ownVersion(db: Db, jobId: string, versionId: unknown): Promise<boolean> {
+  if (typeof versionId !== 'string' || !z.uuid().safeParse(versionId).success) return false;
+  const [row] = await db
+    .select({ id: fileVersions.id })
+    .from(fileVersions)
+    .where(and(eq(fileVersions.id, versionId), eq(fileVersions.jobId, jobId)))
+    .limit(1);
+  return !!row;
+}
+
 export class JobGoneError extends Error {
   override name = 'JobGoneError';
 }
@@ -430,7 +442,13 @@ export async function reportJobEvent(
       .from(jobEvents)
       .where(and(eq(jobEvents.jobId, jobId), eq(jobEvents.type, 'frame')))
       .orderBy(asc(jobEvents.seq));
-    const result = { summary: String(clipped.summary ?? ''), frames: frames.map((f) => f.data) };
+    // Frames come from `frame` events, or with the result (agent jobs, Story 4.5).
+    const reported = Array.isArray(clipped.frames) ? (clipped.frames as unknown[]) : [];
+    const result = {
+      summary: String(clipped.summary ?? ''),
+      frames: [...frames.map((f) => f.data), ...reported],
+      ...((await ownVersion(db, jobId, clipped.versionId)) ? { versionId: clipped.versionId } : {}),
+    };
     // Only recorded if the job is still running: a result that races a cancel is dropped.
     const row = await transition(
       db,

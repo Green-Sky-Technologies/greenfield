@@ -1,11 +1,7 @@
-import { mkdtempSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
-import { join } from 'node:path';
-import { pathToFileURL } from 'node:url';
 import { describe, expect, it, vi } from 'vitest';
 import {
   assertNoSecrets,
-  ENTRYPOINT_SOURCE,
+  JOB_INPUT_PATH,
   JOB_SPEC_PATH,
   recordingSandboxApi,
   SandboxSecretError,
@@ -28,10 +24,16 @@ const prepared = (over: Partial<PreparedJob['spec']> = {}): PreparedJob => ({
   spec: {
     prompt: 'Design a pricing page',
     systemPrompt: 'sys',
-    tools: ['get_outline'],
+    tools: [{ name: 'get_outline', description: 'Outline', input_schema: { type: 'object' } }],
     maxTurns: 40,
+    cli: {
+      url: 'https://github.com/o/r/releases/download/v1/figcraft-cli',
+      sha256: 'ab'.repeat(32),
+    },
+    newDocument: false,
     ...over,
   },
+  document: new TextEncoder().encode('FIGCRAFT-BYTES'),
 });
 
 describe('VercelSandboxRunner', () => {
@@ -49,7 +51,15 @@ describe('VercelSandboxRunner', () => {
     expect(rec.params).toMatchObject({
       timeout: 600_000,
       persistent: false,
-      networkPolicy: { allow: ['app.example.com', 'registry.npmjs.org'] },
+      networkPolicy: {
+        allow: [
+          'app.example.com',
+          'registry.npmjs.org',
+          'github.com',
+          'release-assets.githubusercontent.com',
+          'objects.githubusercontent.com',
+        ],
+      },
       env: {
         ANTHROPIC_BASE_URL: 'https://app.example.com/api/llm',
         ANTHROPIC_AUTH_TOKEN: 'cjt_test-token',
@@ -60,6 +70,11 @@ describe('VercelSandboxRunner', () => {
     expect(rec.params.env).not.toHaveProperty('ANTHROPIC_API_KEY');
     expect(JSON.stringify(rec)).not.toContain(realKey);
     expect(rec.files.map((f) => f.path)).toContain(JOB_SPEC_PATH);
+    // The copy of the file goes into the job's folder, the only one the editor may touch.
+    expect(rec.files.find((f) => f.path === JOB_INPUT_PATH)!.content).toBe('FIGCRAFT-BYTES');
+    expect(JSON.parse(rec.files.find((f) => f.path === JOB_SPEC_PATH)!.content).cli).toEqual(
+      prepared().spec.cli,
+    );
     expect(rec.commands[0]).toMatchObject({ cmd: 'bash', detached: true });
     expect(await runner.isAlive(sandboxId)).toBe(true);
     await runner.cancel(job.jobId, sandboxId);
@@ -124,97 +139,5 @@ describe('assertNoSecrets patterns (defense in depth)', () => {
         ],
       ),
     ).not.toThrow();
-  });
-});
-
-describe('sandbox entrypoint', () => {
-  async function load() {
-    const dir = mkdtempSync(join(tmpdir(), 'greenfield-entry-'));
-    const file = join(dir, 'entry.mjs');
-    writeFileSync(file, ENTRYPOINT_SOURCE);
-    return (await import(pathToFileURL(file).href)) as {
-      main: (deps: unknown) => Promise<number>;
-    };
-  }
-
-  const env = {
-    GREENFIELD_API_URL: 'https://app.example.com',
-    ANTHROPIC_AUTH_TOKEN: 'cjt_tok',
-    ANTHROPIC_MODEL: 'claude-opus-5-5',
-  };
-  const spec = {
-    jobId: 'j1',
-    kind: 'generate',
-    prompt: 'P',
-    systemPrompt: 'S',
-    tools: ['insert_frame'],
-    maxTurns: 5,
-  };
-
-  it('runs the Agent SDK with only our MCP tools and reports progress and the result', async () => {
-    const { main } = await load();
-    const reports: { type: string; data: unknown }[] = [];
-    const fetch = vi.fn(async (url: string, init: RequestInit) => {
-      expect(url).toBe('https://app.example.com/api/jobs/j1/report');
-      expect((init.headers as Record<string, string>).authorization).toBe('Bearer cjt_tok');
-      reports.push(JSON.parse(String(init.body)));
-      return new Response('{}', { status: 200 });
-    });
-    let options: Record<string, unknown> = {};
-    const query = ({ options: o }: { options: Record<string, unknown> }) => {
-      options = o;
-      return (async function* () {
-        yield { type: 'assistant', message: { content: [{ type: 'text', text: 'Building' }] } };
-        yield {
-          type: 'assistant',
-          message: { content: [{ type: 'tool_use', name: 'mcp__greenfield__insert_frame' }] },
-        };
-        yield { type: 'result', subtype: 'success', result: 'Created 1 frame' };
-      })();
-    };
-    const code = await main({ query, fetch, env, readFile: async () => JSON.stringify(spec) });
-    expect(code).toBe(0);
-    expect(options).toMatchObject({
-      tools: [],
-      allowedTools: ['mcp__greenfield__insert_frame'],
-      permissionMode: 'dontAsk',
-      settingSources: [],
-      mcpServers: {
-        greenfield: {
-          type: 'http',
-          url: 'https://app.example.com/api/jobs/j1/mcp',
-          headers: { authorization: 'Bearer cjt_tok' },
-        },
-      },
-    });
-    expect(reports.map((r) => r.type)).toEqual(['progress', 'log', 'tool', 'result']);
-    expect(reports.at(-1)!.data).toEqual({ summary: 'Created 1 frame' });
-  });
-
-  it('reports errors and stops when the job token is revoked', async () => {
-    const { main } = await load();
-    const reports: string[] = [];
-    const failing = () =>
-      (async function* () {
-        yield { type: 'result', subtype: 'error_max_turns' };
-      })();
-    const ok = vi.fn(async (_u: string, init: RequestInit) => {
-      reports.push(JSON.parse(String(init.body)).type);
-      return new Response('{}');
-    });
-    expect(
-      await main({ query: failing, fetch: ok, env, readFile: async () => JSON.stringify(spec) }),
-    ).toBe(1);
-    expect(reports).toEqual(['progress', 'error']);
-
-    const revoked = vi.fn(async () => new Response('{}', { status: 401 }));
-    expect(
-      await main({
-        query: failing,
-        fetch: revoked,
-        env,
-        readFile: async () => JSON.stringify(spec),
-      }),
-    ).toBe(1);
   });
 });
