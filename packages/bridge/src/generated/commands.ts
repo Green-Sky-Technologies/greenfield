@@ -8,8 +8,8 @@ export const EDITOR_VERSION = '0.18.1';
 export const EDITOR_RELEASE_SHA256 =
   '2fbeb93f5022b0a7cc9d8528f1ed7e2b54c94d213ef79e65128aa898c399f02b';
 /** sha256 of `figcraft.commands()` in canonical form (see scripts/command-types.ts). */
-export const COMMANDS_HASH = 'dda89c2e8a58f1829d201db9492eb30d29c3b06b960f8409cd0aafff08fdbe26';
-export const COMMAND_COUNT = 644;
+export const COMMANDS_HASH = '582abc62317c3ec414a8a21eaf79f3026fa92280b5406e0edddfbd7f676de469';
+export const COMMAND_COUNT = 648;
 
 /** Layer keys `document.inspect` and `node.get` accept in `fields`. */
 export const NODE_FIELDS = [
@@ -2750,6 +2750,37 @@ export interface CommandParamsMap {
     id?: number | string;
   };
   /**
+   * Begin a gesture
+   *
+   * `{label? (the undo step's name; default "Edit")}  start a drag or scrub: edit.preview changes the document without undo steps, edit.commit makes them one step, edit.cancel puts everything back. One gesture at a time; edit.undo and edit.redo wait until it ends`
+   */
+  'edit.begin': {
+    /**
+     * the undo step's name; default "Edit"
+     */
+    label?: string;
+    ids?: NodeId[];
+    id?: NodeId;
+  };
+  /**
+   * Cancel a gesture
+   *
+   * `{}  the document and selection go back to where edit.begin found them`
+   */
+  'edit.cancel': {
+    ids?: NodeId[];
+    id?: NodeId;
+  };
+  /**
+   * Commit a gesture
+   *
+   * `{}  the gesture's previews become one undo step (none if nothing changed)`
+   */
+  'edit.commit': {
+    ids?: NodeId[];
+    id?: NodeId;
+  };
+  /**
    * Copy [Edit] (Cmd+C)
    *
    * `{ids?}`
@@ -2894,6 +2925,19 @@ export interface CommandParamsMap {
    */
   'edit.pickColor': {
     apply?: unknown;
+    ids?: NodeId[];
+    id?: NodeId;
+  };
+  /**
+   * Preview a gesture
+   *
+   * `{commands: [{command, params, as?}]}  show the commands' result on the canvas from where the gesture began (the document is reset first, so a relative edit doesn't add up; $step and $ref work as in command.batch). A failing step undoes the whole preview and keeps the last good one`
+   */
+  'edit.preview': {
+    /**
+     * [{command, params, as?}]
+     */
+    commands: unknown[];
     ids?: NodeId[];
     id?: NodeId;
   };
@@ -10883,6 +10927,34 @@ export const COMMANDS: readonly CommandInfo[] = [
     takes: ['index'],
   },
   {
+    id: 'edit.begin',
+    label: 'Begin a gesture',
+    menu: null,
+    params:
+      '{label? (the undo step\'s name; default "Edit")}  start a drag or scrub: edit.preview changes the document without undo steps, edit.commit makes them one step, edit.cancel puts everything back. One gesture at a time; edit.undo and edit.redo wait until it ends',
+    shortcut: null,
+    undoable: false,
+    takes: ['label'],
+  },
+  {
+    id: 'edit.cancel',
+    label: 'Cancel a gesture',
+    menu: null,
+    params: '{}  the document and selection go back to where edit.begin found them',
+    shortcut: null,
+    undoable: false,
+    takes: [],
+  },
+  {
+    id: 'edit.commit',
+    label: 'Commit a gesture',
+    menu: null,
+    params: "{}  the gesture's previews become one undo step (none if nothing changed)",
+    shortcut: null,
+    undoable: false,
+    takes: [],
+  },
+  {
     id: 'edit.copy',
     label: 'Copy',
     menu: 'Edit',
@@ -10992,6 +11064,16 @@ export const COMMANDS: readonly CommandInfo[] = [
     shortcut: 'I',
     undoable: false,
     takes: ['apply'],
+  },
+  {
+    id: 'edit.preview',
+    label: 'Preview a gesture',
+    menu: null,
+    params:
+      "{commands: [{command, params, as?}]}  show the commands' result on the canvas from where the gesture began (the document is reset first, so a relative edit doesn't add up; $step and $ref work as in command.batch). A failing step undoes the whole preview and keeps the last good one",
+    shortcut: null,
+    undoable: false,
+    takes: ['commands'],
   },
   {
     id: 'edit.redo',

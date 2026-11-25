@@ -31,4 +31,6 @@ docker run --rm --name fork-patch-tests \
     # 0008: canvas mode (draws only the canvas, requests go to the host, ?canvas)
     cargo test -q -p figcraft-ui-egui --lib canvas_mode_tests
     cargo test -q -p figcraft-web --bin figcraft-web query_tests
+    # 0009: gesture commands (edit.begin, edit.preview, edit.commit, edit.cancel)
+    cargo test -q -p figcraft-engine --lib gesture_command_tests
   '
