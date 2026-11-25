@@ -4,14 +4,17 @@
 > a real vector editor with an agent built in. The editor is a fork of
 > [FigCraft](https://github.com/storytold/figcraft) (Rust, compiled to WebAssembly) embedded in
 > our Next.js app. The app adds workspaces, the agent, comments that can be sent to the agent,
-> storage, versions and sharing.
+> storage, versions and sharing. In **canvas mode** the editor draws only the canvas; every
+> toolbar, panel and menu around it is Greenfield's own React (§9 D28).
 >
 > Written as epics and user stories with acceptance criteria (AC). The plan is built for
 > **parallel work**: after a short serial foundation, epics 2 to 9 are lanes that one person or
 > one Claude Code session can each take at the same time. Decisions are logged in §9.
 >
-> **Status (2026-11-24):** Phase 0 passed the gate (go, ADR 0003) and Phase 1 is in review
-> (PRs #1–#4). Next is Phase 2: see §7 for what each lane starts with.
+> **Status (2026-11-24):** Phase 0 passed the gate (go, ADR 0003), Phase 1 is merged, and
+> Phase 2 lanes are under way. **Change of direction:** the editor moves to canvas mode with our
+> own chrome (D28), and §6a sets the ten features Greenfield must have, taken from standalone
+> Claude Design. Next: the canvas-mode spike (Story 5.0), which gates Epic 5.
 
 ---
 
@@ -20,11 +23,18 @@
 **Core loop:** draw it yourself (canvas, tools, inspector) **or ask** (agent pane, or a comment
 sent to the agent) → review what the agent changed → share or export.
 
-**Two principles for the product:**
-1. **Direct control is the default.** The canvas works like a professional design tool, with no
-   modes to switch between. The agent is a pane and a comment action, not the whole app.
-2. **You can always tell your edits from the agent's.** Green marks you (selection, focus,
+**Three principles for the product:**
+1. **Direct control is the default.** The canvas works like a professional design tool: select,
+   drag and type on it at any time. The agent is a pane and a comment action, not the whole app.
+2. **Claude is a collaborator on the canvas.** It appears like another person in the file: its
+   avatar in the top bar, an ember outline and name tag on the layers it is editing, and its edits
+   listed and undoable. You can work alongside it while it works.
+3. **You can always tell your edits from the agent's.** Green marks you (selection, focus,
    primary actions); ember marks the agent (what it is editing, values it changed, its turn).
+
+**Baseline:** standalone Claude Design (claude.ai/design, closing 2026-12-14) is the bar for the
+AI workflow. Everything it does should work its way into Greenfield; §6a picks the ten that
+come first, and the appendix lists the rest.
 
 **Brand:** "Greenfield — Design in the open." A Green Sky product, in the same family as the
 greensky.tech site: square corners, hairlines instead of cards, a 32-unit pixel mark. Brand
@@ -33,8 +43,8 @@ sheet and editor mockups: the "Greenfield brand and editor" design canvas.
 **Non-goal:** cloning any product's visual identity. FigCraft's own name and logos are
 trademarks of the ArtCraft Team and must not appear in Greenfield (see Epic 8).
 
-**Out of scope for v1** (see §8): real-time multiplayer, accounts across Greenfield servers,
-billing, mobile, a React rebuild of the inspector (§9 D20), two-way Figma sync.
+**Out of scope for v1** (see §8): real-time multiplayer between people, accounts across
+Greenfield servers, billing, mobile, two-way Figma sync, live-code frames (HTML, shaders, video).
 
 ---
 
@@ -42,9 +52,9 @@ billing, mobile, a React rebuild of the inspector (§9 D20), two-way Figma sync.
 
 | Layer | Choice | Notes |
 |---|---|---|
-| App shell | **Next.js (React + TS)** on **Vercel** | Top bar, agent pane, comments, workspaces, settings. |
-| Editor | **FigCraft fork** (`figcraft-web`, Rust → WebAssembly, egui on WebGPU/WebGL2) | Embedded in a same-origin `<iframe>` in host mode (`?host=parent&control`). Owns the canvas, tools, layers and inspector in v1. |
-| Bridge | **`packages/bridge`** | Typed client for `window.figcraft` (commands, `document.inspect`, `node.get`, `ui.render`) and the host messages (`figcraft:ready/open/save/dirty`). The only way app code talks to the editor. |
+| App shell | **Next.js (React + TS)** on **Vercel** | All chrome: top bar and tools, agent pane, layers and pages, inspector, context menus, pickers, comments, workspaces, settings. |
+| Editor | **FigCraft fork** (`figcraft-web`, Rust → WebAssembly, egui on WebGPU/WebGL2) | Embedded in a same-origin `<iframe>` in host mode and **canvas mode** (Story 2.11): it draws the canvas, selection handles, in-place text editing, agent presence and comment pins, and nothing else. |
+| Bridge | **`packages/bridge`** | Typed client for `window.figcraft` (commands, `document.inspect`, `node.get`, `ui.render`), the host messages (`figcraft:ready/open/save/dirty`) and the editor's events (2.3). Feeds `packages/editor-state`, the React store every panel reads. The only way app code talks to the editor. |
 | Document | **`.figcraft` archive** | Source of truth. Stored in Vercel Blob; Postgres holds metadata, versions and permissions. |
 | App auth | **Clerk** (Organizations = Workspaces) | Admin / Editor / Viewer. Unchanged. |
 | Database | **Neon Postgres** + **Drizzle** | Unchanged; HTML-model tables removed (Story 1.2). |
@@ -57,11 +67,12 @@ billing, mobile, a React rebuild of the inspector (§9 D20), two-way Figma sync.
 ### Architecture shape
 ```
 Browser
- ├── Next.js shell: top bar · agent pane · comment actions · settings
- │      │  bridge (postMessage + window.figcraft, same origin)
+ ├── Next.js shell (React): top bar + tools · agent pane · layers · inspector · menus · comments
+ │      │  editor-state store ◄── events (selection, document, tool)
+ │      │  bridge (commands, gestures, queries; same origin)
  │      ▼
- └── <iframe /editor/?host=parent&control>  Greenfield editor (FigCraft fork, WASM)
-            canvas · tools · layers · inspector · comment pins
+ └── <iframe /editor/?host=parent&control&canvas>  Greenfield editor (FigCraft fork, WASM)
+            canvas only: drawing · handles · text editing · Claude's presence · comment pins
    │ REST / Server Actions          SSE (agent turns, tool calls, job events)
    ▼
 Vercel Functions (Node/TS)
@@ -94,7 +105,10 @@ Vercel Functions (Node/TS)
    access to the app origin, including Clerk's readable session cookie and every API. → Story 8.1.
 8. **Effects-heavy files.** Heavy effects at device pixel ratio 2 pan slowly (p95 92 ms in Chrome,
    350 ms in Firefox); node count is not a risk (30k nodes open in under 0.5 s). → Story 8.2.
-9. Carried over: credential exposure in sandboxes (Story 4.6), prompt-cache TTL, Vercel Hobby
+9. **Canvas mode is a lot of interface.** Every panel FigCraft drew is now ours to build. Story
+   5.0 proves the risky parts first (events, one-step scrubbing, speed); Story 5.13 keeps the
+   editor's own panels reachable as a fallback while ours catch up.
+10. Carried over: credential exposure in sandboxes (Story 4.6), prompt-cache TTL, Vercel Hobby
    being non-commercial.
 
 ---
@@ -142,25 +156,38 @@ Unchanged from CrunchDesign; already built. Summary:
 
 ## 4. Interaction Model
 
-See the Editor page of the design canvas.
+See the Editor page of the design canvas and `docs/brand/mockups/editor.png`: that mockup is the
+target layout.
 
-**Layout:** a slim top bar (file, tools, "Comment or ask", people, zoom, Share), the agent pane
-on the left, the editor in the middle and right. In v1 the editor's own layers and inspector
-panels stay, themed for Greenfield (§9 D20).
+**Layout:**
+- **Top bar:** project and file, the tools (move, frame, shapes, pen, text, hand, comment), "Comment
+  or ask", the people row with Claude's avatar, zoom, Present, Share.
+- **Left panel:** Agent, Layers and Assets tabs.
+- **Canvas:** the editor in canvas mode. All direct manipulation happens here: select, drag,
+  resize, edit text in place, draw with the pen.
+- **Right panel (the edit panel):** Design, Prototype and Code tabs for the selection. Cmd+\
+  hides and shows it; with it hidden, a small toolbar floats over the selection, as in Claude
+  Design.
 
-**No modes.** Select and edit at any time, like a professional design tool. Viewers and
-archived projects open the editor read-only.
+**No hidden modes.** The canvas is always live: selecting and dragging never needs a mode
+switch, and the edit panel only changes what is shown beside it. Viewers and archived projects
+open read-only: the canvas selects and inspects but never changes, and edit controls are hidden.
 
-**Asking the agent:**
+**Claude on the canvas:**
+- While a turn runs, Claude's avatar in the top bar is ringed in ember, and the layers it is
+  editing carry an ember outline with a "Claude" tag (FigCraft's agent presence, Story 2.4).
+- You can keep working while Claude works. Its edits are each one undo step in your history,
+  labelled as Claude's.
 - **Agent pane:** a message is sent with the current selection attached (shown as a chip). The
   reply lists what changed, layer by layer, with "Show on canvas" and "Undo all".
 - **Comment or ask (C):** click an element and write. **Comment** leaves a thread for people;
   **Ask Claude** sends the text to the agent pane with that element attached.
 - **Follow-up questions:** before a new design, or for ambiguous or large requests, the agent
   asks in a card (multiple choice, free text, or "You decide"). Small tweaks run without asking.
+- **Tweaks:** Claude can add sliders and toggles for a design (density, accent, corner style)
+  bound to variables or properties; moving them costs no tokens (Epic 11).
 
-**Attribution:** while the agent works, the layers it touches are outlined in ember with a
-"Claude · editing" tag. Inspector values the agent changed show an ember marker and "changed by
+**Attribution:** inspector values the agent changed show an ember marker and "changed by
 Claude · Revert".
 
 **Concurrency:** async teams with a **soft lock**. One Editor holds the edit lock per file;
@@ -185,8 +212,9 @@ workspaces, members, provider_credentials                                    // 
 - **The `.figcraft` file is the document.** Comments live in the file (FigCraft's `comment.*`
   commands, anchored to node ids); `comment_index` mirrors them for notifications and search.
 - **Removed** with the HTML model (Story 1.2): `design_docs`, `doc_ops`, `doc_versions`,
-  `design_systems`, `design_system_versions`, and the slider tables. Design systems become
-  FigCraft variables, styles and component libraries.
+  `design_systems`, `design_system_versions`, and the slider tables. Design systems come back
+  in Epic 10 as `.figcraft` library files (variables, styles, components) plus a guide, with new
+  tables; tweaks live in the file (Epic 11).
 - **Agent tools** are command batches: `{ label, commands: [{ command, params, as? }] }`, run with
   the editor's `batch` (one undo step). Later steps refer to earlier results with
   `{"$ref": name}` or `{"$step": n}` (Story 1.4).
@@ -207,10 +235,13 @@ Phase 0  POC          0.1 ─┐
                       0.3 ─┤          1.1 → 1.2 → 1.3 + 1.4      2 Fork (Rust)
                       0.4 ─┘                                     3 Files & versions
 Lane 9 (brand) runs from day one                                 4 Agent
-                                                                 5 Editor shell
+                                                                 5 Greenfield chrome (canvas mode)
                                                                  6 Comments & Ask Claude
                                                                  7 Export
                                                                  8 Ops & security
+Phase 3 (§6a): 5.0 spike gates Epic 5; 10–13 run alongside      10 Design systems
+                                                                 11 Tweaks · 12 Context
+                                                                 13 Prototype & present
 ```
 
 **Why the lanes can run in parallel:** every TypeScript lane builds against FigCraft's
@@ -228,6 +259,10 @@ the fork, it says so and names the fallback.
 | 7 Export | 1.3 | none |
 | 8 Ops & security | 0.1 | none |
 | 9 Brand & launch | now | none |
+| 10 Design systems | 1.3 | 4.1 for the agent prefix (10.5) |
+| 11 Tweaks | 2.12, 5.8 | none |
+| 12 Context | 4.2 | none |
+| 13 Prototype & present | 5.0 | 7.5 for deck export |
 
 ### Carried over from CrunchDesign (built, kept)
 
@@ -236,6 +271,30 @@ cap hook (old 1.5), projects (old 1.6, minus design-system linking), the job run
 the LLM proxy (old 5.2), the model picker (old 5.9), usage metering (old 5.10), the cache TTL
 strategy (old 5.11, ADR 0002), the one-click Vercel setup (old 1.2), and the signed-in e2e suite.
 These are not re-specified; stories below say where they change.
+
+---
+
+## 6a. The ten features that come first
+
+Standalone Claude Design is the baseline (appendix A lists everything it does). These ten come
+first, in order. Each names the stories that deliver it.
+
+| # | Feature | What "done" looks like | Stories |
+|---|---|---|---|
+| 1 | **Canvas mode with Greenfield's own chrome** | The editor draws only the canvas; our top bar tools, layers, inspector, context menu and pickers do the rest, matching the mockup | 2.11, 2.12, 2.3, 5.0–5.13 |
+| 2 | **Claude as a collaborator on the canvas** | Avatar in the people row, ember outline and name on the layers it edits for the whole turn, its edits listed and undoable, work alongside it | 2.4, 4.2, 4.7, 5.5 |
+| 3 | **Chat with the selection** | The agent pane: selection as context, follow-up questions, "show me 2–3 alternatives", explain or review a design | 4.1–4.5, 5.2 |
+| 4 | **Comment or ask on any element** | Click anything, write, then Comment (for people) or Ask Claude (scoped turn); a comments list | 6.1, 6.2, 6.4 |
+| 5 | **Design systems Claude follows** | Build one from a codebase, Figma file or uploads; review it; publish one as the workspace default; Claude uses its variables, styles and components and checks its own output against it | Epic 10 |
+| 6 | **Tweaks** | Claude adds sliders and toggles bound to variables or properties; moving them is live, one undo step, zero tokens | Epic 11 |
+| 7 | **Bring your context** | Screenshots and images, PDFs and documents, `.fig` files, a web page capture, a linked repository | Epic 12 |
+| 8 | **Prototype and present** | Link frames, play the prototype; a slide-deck project type and present mode | Epic 13 |
+| 9 | **Share and keep versions** | View, comment or edit access by link; autosave; named versions and "undo the AI" | 3.2–3.5, 3.8 |
+| 10 | **Export and hand off** | PNG, SVG, PDF, PPTX and HTML; a handoff bundle for Claude Code; an MCP server so Claude Code can read and edit Greenfield files | 7.1, 7.5–7.7 |
+
+Not in the ten (see appendix A): drawing on the canvas as instructions to Claude, project types
+beyond designs and decks, templates and examples, group chat with Claude, voice input, Send-to
+integrations, mobile. Their stories are in `ROADMAP.md` (Epics 14–22).
 
 ---
 
@@ -318,27 +377,37 @@ selection to the host.* Lives in its own repository (`green-sky-technologies/gre
 Keep each patch small and isolated; offer upstream anything generic (2.3, 2.5, 2.8).
 Start from `spikes/0.2-fork-build` (`build.sh`, the theme patch and the CI workflow).
 
-- **2.1 Greenfield theme.** Dark and light palettes from the brand sheet, IBM Plex Sans and
-  Mono in the chrome, square corners, hairline separators, field green for selection and focus.
-  AC: matches the brand sheet's tokens; text contrast at least 4.5:1 in both themes; the host
-  sets the theme with `view.themeDark` / `view.themeLight` and it persists.
+- **2.1 Greenfield theme (canvas only).** In canvas mode only what the canvas draws needs
+  theming: the canvas background, selection and hover outlines, handles, size badges, frame
+  labels, guides, snapping lines, the text caret and comment pins. Use the brand tokens in
+  `docs/brand/README.md` (field green for selection, Plex for frame labels). The editor's
+  panels keep their own look for the fallback (5.13); their 333 hard-coded corner radii are out
+  of scope. AC: matches the brand sheet; the host switches dark and light with `view.themeDark` /
+  `view.themeLight`.
 - **2.2 Remove ArtCraft marks.** Replace the FigCraft name, wordmark, logo, app icon and loading
   screen with Greenfield's; keep the MIT/Apache licence texts, `NOTICE` and `ATTRIBUTION.md`. AC: a CI check fails on the
   FigCraft or ArtCraft name or logo in user-visible strings and assets (code identifiers may
   stay).
-- **2.3 Host events.** Post `document changed` (with changed node ids and whether a person or the
+- **2.3 Host events (required for canvas mode).** Post `document changed` (with changed node ids and whether a person or the
   control channel made the change) and `selection changed` to the host in host mode. AC: the
   host learns about every edit within one frame; agent edits are labelled as such; no events
-  when the page is not hosted.
-- **2.4 Agent highlight.** A command to outline node ids in ember with a label ("Claude ·
-  editing"), cleared on demand. AC: drawn above the selection, never exported or rendered in
-  `ui.render`; survives zoom and pan.
-- **2.5 "Ask Claude" in the comment composer.** A second action next to Post that sends
-  `{text, anchor nodeId}` to the host instead of creating a thread. AC: only shown in host mode
-  when the host enables it; keyboard reachable.
-- **2.6 Embed chrome flags.** Host-controlled visibility of the home screen, file tabs and
-  menus that Greenfield replaces (the app's top bar owns file and sharing actions). AC: a
-  hosted editor opens straight to the document with no FigCraft home screen.
+  when the page is not hosted. Also post `tool changed`, `text editing started/ended` and
+  `viewport changed` (zoom and scroll), which our toolbar, floating toolbar and overlays need.
+- **2.4 Claude's presence.** FigCraft already shows an agent like a person in a live session:
+  commands run through the control channel with `agent: "<name>"` (`engine.execute`, then
+  `Session::execute_as`) set `AgentPresence`, and the canvas outlines the layers it last edited
+  or selected in its colour with its name (`ui-egui/src/live/agent.rs`). Our patch:
+  - its colour is ember (`#ff9a4d` dark, `#a54a0f` light), not FigCraft's amber;
+  - the host holds the presence for the whole agent turn (`agent.presence {name, active}`), not
+    the 8-second `LINGER`;
+  - presence is posted to the host (so our people row shows Claude's avatar), and `batch` carries
+    the `agent` name like `engine.execute` (check that it does today);
+  - optional: a cursor that glides to the layer being edited, reusing the live-session cursor.
+
+  AC: during a turn the outline and tag stay on every layer Claude touched; they never appear in
+  exports or `ui.render`; the user's own selection still draws in green on top.
+- **2.5 Superseded by canvas mode.** Our own comment composer (6.2) replaces the editor's.
+- **2.6 Superseded by 2.11.** Canvas mode hides the home screen, tabs and menus too.
 - **2.7 Upstream sync.** A documented rebase routine and a monthly cadence; the bridge's
   generated command types are regenerated on every sync. AC: one sync done end to end.
 - **2.8 Save acknowledgement.** Saves carry an `id`, and the editor clears dirty only when the host
@@ -356,6 +425,19 @@ Start from `spikes/0.2-fork-build` (`build.sh`, the theme patch and the CI workf
     renders in a fallback face while `inspect` reports the requested style.
 
   AC: each has a test upstream or in the fork.
+- **2.11 Canvas mode.** A host flag (`?canvas` and a `view.canvasMode` command) that draws only
+  the canvas: no rail, panels, tab bar, toolbar, home screen, menus or context menus.
+  `view.toggleUi` today hides the panels but leaves the tab bar, and Hide UI keeps the toolbar.
+  Built on the existing `ui_hidden` path in `ui-egui/src/app.rs`. Right-click and the editor's
+  popovers (colour picker, font menu) post a request to the host instead of opening, with the
+  position and target, so the shell draws its own (5.10, 5.11). Keyboard shortcuts keep working
+  in the canvas. AC: in canvas mode the iframe shows nothing but the canvas and its overlays; the
+  fallback (5.13) can turn the editor's panels back on without reloading.
+- **2.12 Gesture commands.** Expose the engine's gestures, which the editor's own panels use for
+  scrubbing (`begin_interaction`, `preview`, `commit_interaction` and `cancel_interaction` in
+  `engine/src/session/undo.rs`), as commands: `edit.begin {label}`, `edit.preview {commands}`,
+  `edit.commit`, `edit.cancel`. AC: dragging a value in our inspector updates the canvas every
+  frame and makes one undo step; Esc during a drag restores the value.
 
 ### Epic 3 — Files, versions and sharing (TS lane)
 *Demo: edits autosave; a named version restores; a public link opens the design read-only.*
@@ -387,7 +469,9 @@ Start from `spikes/0.2-fork-build` (`build.sh`, the theme patch and the CI workf
 - **3.6 Thumbnails.** Render the first frame for the projects list from the saved file with
   headless `figcraft-cli`, at a scale computed from its bounds, not from the user's tab.
 - **3.7 New files open on a document.** A new project opens a blank document, not FigCraft's home
-  screen; the host sends `file.new` until 2.6 hides the home screen.
+  screen; the host sends `file.new` until canvas mode (2.11) hides the home screen.
+- **3.8 Comment access.** Share links and file access gain a "can comment" level between view
+  and edit, as in Claude Design: comment and reply, no edits, no agent turns.
 
 ### Epic 4 — Agent (TS lane)
 *Demo: "tighten the hero" changes three layers as one undo step, with the changes listed in
@@ -441,21 +525,58 @@ The agent is switched off until this epic wires it up (Story 1.2).
 - **4.9 Model picker / 4.10 Usage.** Carried over; task types updated (interactive, job,
   export).
 
-### Epic 5 — Editor shell (React lane)
-*Demo: the Editor mockup, working.* Built against the upstream release from day one.
+### Epic 5 — Greenfield chrome in canvas mode (React lane)
+*Demo: the Editor mockup, working: our toolbar, layers and inspector edit a design on the
+FigCraft canvas, and Claude edits beside you.* Panels read one store, `packages/editor-state`,
+fed by the bridge's events (2.3; polling `document.inspect` until it lands) and write only
+through bridge commands and gestures (2.12). After 5.0 and 5.6, stories 5.7 to 5.11 are separate
+lanes.
 
-- **5.1 Top bar.** File name and project, "Comment or ask", people, zoom, Share; the editor's
-  own home screen and tabs hidden (2.6) or covered until then.
+- **5.0 Canvas-mode spike (gate).** Prove the risky parts before building panels:
+  - the editor hidden down to the canvas (with today's `view.toggleUi`, or a first cut of 2.11);
+  - a React layers list that stays in sync while you edit on the canvas;
+  - a React inspector for position, size and fill of the selection, with a scrubbable number
+    field that makes one undo step (a first cut of 2.12);
+  - Claude's presence from a command sent with `agent: "Claude"`.
+
+  Measure the time from canvas click to inspector update and from scrub to canvas repaint. AC: a
+  written go/no-go with numbers in `docs/adr/0005-canvas-mode.md`; each feels as fast as the
+  editor's own panels (target: under one frame of added latency at 60 fps).
+- **5.1 Top bar.** File name and project, the tool row (`tool.*` commands, active tool from 2.3
+  events), "Comment or ask", the people row with Claude's avatar, zoom, Present, Share, Export.
 - **5.2 Agent pane.** Chat with streaming, the selection chip, the change list (4.7), follow-up
   cards, cancel and retry, job cards.
 - **5.3 Themes.** Light and dark app chrome from the brand sheet, kept in step with the
   editor's theme through the bridge. AC: switching one switches both.
 - **5.4 Focus and shortcuts.** Keyboard focus moves cleanly between the React panes and the
-  editor iframe; C opens "Comment or ask"; Esc returns to the canvas. The editor maps shortcuts
-  per platform (Cmd on a Mac, Ctrl elsewhere), so neither the shell nor tests may hard-code Ctrl.
-  AC: no shortcut fires in both places; screen-reader labels on every control.
-- **5.5 Attribution.** Ember outlines while the agent works (needs 2.4) and the "changed by
-  Claude · Revert" marker in the change list.
+  editor iframe; C opens "Comment or ask"; Esc returns to the canvas; F6 and Shift+F6 cycle the
+  top bar, left panel, canvas and right panel; Cmd+\ toggles the edit panel. The editor maps
+  shortcuts per platform (Cmd on a Mac, Ctrl elsewhere), so neither the shell nor tests may
+  hard-code Ctrl. AC: no shortcut fires in both places; screen-reader labels on every control.
+- **5.5 Claude as a collaborator.** Claude's avatar in the people row, ringed in ember while a
+  turn runs; its outline on the canvas (2.4); "changed by Claude · Revert" on inspector values it
+  set; the change list's "Show on canvas" selects and zooms to the layers.
+- **5.6 Editor state store.** `packages/editor-state`: selection, the selected nodes' properties,
+  the page tree, active tool, viewport and dirty state, as React hooks (`useSelection`,
+  `useNode(id)`, `usePageTree`, `useTool`). AC: one subscription per panel; a 30k-node file keeps
+  the layers panel responsive (virtualised).
+- **5.7 Layers and pages.** Page list; layer tree with expand and collapse, rename, reorder by
+  drag, lock, hide, multi-select; component and instance rows marked.
+- **5.8 Inspector: core.** For the selection: position, size and constraints; auto layout
+  (direction, gap, padding, alignment, wrap, Hug / Fixed / Fill); radius; fill, stroke and effects
+  lists; text (family, weight, size, line height, letter spacing, alignment); opacity and blend;
+  mixed values for multi-select. Number fields scrub with 2.12.
+- **5.9 Inspector: components, variables and styles.** Instance properties and variants; apply
+  and detach styles; bind a value to a variable; variable modes on frames.
+- **5.10 Context menu and floating toolbar.** Our right-click menu from the editor's request
+  (2.11); the floating toolbar over the selection when the edit panel is hidden.
+- **5.11 Pickers.** Colour picker (with variables and styles), font picker (with the design
+  system's fonts first), and the export panel.
+- **5.12 Prototype and Code tabs.** The Prototype tab edits links and transitions (`proto.*`);
+  the Code tab shows FigCraft's generated code for the selection (7.2).
+- **5.13 Fallback to the editor's panels.** A menu item turns the editor's own panels back on
+  for anything our chrome doesn't cover yet. Remove it when 5.7–5.12 cover the commands people
+  use. AC: switching back and forth keeps the selection and undo history.
 
 ### Epic 6 — Comments and Ask Claude (TS lane)
 *Demo: a teammate comments on a heading; the owner turns a comment into an agent request.*
@@ -463,11 +584,13 @@ The agent is switched off until this epic wires it up (Story 1.2).
 - **6.1 Comments in the file.** Use the editor's comment threads (`comment.add` with a node
   anchor and author, replies, resolve). Mirror them into `comment_index` on save for
   notifications and @mentions. AC: comments follow their element when it moves.
-- **6.2 Ask Claude.** From the editor composer's action (2.5), or, until it lands, from an
-  overlay composer the shell positions at the element. Sends the text and element to the agent
+- **6.2 Ask Claude.** From our own composer, which the shell positions at the element (the
+  editor's comment tool posts the click to the host in canvas mode). Sends the text and element to the agent
   pane; `comment.prompt` turns existing threads into context. AC: one action from writing a note
   to an agent turn scoped to that element.
 - **6.3 Notifications.** In-app notifications for mentions and replies; email later.
+- **6.4 Comments list.** A Comments view in the left panel: open and resolved threads, jump to
+  the element, reply, and "Ask Claude" from any thread.
 
 ### Epic 7 — Export (TS lane)
 *Demo: export PNG, SVG and PDF; copy React code for a selected frame.*
@@ -480,6 +603,14 @@ The agent is switched off until this epic wires it up (Story 1.2).
   a project that builds in the sandbox. Editor role required.
 - **7.4 Figma.** `.fig` import comes from the editor (best effort). `apps/figma-plugin` was
   retired in 1.2; bring back a push to Figma only if 7.2 or users show a need.
+- **7.5 PPTX and HTML export.** Slide decks (Epic 13) export to PPTX and PDF; any frame or flow
+  exports to standalone HTML that works offline (from FigCraft's generated code, 7.2).
+- **7.6 Handoff bundle.** One download for a coding agent: the frames as images, the generated
+  code, the variables and styles, the component list and the design intent from the chat.
+  AC: Claude Code builds the screen from it with one instruction.
+- **7.7 Greenfield MCP server.** Claude Code (and other agents) can list a workspace's files and
+  read and edit them through the same tool contract as the in-app agent (1.4), with the user's
+  permissions. Builds on `figcraft-cli mcp` running in a job.
 
 ### Epic 8 — Operations and security (any lane)
 - **8.1 Serving the editor.** Same-origin `/editor/` static route, content security policy
@@ -512,6 +643,63 @@ The agent is switched off until this epic wires it up (Story 1.2).
 - **9.2 Marketing page.** A Greenfield page in the Green Sky family.
 - **9.3 Docs.** README, self-hosting guide, and "how the agent works".
 
+### Epic 10 — Design systems (TS lane)
+*Demo: point Greenfield at a repository; review the colours, type and components it proposes;
+publish it; every new file starts from it and Claude's output matches it.* A design system is a
+`.figcraft` library file (variables, styles, components) plus a short guide for Claude.
+
+- **10.1 Model.** `design_systems` and `design_system_versions` tables pointing at a library file
+  and a guide (markdown). A workspace can have several; one is the default.
+- **10.2 Build from sources.** A job reads a GitHub repository or uploaded code (tokens, Tailwind
+  config, CSS variables, React components), a `.fig` file, or images, decks and PDFs, and writes
+  the library file and guide. AC: from a typical Tailwind repo it produces the colour, type and
+  spacing variables and the core components (button, input, card, nav).
+- **10.3 Review.** A review page: each colour group, type style and component with keep or drop;
+  dropped ones are removed before publishing.
+- **10.4 Publish and default.** Published systems are available to the workspace; the default is
+  attached to every new file. Admins can limit who publishes and sets the default.
+- **10.5 Claude follows it.** The system's guide and a summary of its variables, styles and
+  components go in the agent's cached prefix; the agent uses variables and components instead of
+  raw values; a deterministic check flags raw colours and off-scale spacing after each turn and
+  the agent fixes them (replaces old `ds-lint`; see 4.8).
+- **10.6 Updates.** A new version of the system updates files that use it (library update, with
+  a review of what changes).
+
+### Epic 11 — Tweaks (TS lane)
+*Demo: "give me a density control" adds a slider; dragging it changes padding and gaps across the
+page live, at zero tokens.*
+
+- **11.1 Model.** Tweaks are stored in the file (a plugin-data or variable collection the editor
+  keeps): label, kind (slider, toggle, choice, colour), range, and bindings to variables or node
+  properties with a mapping.
+- **11.2 Agent tool.** `create_tweak` in the tool contract; Claude proposes tweaks with a design
+  or on request.
+- **11.3 Tweaks panel.** A Tweaks section in the edit panel; dragging applies through gestures
+  (2.12): live, one undo step, no model call.
+- **11.4 Variables first.** Where a tweak drives several layers, bind it to a variable and set the
+  variable, so the design stays editable by hand.
+
+### Epic 12 — Bring your context (TS lane)
+- **12.1 Images and screenshots in chat.** Paste or drop; sent to the model as images; placeable
+  on the canvas.
+- **12.2 Documents.** PDF, DOCX, PPTX and XLSX attached to a chat turn as text (and page images
+  for PDFs and decks).
+- **12.3 `.fig` import.** Open a Figma file through the editor's importer as a new file, with an
+  import report (best effort).
+- **12.4 Web capture.** Capture a live page's structure and styles into a frame (a bookmarklet or
+  the sandbox's browser), as a reference to build from. AC: SSRF-safe (8.5).
+- **12.5 Linked repository.** Link a GitHub repository to a project; the agent can read its
+  components and styles when asked (and Epic 10 builds from it).
+
+### Epic 13 — Prototype and present (TS lane)
+- **13.1 Play.** Play a prototype from any frame in the browser (FigCraft's present mode), from
+  the top bar's Present button and from share links.
+- **13.2 Slide decks.** A "Deck" project type: 16:9 frames as slides, a slide list in the left
+  panel, speaker notes, present full screen with keyboard navigation; Claude builds decks from a
+  brief or a document. Exports with 7.5.
+- **13.3 Project types and fidelity.** New project: Design or Deck; wireframe or high fidelity;
+  with or without the design system.
+
 ---
 
 ## 7. Build Order
@@ -531,14 +719,23 @@ The agent is switched off until this epic wires it up (Story 1.2).
    | 6 Comments | 6.1 | |
    | 7 Export | 7.1, then 7.2 | |
    | 8 Ops | 8.6, 8.1, 8.3 | Env rename deadline; trust boundary; Firefox on CI |
-4. **Beta:** 8.3 and the authorization tests green; legal review (8.4) done.
+4. **Phase 3 — canvas mode and the ten features (from 2026-11-24):**
+   - **First, in parallel:** the canvas-mode spike (5.0) in the shell lane, and 2.11 and 2.12 in
+     the fork lane (5.0 can start on today's `view.toggleUi` and polling).
+   - **After 5.0 says go:** 5.6 (store), then 5.7, 5.8, 5.10 and 5.11 as separate lanes; 2.3 and
+     2.4 in the fork lane; 5.5 once 2.4 lands.
+   - **Independent of canvas mode, start any time:** Epic 10 (design systems), Epic 12 (context),
+     6.4, 3.8, 7.5–7.7. Epics 11 and 13 after 2.12 and 5.8.
+5. **Beta:** the ten features in §6a working; 8.3 and the authorization tests green; legal
+   review (8.4) done.
 
 ---
 
 ## 8. Deferred (post-v1)
-Real-time multiplayer (FigCraft live sessions or `figcraft-server`) · a React inspector
-replacing the editor's own panels · plugins in the browser build (not supported upstream yet) ·
-billing · personal keys · mobile · two-way Figma sync · desktop app.
+Real-time multiplayer between people (FigCraft live sessions or `figcraft-server`) · group chat
+with Claude · plugins in the browser build (not supported upstream yet) · billing · personal keys
+· mobile · two-way Figma sync · desktop app · live-code frames (HTML, shaders, video, 3D).
+The rest of the Claude Design baseline is listed in appendix A, with stories in `ROADMAP.md`.
 
 ---
 
@@ -557,10 +754,15 @@ New decisions:
 | D25 | Go on D19 after the 0.3 gate; the agent starts from the 0.3 `v2` prompt and tool shape | Comparable to the HTML agent on the golden prompts and two build-a-screen prompts; half the cost on small edits (ADR 0003). |
 | D26 | Wasm budget is 25 MiB raw (was 24), checked by our own build | A release-equivalent build with fonts is 24.39 MiB; upstream's own gate is 25 MiB. |
 | D27 | `apps/figma-plugin` retired in Story 1.2, ahead of 7.4 | It was built on `figma-convert`, which 1.2 deletes. |
+| D28 | **Canvas mode:** the editor draws only the canvas; all chrome is Greenfield's React (reverses D20) | The embedded editor's own panels can't be made to look and work like Greenfield. FigCraft's command list already covers what a full interface needs, so the editor becomes the engine, as Figma's is. |
+| D29 | Claude appears as a collaborator, built on FigCraft's agent presence (`execute_as`) | It already draws an agent like a person in a live session; we restyle it and hold it for the turn. |
+| D30 | Tweaks return, bound to variables and properties (reverses the D16 drop) | One of Claude Design's signature features; zero-token tuning fits the cost rules (§2). |
+| D31 | Standalone Claude Design is the feature baseline; §6a's ten come first | It closes 2026-12-14; its AI workflow is what Greenfield must match. |
 
 Superseded from CrunchDesign: **D1** (live HTML frames) by D19; **D2** (flow-first drag) and
 **D15** (breakpoint overrides) by the editor's auto layout and constraints; **D11** (export v1)
-by Epic 7; **D12** (Figma plugin push) by 7.4; **D16** (sliders) dropped. Still in force: D3,
+by Epic 7; **D12** (Figma plugin push) by 7.4; **D16** (sliders) dropped, then brought back as
+Tweaks by D30. **D20** (keep the editor's panels) is reversed by D28. Still in force: D3,
 D4, D5, D6, D7, D8, D9, D10, D13, D14, D17, D18.
 
 ## 10. Open Questions
@@ -570,3 +772,49 @@ D4, D5, D6, D7, D8, D9, D10, D13, D14, D17, D18.
    them in the fork?
 3. Do we need `.figcraft` diffs for version compare, or are rendered side-by-sides enough?
 4. Domain: greenfield.greensky.tech?
+5. Canvas mode upstream: offer 2.11 and 2.12 to FigCraft, so fewer fork patches carry them?
+6. Tweaks storage: a variable collection, plugin data, or our own table?
+
+---
+
+## Appendix A — Claude Design coverage
+
+Standalone Claude Design's features (from its help centre, launch post and reviews, November
+2026) against this plan. **Top 10** = in §6a; **Later** = after beta, with stories in
+`ROADMAP.md`; **Research** = a spike in `ROADMAP.md` decides whether and how.
+
+| Area | Claude Design feature | Greenfield |
+|---|---|---|
+| Start | Project types: prototype, slide deck, template; wireframe or high fidelity; one-pagers | Top 10 (13.3); templates later (14.1) |
+| Start | Examples gallery | Later (14.2) |
+| Start | Sketch a starting layout | Later (14.3) |
+| Inputs | Images and screenshots | Top 10 (12.1) |
+| Inputs | DOCX, PPTX, XLSX, PDF | Top 10 (12.2) |
+| Inputs | Figma files | Top 10 (12.3) |
+| Inputs | Web capture | Top 10 (12.4) |
+| Inputs | Codebase / GitHub | Top 10 (12.5, 10.2) |
+| Inputs | Voice dictation | Later (Epic 16) |
+| Design systems | Built from codebase, design files and uploads | Top 10 (10.2) |
+| Design systems | Review, publish, default, admin limits, several per workspace | Top 10 (10.3, 10.4) |
+| Design systems | Output checked against the system | Top 10 (10.5) |
+| Design systems | `/design-sync` from Claude Code | Later (17.1, 17.2) |
+| Chat | Chat beside the canvas; clarifying questions; alternatives; explain or review | Top 10 (Epic 4, 5.2) |
+| Chat | Group conversations with Claude | Later (Epic 18) |
+| Refine | Inline comments to Claude or teammates; comments view | Top 10 (6.1, 6.2, 6.4) |
+| Refine | Direct editing: drag, resize, align, text | Top 10 (canvas) |
+| Refine | Edit panel (Simple and Pro), properties toggle (Cmd+\), floating toolbar | Top 10 (5.8–5.10) |
+| Refine | Tweaks: knobs and Claude-made sliders | Top 10 (Epic 11) |
+| Refine | Drawing on the canvas as instructions | Later (Epic 15) |
+| Canvas | Artboards, pages, notes, guides, Play, links between screens | Top 10 (FigCraft, 13.1) |
+| Canvas | Live-code prototypes: voice, video, shaders, 3D, AI | Research (Epic 21) |
+| Versions | Save and try another approach | Top 10 (3.3, beyond it: real versions) |
+| Present | Present decks in the app | Top 10 (13.2) |
+| Share | Private by default; view, comment or edit | Top 10 (3.5, 3.8) |
+| Export | ZIP, PDF, PPTX, standalone HTML | Top 10 (7.1, 7.5); ZIP later (19.1) |
+| Export | Google Slides | Later (19.2) |
+| Export | Send to Canva, Adobe, Lovable, v0, Vercel, Netlify and others | Later (Epic 20) |
+| Handoff | Handoff bundle to Claude Code | Top 10 (7.6) |
+| Handoff | Claude Code integration (`/design`, MCP) | Top 10 (7.7) |
+| Access | Keyboard regions (F6), layers by keyboard | Top 10 (5.4, 5.7) |
+| Access | Mobile apps | Research, then build (Epic 22) |
+
