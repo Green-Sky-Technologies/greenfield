@@ -2,7 +2,8 @@
 # clean runner and publish the static site as an artifact. Pins are in
 # spikes/0.2-fork-build/versions.env; the build runs in the same image as the local
 # reproducibility check (spikes/0.2-fork-build/verify/docker-build.sh). build.sh fails any .wasm
-# over 25 MiB raw (SPEC.md D26) on every build.
+# over 25 MiB raw (SPEC.md D26) on every build, and check-marks.sh fails the build when the FigCraft
+# or ArtCraft name or logo is user-visible in the patched source or the built site (Story 2.2).
 name: figcraft-web
 
 on:
@@ -10,10 +11,12 @@ on:
   push:
     paths:
       - 'spikes/0.2-fork-build/**'
+      - 'apps/web/public/greenfield-*.svg'
       - '.github/workflows/figcraft-web.yml'
   pull_request:
     paths:
       - 'spikes/0.2-fork-build/**'
+      - 'apps/web/public/greenfield-*.svg'
       - '.github/workflows/figcraft-web.yml'
 
 permissions:
@@ -49,13 +52,13 @@ jobs:
             /usr/local/cargo/bin/trunk
             /usr/local/cargo/bin/wasm-bindgen
             spikes/0.2-fork-build/figcraft/target
-          key: figcraft-web-${{ hashFiles('spikes/0.2-fork-build/*.sh', 'spikes/0.2-fork-build/versions.env', 'spikes/0.2-fork-build/patches/**') }}
+          key: figcraft-web-${{ hashFiles('spikes/0.2-fork-build/*.sh', 'spikes/0.2-fork-build/versions.env', 'spikes/0.2-fork-build/patches/**', 'spikes/0.2-fork-build/overlay/**', 'apps/web/public/greenfield-*.svg') }}
           restore-keys: figcraft-web-
 
       - name: Pinned toolchain (binaryen, brotli, wasm32 target, trunk, wasm-bindgen)
         run: spikes/0.2-fork-build/toolchain.sh
 
-      - name: Build (pinned sources and fonts, patches, trunk build --release, size gate)
+      - name: Build (pinned sources and fonts, patches, marks check, trunk build --release, size gate)
         run: spikes/0.2-fork-build/build.sh
 
       - name: Upload static site

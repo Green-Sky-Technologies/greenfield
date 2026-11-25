@@ -92,7 +92,7 @@ async function openEditor(page: Page, url: string) {
 async function snapshot(frame: Frame): Promise<string> {
   return frame.evaluate(async () => {
     const doc = (await window.figcraft.docInspect({})) as Record<string, unknown>;
-    for (const k of ['history', 'selection', 'textEdit', 'dirty']) delete doc[k];
+    for (const k of ['history', 'selection', 'textEdit', 'dirty', 'revision']) delete doc[k];
     return JSON.stringify(doc);
   });
 }
