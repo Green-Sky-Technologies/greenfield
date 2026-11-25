@@ -241,7 +241,7 @@ function Shell({
           label="Edit panel"
           side="right"
           tabs={[
-            { id: 'design', label: 'Design', content: <DesignTab /> },
+            { id: 'design', label: 'Design', content: <DesignTab projectId={bar.project.id} /> },
             { id: 'prototype', label: 'Prototype', content: <PrototypeTab /> },
             { id: 'code', label: 'Code', content: <CodeTab /> },
           ]}

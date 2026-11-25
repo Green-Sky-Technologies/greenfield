@@ -6,6 +6,7 @@
  * the turn runs, then what it changed, its questions, or the job it offered or started.
  */
 import type { Editor } from '@greenfield/bridge';
+import { DesignCheckCard } from '@/features/design-systems/check-card';
 import type { MessageView } from '@/server/services/agent';
 import { ChangeList } from './change-list';
 import { JobCard } from './job-card';
@@ -137,8 +138,7 @@ export function ClaudeMessage({ message: m, asked, chat, editor }: ClaudeProps) 
       )}
       {m.jobId && <JobCard jobId={m.jobId} suggestion={m.jobSuggestion} editor={editor} />}
       {!running && m.changes.length > 0 && <ChangeList reply={m} onUndo={() => chat.revert(m)} />}
-      {/* Mount point (Story 10.5, lane W2-H): render W2-H's DesignCheckCard here when the reply
-          has `designCheck`; wired at integration, since that field isn't on this base. */}
+      {!running && m.designCheck && <DesignCheckCard check={m.designCheck} />}
     </li>
   );
 }

@@ -84,7 +84,7 @@ function mount(nodes: NodeFields[]) {
   act(() =>
     root.render(
       <EditorStateProvider store={store}>
-        <DesignTab />
+        <DesignTab projectId="p1" />
       </EditorStateProvider>,
     ),
   );
@@ -119,14 +119,25 @@ function pointer(el: Element, kind: string, clientX: number) {
   });
 }
 
+/** The app's routes the tab reads: the project's conversation and its design system. */
+function stubFetch(conversation: unknown, designSystem: unknown = null) {
+  vi.stubGlobal(
+    'fetch',
+    vi.fn(async (url: string) =>
+      url.endsWith('/design-system')
+        ? designSystem
+          ? Response.json(designSystem)
+          : new Response(null, { status: 404 })
+        : Response.json(conversation),
+    ),
+  );
+}
+
 beforeEach(() => {
   host = document.createElement('div');
   document.body.append(host);
   root = createRoot(host);
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async () => new Response(JSON.stringify({ conversationId: null, messages: [] }))),
-  );
+  stubFetch({ conversationId: null, messages: [] });
 });
 afterEach(() => {
   act(() => root.unmount());
@@ -135,6 +146,28 @@ afterEach(() => {
 });
 
 describe('Design tab', () => {
+  it("shows the file's design system, with or without a selection (Story 10.5)", async () => {
+    stubFetch(
+      { conversationId: null, messages: [] },
+      {
+        system: { id: 's1', name: 'Voirdire' },
+        version: 3,
+        published: 4,
+        counts: { colours: 13, type: 9, components: 41, spacing: 8 },
+      },
+    );
+    const section = () => host.querySelector('[aria-label="Design system"]');
+    mount([]);
+    await flush();
+    expect(section()?.textContent).toContain('Voirdire · v3');
+    expect(section()?.textContent).toContain('Components41');
+    expect(section()?.textContent).toContain('v4 is published');
+    mount([rect]);
+    await flush();
+    expect(section()?.textContent).toContain('Voirdire · v3');
+    expect(calls).toEqual([]);
+  });
+
   it('shows the selected layer and sets a typed value', async () => {
     mount([rect]);
     expect(host.querySelector('[data-testid=design-tab-name]')!.textContent).toBe('Swatch');
@@ -235,25 +268,20 @@ describe('Design tab', () => {
 
   it('marks what Claude changed in the last turn and reverts it as one step', async () => {
     const before = [{ type: 'solid', color: '#14150F' }];
-    vi.stubGlobal(
-      'fetch',
-      vi.fn(async () =>
-        Response.json({
-          conversationId: 'c1',
-          messages: [
-            {
-              id: 'm1',
-              role: 'assistant',
-              createdAt: new Date().toISOString(),
-              reverted: null,
-              changes: [
-                { id: 4, kind: 'changed', fields: [{ field: 'fills', before, after: rect.fills }] },
-              ],
-            },
+    stubFetch({
+      conversationId: 'c1',
+      messages: [
+        {
+          id: 'm1',
+          role: 'assistant',
+          createdAt: new Date().toISOString(),
+          reverted: null,
+          changes: [
+            { id: 4, kind: 'changed', fields: [{ field: 'fills', before, after: rect.fills }] },
           ],
-        }),
-      ),
-    );
+        },
+      ],
+    });
     const store = mount([rect]);
     await flush();
     const note = host.querySelector('[data-testid=changed-by-claude]')!;

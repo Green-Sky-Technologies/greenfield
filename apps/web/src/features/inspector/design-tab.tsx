@@ -5,11 +5,13 @@
  * and resizing; opacity, blend and radius; fills, strokes and effects; typography. Several
  * layers selected: shared values, "Mixed" where they differ, and an edit sets them all. Values
  * Claude set in the last turn carry an ember mark and "changed by Claude · Revert" (Story 5.5).
+ * The file's design system (Story 10.5) heads the tab with nothing selected and closes it otherwise.
  * Reads `useSelection` and the selected layers' fields; writes through the store.
  */
 import type { NodeFields } from '@greenfield/editor-state';
 import { useEditorState, useSelection } from '@greenfield/editor-state/react';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
+import { DesignSystemSection } from '@/features/design-systems/design-system-section';
 import { StylesSection } from './styles/styles-section';
 import { AgentChangesProvider } from './agent-changes';
 import { ReportContext } from './controls';
@@ -18,15 +20,15 @@ import { LayerSection, LayoutSection, PositionSection } from './geometry';
 import { EffectsSection, PaintsSection } from './paints';
 import { TypographySection } from './typography';
 
-export function DesignTab() {
+export function DesignTab({ projectId }: { projectId: string }) {
   return (
     <AgentChangesProvider>
-      <Inspector />
+      <Inspector designSystem={<DesignSystemSection projectId={projectId} />} />
     </AgentChangesProvider>
   );
 }
 
-function Inspector() {
+function Inspector({ designSystem }: { designSystem: ReactNode }) {
   const selection = useSelection();
   const fields = useEditorState((s) => s.nodes);
   const nodes = useMemo(
@@ -44,9 +46,10 @@ function Inspector() {
 
   if (!selection.length) {
     return (
-      <p data-testid="design-tab" data-selected="" className="p-4 text-xs text-muted">
-        Nothing selected
-      </p>
+      <div data-testid="design-tab" data-selected="">
+        {designSystem}
+        <p className="p-4 text-xs text-muted">Nothing selected</p>
+      </div>
     );
   }
   const type = nodes.length ? shared(nodes, (n) => n.type) : undefined;
@@ -74,6 +77,7 @@ function Inspector() {
           </>
         )}
         <StylesSection />
+        {designSystem}
         {error && (
           <p role="status" className="px-4 py-3 text-xs text-danger" data-testid="design-error">
             {error}

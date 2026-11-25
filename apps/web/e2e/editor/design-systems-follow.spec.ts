@@ -141,6 +141,11 @@ test('build a system from a Tailwind repo; Claude’s check holds files to it; u
     counts: { type: 9, components: 4, spacing: 15 },
   });
   const frame = await editorFrame(work);
+  // The Design tab names the system the file follows and what it has from it.
+  const system = work.getByRole('region', { name: 'Design system' });
+  await expect(system).toContainText(`${name} · v1`);
+  await expect(system).toContainText(/Components\s*4/);
+  await work.screenshot({ path: testInfo.outputPath('10.5-design-tab.png') });
   await expect
     .poll(() => run(frame, 'component.list', {}))
     .toEqual(

@@ -20,7 +20,7 @@ export function useProjectDesignSystem(projectId: string) {
 }
 
 /**
- * Story 10.5, in the edit panel's Design tab (W2-B mounts it): which system the file follows,
+ * Story 10.5, in the edit panel's Design tab: which system the file follows,
  * what it has from it, and whether a newer version is waiting (10.6).
  */
 export function DesignSystemSection({ projectId }: { projectId: string }) {
@@ -33,7 +33,10 @@ export function DesignSystemSection({ projectId }: { projectId: string }) {
     ['Spacing', ds.counts.spacing],
   ] as const;
   return (
-    <section aria-label="Design system" className="flex flex-col gap-3 text-sm">
+    <section
+      aria-label="Design system"
+      className="flex flex-col gap-3 border-b border-border px-4 py-3.5 text-sm"
+    >
       <h3 className="type-label text-muted">Design system</h3>
       <p className="border border-border bg-surface px-3 py-2">
         {ds.system.name} · v{ds.version}
