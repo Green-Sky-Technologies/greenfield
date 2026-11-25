@@ -2,7 +2,11 @@
 # clean runner and publish the static site as an artifact. Pins are in
 # spikes/0.2-fork-build/versions.env; the build runs in the same image as the local
 # reproducibility check (spikes/0.2-fork-build/verify/docker-build.sh). build.sh fails any .wasm
-# over 25 MiB raw (SPEC.md D26) on every build.
+# over 25 MiB raw (SPEC.md D26) on every build, and check-marks.sh fails the build when the FigCraft
+# or ArtCraft name or logo is user-visible in the patched source or the built site (Story 2.2).
+# A push to main also publishes the built site as a GitHub release (tag editor-<short sha>) in this
+# public repo, so the app's build can download it with no token (Story 8.1); the run summary has
+# the url and sha256 to paste into packages/bridge/editor-release.json.
 name: figcraft-web
 
 on:
@@ -10,10 +14,12 @@ on:
   push:
     paths:
       - 'spikes/0.2-fork-build/**'
+      - 'apps/web/public/greenfield-*.svg'
       - '.github/workflows/figcraft-web.yml'
   pull_request:
     paths:
       - 'spikes/0.2-fork-build/**'
+      - 'apps/web/public/greenfield-*.svg'
       - '.github/workflows/figcraft-web.yml'
 
 permissions:
@@ -49,13 +55,13 @@ jobs:
             /usr/local/cargo/bin/trunk
             /usr/local/cargo/bin/wasm-bindgen
             spikes/0.2-fork-build/figcraft/target
-          key: figcraft-web-${{ hashFiles('spikes/0.2-fork-build/*.sh', 'spikes/0.2-fork-build/versions.env', 'spikes/0.2-fork-build/patches/**') }}
+          key: figcraft-web-${{ hashFiles('spikes/0.2-fork-build/*.sh', 'spikes/0.2-fork-build/versions.env', 'spikes/0.2-fork-build/patches/**', 'spikes/0.2-fork-build/overlay/**', 'apps/web/public/greenfield-*.svg') }}
           restore-keys: figcraft-web-
 
       - name: Pinned toolchain (binaryen, brotli, wasm32 target, trunk, wasm-bindgen)
         run: spikes/0.2-fork-build/toolchain.sh
 
-      - name: Build (pinned sources and fonts, patches, trunk build --release, size gate)
+      - name: Build (pinned sources and fonts, patches, marks check, trunk build --release, size gate)
         run: spikes/0.2-fork-build/build.sh
 
       - name: Upload static site
@@ -65,3 +71,41 @@ jobs:
           path: spikes/0.2-fork-build/dist/
           if-no-files-found: error
           retention-days: 14
+
+  release:
+    # Only main. Needs the build job's artifact; a pull request or branch push never publishes.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: figcraft-web-dist
+          path: site
+
+      - name: Zip the site (site at the zip root, sorted, fixed timestamps) and publish the release
+        run: |
+          tag="editor-${GITHUB_SHA::12}"
+          zip_name="greenfield-editor-${GITHUB_SHA::12}.zip"
+          (cd site && find . -type f | LC_ALL=C sort | sed 's|^\./||' | TZ=UTC zip -X -q -@ "../$zip_name")
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            # A re-run: keep the published asset, whose bytes differ from this fresh zip.
+            gh release download "$tag" --repo "$GITHUB_REPOSITORY" -p "$zip_name" --clobber
+          else
+            gh release create "$tag" "$zip_name" --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" \
+              --title "Editor build ${GITHUB_SHA::12}" \
+              --notes "figcraft-web fork build of $GITHUB_SHA (patched, pinned toolchain)."
+          fi
+          sha="$(sha256sum "$zip_name" | cut -d' ' -f1)"
+          url="https://github.com/$GITHUB_REPOSITORY/releases/download/$tag/$zip_name"
+          {
+            echo "### Editor release $tag"
+            echo "Pin it in \`packages/bridge/editor-release.json\`, then run \`pnpm --filter @greenfield/bridge generate\`:"
+            # shellcheck disable=SC2016 # literal backticks for the markdown fence
+            printf '```json\n{ "version": "%s", "url": "%s", "sha256": "%s" }\n```\n' "$tag" "$url" "$sha"
+          } | tee -a "$GITHUB_STEP_SUMMARY"

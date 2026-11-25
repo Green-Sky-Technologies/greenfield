@@ -1,0 +1,356 @@
+diff --git a/crates/engine/src/cmd.rs b/crates/engine/src/cmd.rs
+index 0e90dc1..c59d65b 100644
+--- a/crates/engine/src/cmd.rs
++++ b/crates/engine/src/cmd.rs
+@@ -7,6 +7,7 @@ pub mod create;
+ pub mod edit;
+ pub mod facilitate;
+ pub mod file;
++pub mod gesture;
+ pub mod image;
+ pub mod layout;
+ pub mod library;
+@@ -76,6 +77,7 @@ fn registry() -> &'static Registry {
+         let mut list = Vec::new();
+         list.extend(create::specs());
+         list.extend(edit::specs());
++        list.extend(gesture::specs());
+         list.extend(lists::specs());
+         list.extend(crate::selection_colors::specs());
+         list.extend(arrange::specs());
+diff --git a/crates/engine/src/cmd/edit.rs b/crates/engine/src/cmd/edit.rs
+index efcb0fc..385bddc 100644
+--- a/crates/engine/src/cmd/edit.rs
++++ b/crates/engine/src/cmd/edit.rs
+@@ -107,8 +107,14 @@ fn node_find(s: &mut Session, p: &Value) -> Result<Value> {
+ 
+ pub fn specs() -> Vec<CommandSpec> {
+     vec![
+-        spec!("edit.undo", "Undo", "{}", false, |s, _| Ok(json!({"undone": s.undo()?}))),
+-        spec!("edit.redo", "Redo", "{}", false, |s, _| Ok(json!({"redone": s.redo()?}))),
++        spec!("edit.undo", "Undo", "{}", false, |s, _| {
++            super::gesture::refuse_during_gesture(s, "edit.undo")?;
++            Ok(json!({"undone": s.undo()?}))
++        }),
++        spec!("edit.redo", "Redo", "{}", false, |s, _| {
++            super::gesture::refuse_during_gesture(s, "edit.redo")?;
++            Ok(json!({"redone": s.redo()?}))
++        }),
+         spec!("edit.delete", "Delete", "{ids?}", true, delete),
+         spec!(
+             "edit.duplicate",
+diff --git a/crates/engine/src/cmd/gesture.rs b/crates/engine/src/cmd/gesture.rs
+new file mode 100644
+index 0000000..cef7c7b
+--- /dev/null
++++ b/crates/engine/src/cmd/gesture.rs
+@@ -0,0 +1,121 @@
++//! Gestures as commands: a scrub, a drag or a slider is many small edits that end as one undo step.
++//!
++//! `edit.begin` starts one, `edit.preview` shows what the edits would do (the document is put back
++//! to where the gesture began and the commands run again, so a relative edit never piles up),
++//! `edit.commit` makes the gesture one undo step and `edit.cancel` puts the document back. They are
++//! [`Session::begin_interaction`], [`Session::preview`]'s way of working, [`Session::commit_interaction`]
++//! and [`Session::cancel_interaction`], which the editor's own panels already use.
++
++use std::sync::Arc;
++
++use serde_json::{Value, json};
++
++use super::CommandSpec;
++use crate::params::string;
++use crate::{BatchScope, BatchStep, EngineError, Result, Session, bad, spec};
++
++/// What a preview may not run: it would end or outlive the gesture, or edit something else.
++fn refuse_in_preview(command: &str) -> Result<()> {
++    let denied = command.starts_with("edit.begin")
++        || matches!(command, "edit.preview" | "edit.commit" | "edit.cancel" | "edit.undo" | "edit.redo" | "edit.repeat")
++        || command.starts_with("file.")
++        || command.starts_with("doc.")
++        || command.starts_with("window.");
++    if denied { Err(bad("edit.preview", format!("`{command}` can't run inside a gesture"))) } else { Ok(()) }
++}
++
++/// Undo and redo during a gesture of `edit.begin` would swap the document under it: refuse them
++/// until it ends. (The editor's own gestures, the pen's anchors among them, have their own rules.)
++pub(crate) fn refuse_during_gesture(s: &Session, id: &str) -> Result<()> {
++    if s.ds().is_ok_and(|d| s.gesture_cmd == Some(d.uid) && d.interaction.is_some()) {
++        return Err(EngineError::Disabled(id.to_string(), "finish the gesture first (edit.commit or edit.cancel)".into()));
++    }
++    Ok(())
++}
++
++fn begin(s: &mut Session, p: &Value) -> Result<Value> {
++    if let Ok(ds) = s.ds()
++        && let Some(it) = &ds.interaction
++    {
++        return Err(bad("edit.begin", format!("a gesture (\"{}\") is already in progress: edit.commit or edit.cancel it first", it.label)));
++    }
++    let label = string(p, "label").unwrap_or_else(|| "Edit".into());
++    s.begin_interaction(&label)?;
++    s.gesture_cmd = s.ds().ok().map(|d| d.uid);
++    Ok(json!({"label": label}))
++}
++
++fn preview(s: &mut Session, p: &Value) -> Result<Value> {
++    let steps: Vec<BatchStep> = match p.get("commands") {
++        Some(Value::Array(a)) => {
++            let mut out = Vec::with_capacity(a.len());
++            for (i, c) in a.iter().enumerate() {
++                let cmd = c.get("command").and_then(Value::as_str).ok_or_else(|| bad("edit.preview", format!("step {i} has no `command`")))?;
++                crate::batch::refuse_unknown_step_keys(i, c)?;
++                refuse_in_preview(cmd)?;
++                out.push(BatchStep { name: crate::batch::step_name(i, c)?, ..BatchStep::new(cmd, c.get("params").cloned().unwrap_or(json!({}))) });
++            }
++            out
++        }
++        _ => return Err(bad("edit.preview", "`commands` must be an array")),
++    };
++    let mut scope = BatchScope::new(&steps)?;
++    // From the gesture's start each time; a failed step goes back to the last preview that worked.
++    let (shown_doc, shown_sel) = {
++        let ds = s.ds_mut()?;
++        let Some(it) = ds.interaction.as_mut() else { return Err(bad("edit.preview", "no gesture in progress: call edit.begin first")) };
++        it.moved_by = None;
++        let (doc, sel) = (it.doc.clone(), it.selection.clone());
++        let shown = (std::mem::replace(&mut ds.doc, doc), std::mem::replace(&mut ds.selection, sel));
++        // The document under the commands is not the one a canvas pinned to the last preview shows.
++        ds.revision += 1;
++        shown
++    };
++    for step in &steps {
++        if let Err(e) = s.batch_step(&mut scope, &step.command, &step.params) {
++            let ds = s.ds_mut()?;
++            ds.doc = shown_doc;
++            ds.selection = shown_sel;
++            ds.revision += 1;
++            return Err(e);
++        }
++    }
++    Ok(Value::Array(scope.into_results()))
++}
++
++fn commit(s: &mut Session, _: &Value) -> Result<Value> {
++    let ds = s.ds()?;
++    // One step, or none when the previews ended where the gesture began.
++    let changed = ds.interaction.as_ref().is_some_and(|it| !Arc::ptr_eq(&it.doc, &ds.doc) && *it.doc != *ds.doc);
++    s.commit_interaction()?;
++    s.gesture_cmd = None;
++    Ok(json!({"committed": changed}))
++}
++
++fn cancel(s: &mut Session, _: &Value) -> Result<Value> {
++    let was = s.ds()?.interaction.is_some();
++    s.cancel_interaction()?;
++    s.gesture_cmd = None;
++    Ok(json!({"cancelled": was}))
++}
++
++pub fn specs() -> Vec<CommandSpec> {
++    vec![
++        spec!(
++            "edit.begin",
++            "Begin a gesture",
++            "{label? (the undo step's name; default \"Edit\")}  start a drag or scrub: edit.preview changes the document without undo steps, edit.commit makes them one step, edit.cancel puts everything back. One gesture at a time; edit.undo and edit.redo wait until it ends",
++            false,
++            begin
++        ),
++        spec!(
++            "edit.preview",
++            "Preview a gesture",
++            "{commands: [{command, params, as?}]}  show the commands' result on the canvas from where the gesture began (the document is reset first, so a relative edit doesn't add up; $step and $ref work as in command.batch). A failing step undoes the whole preview and keeps the last good one",
++            false,
++            preview
++        ),
++        spec!("edit.commit", "Commit a gesture", "{}  the gesture's previews become one undo step (none if nothing changed)", false, commit),
++        spec!("edit.cancel", "Cancel a gesture", "{}  the document and selection go back to where edit.begin found them", false, cancel),
++    ]
++}
+diff --git a/crates/engine/src/gesture_command_tests.rs b/crates/engine/src/gesture_command_tests.rs
+new file mode 100644
+index 0000000..0f4845e
+--- /dev/null
++++ b/crates/engine/src/gesture_command_tests.rs
+@@ -0,0 +1,147 @@
++//! `edit.begin`, `edit.preview`, `edit.commit` and `edit.cancel`: a scrub updates the document at
++//! every step and ends as exactly one undo step; cancel puts the value back.
++
++use figcraft_doc::NodeId;
++use serde_json::{Value, json};
++
++use crate::Session;
++use crate::params::id_of;
++
++fn run(s: &mut Session, command: &str, params: Value) -> Value {
++    s.execute(command, &params).unwrap_or_else(|e| panic!("{command}: {e}"))
++}
++
++fn rect(s: &mut Session) -> NodeId {
++    id_of(&run(s, "shape.rectangle", json!({"x": 10, "y": 20, "width": 80, "height": 60}))["id"]).unwrap()
++}
++
++fn x(s: &Session, id: NodeId) -> f64 {
++    s.doc().unwrap().node(id).unwrap().transform.as_coeffs()[4]
++}
++
++fn scrub(s: &mut Session, id: NodeId, value: f64) -> Value {
++    run(s, "edit.preview", json!({"commands": [{"command": "node.set", "params": {"id": id, "x": value}}]}))
++}
++
++#[test]
++fn a_scrub_shows_every_step_and_leaves_one_undo_step() {
++    let mut s = Session::new();
++    let r = rect(&mut s);
++    let depth = s.undo_depth().0;
++    let revision = s.ds().unwrap().revision;
++
++    run(&mut s, "edit.begin", json!({"label": "Scrub X"}));
++    let mut last = revision;
++    for v in [11.0, 25.0, 40.0, 33.0, 52.0] {
++        scrub(&mut s, r, v);
++        assert_eq!(x(&s, r), v, "the document shows the preview at once");
++        let now = s.ds().unwrap().revision;
++        assert!(now > last, "every preview is a new revision, so the canvas repaints");
++        last = now;
++        assert_eq!(s.undo_depth().0, depth, "a preview is no undo step");
++    }
++    assert_eq!(run(&mut s, "edit.commit", json!({})), json!({"committed": true}));
++    assert_eq!((x(&s, r), s.undo_depth(), s.undo_labels(1)), (52.0, (depth + 1, 0), vec!["Scrub X".to_string()]));
++
++    run(&mut s, "edit.undo", json!({}));
++    assert_eq!(x(&s, r), 10.0, "one undo undoes the whole scrub");
++    assert_eq!(s.undo_depth().0, depth);
++}
++
++#[test]
++fn cancel_puts_the_value_and_selection_back() {
++    let mut s = Session::new();
++    let r = rect(&mut s);
++    run(&mut s, "select.set", json!({"ids": [r]}));
++    let depth = s.undo_depth();
++    run(&mut s, "edit.begin", json!({}));
++    scrub(&mut s, r, 99.0);
++    run(&mut s, "select.none", json!({}));
++    assert_eq!(run(&mut s, "edit.cancel", json!({})), json!({"cancelled": true}));
++    assert_eq!(x(&s, r), 10.0);
++    assert_eq!(s.selection(), vec![r]);
++    assert_eq!(s.undo_depth(), depth, "no undo step");
++    assert!(s.ds().unwrap().interaction.is_none());
++    assert_eq!(run(&mut s, "edit.cancel", json!({})), json!({"cancelled": false}), "cancelling again is harmless");
++}
++
++#[test]
++fn a_relative_edit_does_not_pile_up_across_previews() {
++    let mut s = Session::new();
++    let r = rect(&mut s);
++    run(&mut s, "edit.begin", json!({}));
++    for _ in 0..3 {
++        run(&mut s, "edit.preview", json!({"commands": [{"command": "transform.move", "params": {"ids": [r], "dx": 5, "dy": 0}}]}));
++    }
++    assert_eq!(x(&s, r), 15.0, "each preview starts from where the gesture began");
++    run(&mut s, "edit.commit", json!({}));
++    assert_eq!(x(&s, r), 15.0);
++}
++
++#[test]
++fn a_failing_preview_keeps_the_last_good_one() {
++    let mut s = Session::new();
++    let r = rect(&mut s);
++    run(&mut s, "edit.begin", json!({}));
++    scrub(&mut s, r, 30.0);
++    let bad = s.execute(
++        "edit.preview",
++        &json!({"commands": [{"command": "node.set", "params": {"id": r, "x": 77}}, {"command": "node.set", "params": {"id": r, "visible": "nope"}}]}),
++    );
++    assert!(bad.is_err());
++    assert_eq!(x(&s, r), 30.0, "the first step of the failed preview is not left behind");
++    assert!(s.ds().unwrap().interaction.is_some(), "the gesture goes on");
++    run(&mut s, "edit.commit", json!({}));
++    assert_eq!(x(&s, r), 30.0);
++}
++
++#[test]
++fn nothing_changed_is_no_step() {
++    let mut s = Session::new();
++    let r = rect(&mut s);
++    let depth = s.undo_depth();
++    run(&mut s, "edit.begin", json!({}));
++    scrub(&mut s, r, 70.0);
++    scrub(&mut s, r, 10.0);
++    assert_eq!(run(&mut s, "edit.commit", json!({})), json!({"committed": false}));
++    assert_eq!(s.undo_depth(), depth);
++    assert_eq!(run(&mut s, "edit.commit", json!({})), json!({"committed": false}), "committing with no gesture is harmless");
++}
++
++#[test]
++fn the_gesture_commands_refuse_what_would_break_a_gesture() {
++    let mut s = Session::new();
++    let r = rect(&mut s);
++    let err = |s: &mut Session, c: &str, p: Value| s.execute(c, &p).unwrap_err().to_string();
++    assert!(err(&mut s, "edit.preview", json!({"commands": []})).contains("no gesture"));
++    run(&mut s, "edit.begin", json!({}));
++    assert!(err(&mut s, "edit.begin", json!({})).contains("already in progress"));
++    for c in ["edit.begin", "edit.commit", "edit.cancel", "edit.undo", "file.close", "doc.nextTab"] {
++        assert!(err(&mut s, "edit.preview", json!({"commands": [{"command": c, "params": {}}]})).contains("can't run inside a gesture"), "{c}");
++    }
++    assert!(err(&mut s, "edit.undo", json!({})).contains("finish the gesture"));
++    assert!(err(&mut s, "edit.redo", json!({})).contains("finish the gesture"));
++    assert!(err(&mut s, "edit.preview", json!({"commands": [{"command": "node.set", "args": {}}]})).contains("args"), "a misspelt step key is named");
++    scrub(&mut s, r, 12.0);
++    run(&mut s, "edit.cancel", json!({}));
++    assert_eq!(run(&mut s, "edit.undo", json!({})), json!({"undone": true}), "undo works again once it ends (it takes the rectangle back)");
++}
++
++#[test]
++fn a_preview_can_run_a_batch_of_commands_with_references() {
++    let mut s = Session::new();
++    let r = rect(&mut s);
++    run(&mut s, "edit.begin", json!({"label": "Resize"}));
++    run(
++        &mut s,
++        "edit.preview",
++        json!({"commands": [
++            {"command": "node.set", "params": {"id": r, "width": 120}},
++            {"command": "node.set", "params": {"id": r, "height": 30}},
++        ]}),
++    );
++    run(&mut s, "edit.commit", json!({}));
++    let n = s.doc().unwrap().node(r).unwrap();
++    assert_eq!((n.width, n.height), (120.0, 30.0));
++    assert_eq!(s.undo_labels(1), vec!["Resize".to_string()], "two edits, one step");
++}
+diff --git a/crates/engine/src/lib.rs b/crates/engine/src/lib.rs
+index a9cf28d..1048173 100644
+--- a/crates/engine/src/lib.rs
++++ b/crates/engine/src/lib.rs
+@@ -162,6 +162,9 @@ pub struct Session {
+     pub agent: Option<String>,
+     /// Where an attached AI agent last worked ([`Session::agent_presence_at`]): display only.
+     pub agent_presence: Option<agent::AgentPresence>,
++    /// The file a gesture started with `edit.begin` is in ([`cmd::gesture`]), until `edit.commit` or
++    /// `edit.cancel`. The editor's own gestures (a drag, the pen) don't set it.
++    pub(crate) gesture_cmd: Option<u64>,
+ }
+ 
+ impl Default for Session {
+@@ -173,6 +176,8 @@ impl Default for Session {
+ #[cfg(test)]
+ mod a11y_keys_tests;
+ #[cfg(test)]
++mod gesture_command_tests;
++#[cfg(test)]
+ mod agent_presence_tests;
+ #[cfg(test)]
+ mod al_behaviour_tests;
+diff --git a/crates/engine/src/session/new.rs b/crates/engine/src/session/new.rs
+index f3b75b6..c3253da 100644
+--- a/crates/engine/src/session/new.rs
++++ b/crates/engine/src/session/new.rs
+@@ -34,6 +34,7 @@ impl Session {
+             pending_events: Vec::new(),
+             agent: None,
+             agent_presence: None,
++            gesture_cmd: None,
+         }
+     }
+ 

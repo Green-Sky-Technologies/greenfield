@@ -11,10 +11,8 @@ NAME="${1:-1}"
 OUT="$HERE/.toolchain/dist-docker-$NAME"
 rm -rf "$OUT" && mkdir -p "$OUT"
 docker run --rm --name "fork-build-$NAME" \
-  -v "$HERE/build.sh:/spike/build.sh:ro" \
-  -v "$HERE/toolchain.sh:/spike/toolchain.sh:ro" \
-  -v "$HERE/versions.env:/spike/versions.env:ro" \
-  -v "$HERE/patches:/spike/patches:ro" \
+  -v "$HERE:/spike:ro" \
+  -v "$HERE/../../apps/web/public:/apps/web/public:ro" \
   -v "$OUT:/out" \
   -e CARGO_BUILD_JOBS="${CARGO_BUILD_JOBS:-8}" \
   -e FIGCRAFT_SRC=/work/figcraft -e CRAFT_FONTS_SRC=/work/craft-fonts -e FIGCRAFT_OUT=/out/dist \

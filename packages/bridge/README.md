@@ -17,8 +17,10 @@ interface (`src/types.ts`):
 | `MockEditor`                    | `@greenfield/bridge/mock`       | unit tests (in memory)                   |
 | `RemoteEditor` / `test` fixture | `@greenfield/bridge/playwright` | Playwright tests against the real editor |
 
-Pinned editor: **figcraft-web 0.18.1**, set once in [`editor-release.json`](editor-release.json).
-`node apps/web/scripts/fetch-editor.mjs` downloads that release into `apps/web/public/editor`; the
+Pinned editor: **figcraft-web 0.18.1**, set once in [`editor-release.json`](editor-release.json)
+(`version`, the download `url` and the `sha256` of the zip). The `figcraft-web` workflow publishes
+our fork's build as a release on every push to `main` (tag `editor-<short sha>`) and prints the three
+pin values in the run summary. `node apps/web/scripts/fetch-editor.mjs` downloads the pinned release into `apps/web/public/editor`; the
 generated `EDITOR_VERSION` and `EDITOR_RELEASE_SHA256` must match it (`test/csp.test.ts` fails
 otherwise). To upgrade, change the pin, fetch, then `generate`.
 

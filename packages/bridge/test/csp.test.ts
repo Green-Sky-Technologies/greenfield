@@ -10,8 +10,12 @@ describe('editor version pin', () => {
   it('fetch-editor.mjs and the generated bridge types pin the same release', () => {
     const pin = JSON.parse(
       readFileSync(new URL('../editor-release.json', import.meta.url), 'utf8'),
-    ) as { version: string; sha256: string };
-    expect({ version: EDITOR_VERSION, sha256: EDITOR_RELEASE_SHA256 }).toEqual(pin);
+    ) as { version: string; url: string; sha256: string };
+    expect(pin.url).toMatch(/^https:\/\/github\.com\/.+\.zip$/);
+    expect({ version: EDITOR_VERSION, sha256: EDITOR_RELEASE_SHA256 }).toEqual({
+      version: pin.version,
+      sha256: pin.sha256,
+    });
   });
 });
 

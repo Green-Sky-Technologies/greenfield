@@ -8,8 +8,8 @@ export const EDITOR_VERSION = '0.18.1';
 export const EDITOR_RELEASE_SHA256 =
   '2fbeb93f5022b0a7cc9d8528f1ed7e2b54c94d213ef79e65128aa898c399f02b';
 /** sha256 of `figcraft.commands()` in canonical form (see scripts/command-types.ts). */
-export const COMMANDS_HASH = '14104b31712737f6053074fad1b0eb4bc89a01fb1ea6beba60286574d15f8770';
-export const COMMAND_COUNT = 643;
+export const COMMANDS_HASH = '6ccd1d4e3941be83f2a519cce14fa2cfb1c52e2806be220ea7d327df973028dd';
+export const COMMAND_COUNT = 649;
 
 /** Layer keys `document.inspect` and `node.get` accept in `fields`. */
 export const NODE_FIELDS = [
@@ -537,6 +537,23 @@ export interface NodeProps {
 
 /** Parameters per command id, from the pinned editor. */
 export interface CommandParamsMap {
+  /**
+   * Hold an agent's presence
+   *
+   * `{name (the agent's client name, as in engine.execute's 'agent'), active (true: it shows in the file in front until you release it; false: it goes after the usual few seconds)}  an agent's outline and avatar for a whole turn, not only after its commands`
+   */
+  'agent.presence': {
+    /**
+     * the agent's client name, as in engine.execute's `agent`
+     */
+    name: string;
+    /**
+     * true: it shows in the file in front until you release it; false: it goes after the usual few seconds
+     */
+    active: unknown;
+    ids?: (number | string)[];
+    id?: number | string;
+  };
   /**
    * Align bottom [Arrange] (Alt+S) · undoable
    *
@@ -2750,6 +2767,37 @@ export interface CommandParamsMap {
     id?: number | string;
   };
   /**
+   * Begin a gesture
+   *
+   * `{label? (the undo step's name; default "Edit")}  start a drag or scrub: edit.preview changes the document without undo steps, edit.commit makes them one step, edit.cancel puts everything back. One gesture at a time; edit.undo and edit.redo wait until it ends`
+   */
+  'edit.begin': {
+    /**
+     * the undo step's name; default "Edit"
+     */
+    label?: string;
+    ids?: NodeId[];
+    id?: NodeId;
+  };
+  /**
+   * Cancel a gesture
+   *
+   * `{}  the document and selection go back to where edit.begin found them`
+   */
+  'edit.cancel': {
+    ids?: NodeId[];
+    id?: NodeId;
+  };
+  /**
+   * Commit a gesture
+   *
+   * `{}  the gesture's previews become one undo step (none if nothing changed)`
+   */
+  'edit.commit': {
+    ids?: NodeId[];
+    id?: NodeId;
+  };
+  /**
    * Copy [Edit] (Cmd+C)
    *
    * `{ids?}`
@@ -2894,6 +2942,19 @@ export interface CommandParamsMap {
    */
   'edit.pickColor': {
     apply?: unknown;
+    ids?: NodeId[];
+    id?: NodeId;
+  };
+  /**
+   * Preview a gesture
+   *
+   * `{commands: [{command, params, as?}]}  show the commands' result on the canvas from where the gesture began (the document is reset first, so a relative edit doesn't add up; $step and $ref work as in command.batch). A failing step undoes the whole preview and keeps the last good one`
+   */
+  'edit.preview': {
+    /**
+     * [{command, params, as?}]
+     */
+    commands: unknown[];
     ids?: NodeId[];
     id?: NodeId;
   };
@@ -8854,6 +8915,16 @@ export interface CommandParamsMap {
     id?: number | string;
   };
   /**
+   * Canvas mode
+   *
+   * `{on?}  draw only the canvas and its overlays: no navigation bar, sidebars, tab bar, toolbar, home screen or menus. Right-clicks, dialogs, popovers and the Comment tool's click go to the host as 'ui.request' events ('?canvas' on the page starts in it). Off brings the editor's own panels back`
+   */
+  'view.canvasMode': {
+    on?: unknown;
+    ids?: (number | string)[];
+    id?: number | string;
+  };
+  /**
    * Comments [View] (Shift+C)
    *
    * `{on?}`
@@ -9471,6 +9542,16 @@ export interface CommandParamsMap {
 
 /** Every command of the pinned editor, as `figcraft.commands()` lists it, plus `takes`. */
 export const COMMANDS: readonly CommandInfo[] = [
+  {
+    id: 'agent.presence',
+    label: "Hold an agent's presence",
+    menu: null,
+    params:
+      "{name (the agent's client name, as in engine.execute's `agent`), active (true: it shows in the file in front until you release it; false: it goes after the usual few seconds)}  an agent's outline and avatar for a whole turn, not only after its commands",
+    shortcut: null,
+    undoable: false,
+    takes: ['name', 'active'],
+  },
   {
     id: 'align.bottom',
     label: 'Align bottom',
@@ -10873,6 +10954,34 @@ export const COMMANDS: readonly CommandInfo[] = [
     takes: ['index'],
   },
   {
+    id: 'edit.begin',
+    label: 'Begin a gesture',
+    menu: null,
+    params:
+      '{label? (the undo step\'s name; default "Edit")}  start a drag or scrub: edit.preview changes the document without undo steps, edit.commit makes them one step, edit.cancel puts everything back. One gesture at a time; edit.undo and edit.redo wait until it ends',
+    shortcut: null,
+    undoable: false,
+    takes: ['label'],
+  },
+  {
+    id: 'edit.cancel',
+    label: 'Cancel a gesture',
+    menu: null,
+    params: '{}  the document and selection go back to where edit.begin found them',
+    shortcut: null,
+    undoable: false,
+    takes: [],
+  },
+  {
+    id: 'edit.commit',
+    label: 'Commit a gesture',
+    menu: null,
+    params: "{}  the gesture's previews become one undo step (none if nothing changed)",
+    shortcut: null,
+    undoable: false,
+    takes: [],
+  },
+  {
     id: 'edit.copy',
     label: 'Copy',
     menu: 'Edit',
@@ -10982,6 +11091,16 @@ export const COMMANDS: readonly CommandInfo[] = [
     shortcut: 'I',
     undoable: false,
     takes: ['apply'],
+  },
+  {
+    id: 'edit.preview',
+    label: 'Preview a gesture',
+    menu: null,
+    params:
+      "{commands: [{command, params, as?}]}  show the commands' result on the canvas from where the gesture began (the document is reset first, so a relative edit doesn't add up; $step and $ref work as in command.batch). A failing step undoes the whole preview and keeps the last good one",
+    shortcut: null,
+    undoable: false,
+    takes: ['commands'],
   },
   {
     id: 'edit.redo',
@@ -15199,6 +15318,16 @@ export const COMMANDS: readonly CommandInfo[] = [
     shortcut: 'Alt+2',
     undoable: false,
     takes: [],
+  },
+  {
+    id: 'view.canvasMode',
+    label: 'Canvas mode',
+    menu: null,
+    params:
+      "{on?}  draw only the canvas and its overlays: no navigation bar, sidebars, tab bar, toolbar, home screen or menus. Right-clicks, dialogs, popovers and the Comment tool's click go to the host as `ui.request` events (`?canvas` on the page starts in it). Off brings the editor's own panels back",
+    shortcut: null,
+    undoable: false,
+    takes: ['on'],
   },
   {
     id: 'view.comments',

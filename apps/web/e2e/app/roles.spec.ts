@@ -2,20 +2,20 @@
  * Scenario 2, roles (SPEC §3): a viewer can open a project but the server refuses their saves,
  * and they're kept out of admin settings; an editor doesn't see Model access.
  */
-import { createProject, openProject, pageFetch, uniqueName } from './support/app';
+import { createProject, openProject, pageFetch, putFile, uniqueName } from './support/app';
 import { expect, test } from './support/fixtures';
 
 test('a viewer opens the project but cannot save it', async ({ as, run }) => {
   const editor = await as('editor');
   const projectId = await createProject(editor, run.org.slug, uniqueName('Roles'));
   const file = `/api/projects/${projectId}/file`;
-  expect((await pageFetch(editor, file, { method: 'PUT', bytes: [1, 2] })).status).toBe(200);
+  expect((await putFile(editor, projectId, [1, 2])).status).toBe(200);
 
   const page = await as('viewer');
   await openProject(page, run.org.slug, projectId);
   expect((await pageFetch(page, file)).status).toBe(200);
   // The server enforces the role: a save from the viewer's session is forbidden.
-  expect((await pageFetch(page, file, { method: 'PUT', bytes: [9] })).status).toBe(403);
+  expect((await putFile(page, projectId, [9], { lock: false })).status).toBe(403);
 });
 
 test('a viewer is redirected away from admin settings', async ({ as, run }) => {

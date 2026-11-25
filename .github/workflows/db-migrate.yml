@@ -1,0 +1,34 @@
+name: Migrate production database
+
+# Applies committed migrations (packages/db/migrations) to production after they land on main.
+# It runs here, not in the Vercel build, because Preview deployments share production's
+# DATABASE_URL: a migrate step in the build would let any PR preview change production.
+on:
+  push:
+    branches: [main]
+    paths: ['packages/db/migrations/**']
+  workflow_dispatch:
+
+concurrency:
+  group: db-migrate-production
+  cancel-in-progress: false
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    # Add required reviewers to this environment (Settings > Environments) to approve each run.
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Apply migrations
+        env:
+          DATABASE_URL: ${{ secrets.PRODUCTION_DATABASE_URL }}
+        run: |
+          [ -n "$DATABASE_URL" ] || { echo "PRODUCTION_DATABASE_URL secret is not set" >&2; exit 1; }
+          pnpm db:migrate
