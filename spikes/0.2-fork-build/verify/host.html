@@ -14,13 +14,18 @@
   <header>Host page (parent) &middot; <span id="status">waiting for figcraft:ready</span></header>
   <iframe id="editor"></iframe>
   <script>
-    // ?webgl on the host page is passed through (headless Chromium has no WebGPU).
+    // ?webgl on the host page is passed through (headless Chromium has no WebGPU), and so is ?canvas
+    // (canvas mode: Stories 2.11 and after).
+    const q = new URLSearchParams(location.search);
     document.getElementById('editor').src = './editor/index.html?host=parent&control&author=spike' +
-      (new URLSearchParams(location.search).has('webgl') ? '&webgl' : '');
+      (q.has('webgl') ? '&webgl' : '') + (q.has('canvas') ? '&canvas' : '');
     window.hostEvents = [];
+    // Every `figcraft:event` in full ({ name, data }), for the canvas-mode checks (verify/smoke-canvas.mjs).
+    window.hostMessages = [];
     window.addEventListener('message', (e) => {
       if (e.origin !== location.origin || !e.data || typeof e.data.type !== 'string') return;
       window.hostEvents.push(e.data.type);
+      if (e.data.type === 'figcraft:event') window.hostMessages.push({ name: e.data.name, data: e.data.data });
       if (e.data.type === 'figcraft:ready') document.getElementById('status').textContent = 'figcraft:ready ' + (e.data.appVersion || '');
     });
   </script>

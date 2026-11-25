@@ -28,4 +28,7 @@ docker run --rm --name fork-patch-tests \
     # 0005/0006/0007: fonts draw, catalogs match the code (renamed keys), menus and dialogs read
     cargo test -q -p figcraft-ui-egui --lib i18n
     cargo test -q -p figcraft-ui-egui --lib menu_contrast_tests
+    # 0008: canvas mode (draws only the canvas, requests go to the host, ?canvas)
+    cargo test -q -p figcraft-ui-egui --lib canvas_mode_tests
+    cargo test -q -p figcraft-web --bin figcraft-web query_tests
   '
