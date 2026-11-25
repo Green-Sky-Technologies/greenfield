@@ -274,7 +274,7 @@ describe('panels read the editor store', () => {
         data: { document: doc.id, page: doc.currentPage, ids: [2], nodes: [hero] },
       });
     });
-    expect($('[data-testid="layers-summary"]')!.textContent).toContain('1 layers · 1 selected');
+    expect($('[role="treeitem"][aria-selected="true"]')!.getAttribute('aria-label')).toBe('Hero');
     expect($('[data-testid="design-tab-name"]')!.textContent).toBe('Hero');
     expect($('[data-testid="design-width"]')!.textContent).toBe('320');
   });

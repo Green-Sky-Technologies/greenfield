@@ -83,15 +83,14 @@ test('canvas mode: panels follow the canvas, F6 cycles the panes, the fallback r
   )) as [unknown, { id: number }];
   await editor.execute('view.zoomFit', {});
   await left.getByRole('tab', { name: 'Layers' }).click();
-  const summary = page.getByTestId('layers-summary');
-  await expect(summary).toContainText('2 layers');
+  const layers = left.getByRole('tree', { name: 'Layers' });
+  await expect(layers.getByRole('treeitem')).toHaveCount(2);
 
   // 5.6: select on the canvas; the stubs show it.
   const swatch = await layerPoint(page, editor, made.id);
   await page.mouse.click(swatch.x, swatch.y);
   await expect(page.getByTestId('design-tab-name')).toHaveText('Swatch');
-  await expect(summary).toContainText('1 selected');
-  await expect(left.getByRole('list', { name: 'Selected layers' })).toHaveText('Swatch');
+  await expect(layers.getByRole('treeitem', { selected: true })).toHaveAccessibleName('Swatch');
   await expect(page.getByTestId('design-width')).toHaveText('160');
   expect(await hostFocus(page)).toBe('canvas');
 
