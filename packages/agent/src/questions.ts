@@ -34,12 +34,24 @@ export {
   type QuestionSet,
 };
 
-/** The request body for answering a question set. `skip`: "just decide". */
+/**
+ * The request body for answering a question set. `skip`: "just decide". `context` and `scope`
+ * are the tab's fresh `<document>` block and selection (as for a new message); without them the
+ * answers apply to the scope the questions were asked with.
+ */
 export const answerQuestionsInput = z
   .object({
     skip: z.boolean().optional(),
     answers: z.array(questionAnswer).max(5).default([]),
     model: z.string().max(100).optional(),
+    context: z
+      .string()
+      .max(60_000)
+      .refine((s) => s.startsWith('<document>') && s.endsWith('</document>'), {
+        message: 'context must be a <document> block',
+      })
+      .optional(),
+    scope: z.array(z.number().int().nonnegative()).max(50).nullish(),
   })
   .strict();
 export type AnswerQuestionsInput = z.input<typeof answerQuestionsInput>;

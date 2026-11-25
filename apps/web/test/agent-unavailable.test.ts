@@ -1,7 +1,7 @@
 /**
  * Story 1.2 switched the agent off (AgentUnavailableError, 503). Story 4.2 turns interactive turns
- * back on (agent-interactive.test.ts); answering follow-up questions (4.4) and jobs (4.5) stay
- * off until their stories. Stored conversations stay readable.
+ * back on (agent-interactive.test.ts) and 4.4 follow-up questions (agent-questions.test.ts); jobs
+ * (4.5) stay off until their story. Stored conversations stay readable.
  */
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
@@ -9,13 +9,7 @@ import { parseSse } from '@greenfield/agent';
 import { agentConversations, agentMessages, eq, jobs } from '@greenfield/db';
 import { recordingSandboxApi } from '@greenfield/sandbox-runner';
 import { apiError } from '@/server/api';
-import {
-  answerQuestions,
-  cancelMessage,
-  getProjectChat,
-  messageEvents,
-  sendMessage,
-} from '@/server/services/agent';
+import { cancelMessage, getProjectChat, messageEvents, sendMessage } from '@/server/services/agent';
 import { jobRunner } from '@/server/services/agent/runner';
 import { createJob, startJob } from '@/server/services/jobs';
 import { createProject } from '@/server/services/projects';
@@ -75,15 +69,6 @@ describe('agent while unavailable', () => {
     const res = apiError(new AgentUnavailableError());
     expect(res.status).toBe(503);
     expect(await res.json()).toMatchObject({ error: 'agent_unavailable' });
-  });
-
-  it('answerQuestions is unavailable too', async () => {
-    const editor = await makeActor(db, 'editor');
-    const project = await createProject(db, editor, { name: 'P' });
-    const msg = await storedReply(editor, project.id);
-    await expect(
-      answerQuestions(db, editor, msg.id, { answers: [], skip: true }),
-    ).rejects.toBeInstanceOf(AgentUnavailableError);
   });
 
   it('stored conversations can still be read, streamed and cancelled', async () => {

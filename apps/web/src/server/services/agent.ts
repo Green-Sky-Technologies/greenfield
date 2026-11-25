@@ -3,13 +3,17 @@
  *
  * Story 4.2 turns the agent back on for interactive turns: `sendMessage` stores the request
  * with its document context (Story 4.1, built in the browser) and `runTurn` drives the loop in
- * `agent/turn.ts`, whose tools run in the user's editor tab. Answering follow-up questions
- * (Story 4.4) still throws AgentUnavailableError (503), and so do jobs (Story 4.5).
+ * `agent/turn.ts`, whose tools run in the user's editor tab. A reply that asks follow-up
+ * questions (Story 4.4) ends there; `answerQuestions` (or the next message) sends their result
+ * and continues.
  */
 import { assertCan } from '@greenfield/authz';
 import {
+  AnswerError,
   answerQuestionsInput,
+  answersSummary,
   encodeSse,
+  formatAnswersForModel,
   ModelNotAllowedError,
   resolveModel,
   SSE_KEEPALIVE,
@@ -19,6 +23,7 @@ import {
   type QuestionAnswers,
   type QuestionSet,
   type ToolActivity,
+  validateAnswers,
 } from '@greenfield/agent';
 import {
   agentConversations,
@@ -45,7 +50,7 @@ import {
   type RunContent,
   type TurnDeps,
 } from './agent/turn';
-import { AgentUnavailableError, NotFoundError, ValidationError, type Actor } from './types';
+import { NotFoundError, ValidationError, type Actor } from './types';
 
 // ---------------------------------------------------------------------------------------------
 // Stored shapes (agent_messages.content)
@@ -302,6 +307,107 @@ export const sendMessageInput = z
   .strict();
 export type SendMessageInput = z.infer<typeof sendMessageInput>;
 
+type Tx = Parameters<Parameters<Db['transaction']>[0]>[0];
+
+/** Tool results that answer a question set (plus the sibling results held with it). */
+function questionResults(
+  q: PendingQuestions,
+  answers: QuestionAnswers,
+): Anthropic.ToolResultBlockParam[] {
+  return [
+    ...q.results,
+    {
+      type: 'tool_result',
+      tool_use_id: q.toolUseId,
+      content: formatAnswersForModel(q.set, answers),
+    },
+  ];
+}
+
+/**
+ * Mark the conversation's unanswered question set (if any) as superseded by a new message and
+ * return the tool results the new user turn must start with (the history stays valid).
+ */
+async function supersedePendingQuestions(
+  tx: Tx,
+  conversationId: string,
+  actor: Actor,
+): Promise<Anthropic.ToolResultBlockParam[] | null> {
+  const [row] = await tx
+    .select()
+    .from(agentMessages)
+    .where(
+      and(
+        eq(agentMessages.conversationId, conversationId),
+        eq(agentMessages.role, 'assistant'),
+        eq(agentMessages.status, 'complete'),
+        sql`jsonb_typeof(${agentMessages.content}->'questions') = 'object'`,
+        sql`coalesce(jsonb_typeof(${agentMessages.content}->'answers'), 'null') = 'null'`,
+      ),
+    )
+    .orderBy(desc(agentMessages.seq))
+    .limit(1)
+    .for('update');
+  if (!row) return null;
+  const content = row.content as StoredAssistantContent;
+  const answers: QuestionAnswers = {
+    outcome: 'superseded',
+    answers: [],
+    answeredBy: actor.userId,
+    answeredAt: new Date().toISOString(),
+  };
+  await tx
+    .update(agentMessages)
+    .set({ content: { ...content, answers } satisfies StoredAssistantContent })
+    .where(eq(agentMessages.id, row.id));
+  return questionResults(content.questions!, answers);
+}
+
+/** A user message and its pending reply, at the end of the conversation. */
+async function insertExchange(
+  tx: Tx,
+  actor: Actor,
+  conversationId: string,
+  user: { content: StoredUserContent; attachments?: Attachment[] },
+  model: string,
+): Promise<{ userMessageId: string; messageId: string }> {
+  const [{ max }] = (await tx
+    .select({ max: sql<number>`coalesce(max(${agentMessages.seq}), 0)::int` })
+    .from(agentMessages)
+    .where(eq(agentMessages.conversationId, conversationId))) as [{ max: number }];
+  const [u] = await tx
+    .insert(agentMessages)
+    .values({
+      conversationId,
+      workspaceId: actor.workspace.id,
+      seq: max + 1,
+      role: 'user',
+      content: user.content,
+      attachments: user.attachments ?? [],
+      status: 'complete',
+      createdBy: actor.userId,
+    })
+    .returning();
+  const [assistant] = await tx
+    .insert(agentMessages)
+    .values({
+      conversationId,
+      workspaceId: actor.workspace.id,
+      seq: max + 2,
+      role: 'assistant',
+      content: { v: 1, turns: [] } satisfies StoredAssistantContent,
+      status: 'pending',
+      model,
+      createdBy: actor.userId,
+    })
+    .returning();
+  await tx
+    .update(agentConversations)
+    .set({ updatedAt: new Date() })
+    .where(eq(agentConversations.id, conversationId));
+  return { userMessageId: u!.id, messageId: assistant!.id };
+}
+
 export interface SentMessage {
   conversationId: string;
   userMessageId: string;
@@ -392,44 +498,28 @@ export async function sendMessage(db: Db, actor: Actor, raw: unknown): Promise<S
         .returning();
       conversationId = conv!.id;
     }
-    const [{ max }] = (await tx
-      .select({ max: sql<number>`coalesce(max(${agentMessages.seq}), 0)::int` })
-      .from(agentMessages)
-      .where(eq(agentMessages.conversationId, conversationId))) as [{ max: number }];
-    const [user] = await tx
-      .insert(agentMessages)
-      .values({
-        conversationId,
-        workspaceId: actor.workspace.id,
-        seq: max + 1,
-        role: 'user',
-        content: userContent,
-        attachments,
-        status: 'complete',
-        createdBy: actor.userId,
-      })
-      .returning();
-    const [assistant] = await tx
-      .insert(agentMessages)
-      .values({
-        conversationId,
-        workspaceId: actor.workspace.id,
-        seq: max + 2,
-        role: 'assistant',
-        content: { v: 1, turns: [] } satisfies StoredAssistantContent,
-        status: 'pending',
-        model,
-        createdBy: actor.userId,
-      })
-      .returning();
-    await tx
-      .update(agentConversations)
-      .set({ updatedAt: new Date() })
-      .where(eq(agentConversations.id, conversationId));
+    // Questions left unanswered get their tool_result now, so the history stays valid.
+    const superseded = await supersedePendingQuestions(tx, conversationId, actor);
+    if (superseded)
+      userContent.turns = [
+        {
+          role: 'user',
+          content: [
+            ...superseded,
+            ...(userContent.turns[0]!.content as Anthropic.ContentBlockParam[]),
+          ],
+        },
+      ];
+    const ids = await insertExchange(
+      tx,
+      actor,
+      conversationId,
+      { content: userContent, attachments },
+      model,
+    );
     return {
       conversationId,
-      userMessageId: user!.id,
-      messageId: assistant!.id,
+      ...ids,
       needsRun: true,
     };
   });
@@ -471,7 +561,12 @@ export async function runTurn(
   return toMessageView(await loadMessage(db, actor, messageId));
 }
 
-/** Answer an assistant message's follow-up questions. Not available until Story 4.4. */
+/**
+ * Answer (or skip) the follow-up questions a reply asked (Story 4.4). Stores what the user did
+ * on the asking message, then a user message whose API turn is the pending tool_result (plus
+ * fresh document context, when the tab sends it) and a pending reply that continues the
+ * request. The caller runs it with `runTurn`.
+ */
 export async function answerQuestions(
   db: Db,
   actor: Actor,
@@ -482,8 +577,85 @@ export async function answerQuestions(
   const parsed = answerQuestionsInput.safeParse(raw);
   if (!parsed.success)
     throw new ValidationError(parsed.error.issues[0]?.message ?? 'Invalid answers');
-  await loadMessage(db, actor, messageId);
-  throw new AgentUnavailableError();
+  const input = parsed.data;
+  const asked = await loadMessage(db, actor, messageId);
+  const conv = await loadConversation(db, actor, asked.conversationId);
+  const project = await getProject(db, actor, conv.projectId);
+  if (project.archivedAt) throw new ValidationError('This project is archived');
+  // Continue on the model that asked, unless one is picked (or it's no longer allowed).
+  const settings = await getModelSettings(db, actor.workspace.id);
+  let model: string;
+  try {
+    model = resolveModel(settings, 'interactive', input.model ?? asked.model ?? undefined);
+  } catch (e) {
+    if (!(e instanceof ModelNotAllowedError)) throw e;
+    if (input.model) throw new ValidationError(e.message);
+    model = resolveModel(settings, 'interactive');
+  }
+
+  return db.transaction(async (tx) => {
+    const [row] = await tx
+      .select()
+      .from(agentMessages)
+      .where(eq(agentMessages.id, messageId))
+      .for('update')
+      .limit(1);
+    const content = row?.content as StoredAssistantContent | undefined;
+    if (!row || row.role !== 'assistant' || !content?.questions)
+      throw new NotFoundError('Those questions were not found');
+    if (row.status !== 'complete' || content.answers)
+      throw new ValidationError('Those questions were already answered');
+    const q = content.questions;
+    let normalized: QuestionAnswers['answers'] = [];
+    if (!input.skip) {
+      try {
+        normalized = validateAnswers(q.set, input.answers);
+      } catch (e) {
+        if (e instanceof AnswerError) throw new ValidationError(e.message);
+        throw e;
+      }
+      if (!normalized.length) throw new ValidationError('Answer a question, or skip');
+    }
+    const answers: QuestionAnswers = {
+      outcome: input.skip ? 'skipped' : 'answered',
+      answers: normalized,
+      answeredBy: actor.userId,
+      answeredAt: new Date().toISOString(),
+    };
+    await tx
+      .update(agentMessages)
+      .set({ content: { ...content, answers } satisfies StoredAssistantContent })
+      .where(eq(agentMessages.id, row.id));
+    // The answers apply to the request that prompted them, unless the tab sends a new scope.
+    const [asking] = await tx
+      .select()
+      .from(agentMessages)
+      .where(
+        and(
+          eq(agentMessages.conversationId, conv.id),
+          eq(agentMessages.role, 'user'),
+          sql`${agentMessages.seq} < ${row.seq}`,
+        ),
+      )
+      .orderBy(desc(agentMessages.seq))
+      .limit(1);
+    const askedContext = (asking?.content as StoredUserContent | undefined)?.context ?? {};
+    const blocks: Anthropic.ContentBlockParam[] = questionResults(q, answers);
+    // Tool results lead the user turn; the document context follows them.
+    if (input.context) blocks.push({ type: 'text', text: input.context });
+    const userContent: StoredUserContent = {
+      v: 1,
+      prompt: answersSummary(q.set, answers),
+      context:
+        input.scope !== undefined
+          ? { ...askedContext, scope: input.scope?.length ? input.scope : null }
+          : askedContext,
+      turns: [{ role: 'user', content: blocks }],
+      answersFor: row.id,
+    };
+    const ids = await insertExchange(tx, actor, conv.id, { content: userContent }, model);
+    return { conversationId: conv.id, ...ids, needsRun: true };
+  });
 }
 
 export async function cancelMessage(db: Db, actor: Actor, messageId: string): Promise<MessageView> {

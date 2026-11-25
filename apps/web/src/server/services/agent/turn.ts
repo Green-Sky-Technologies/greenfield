@@ -167,7 +167,7 @@ async function claimStep(
       for (const x of pending.calls) for (const id of x.touched ?? []) touched.add(String(id));
       const blocks = stepResults(pending.step, results);
       if (pending.step.questions) {
-        // Not reached while questions are off (Story 4.4); kept so the history stays valid.
+        // ask_followup ends the turn (Story 4.4): its result is the user's answers, sent later.
         await tx
           .update(agentMessages)
           .set({
@@ -286,8 +286,6 @@ async function runStep(
       runtime: 'interactive',
       signal: controller.signal,
       effort: 'medium',
-      // Follow-up questions come with Story 4.4.
-      allowQuestions: false,
       onPartial: (p) => {
         partial = p;
         if (Date.now() - lastFlush >= (deps.flushMs ?? 250)) flush();
@@ -564,7 +562,22 @@ export function windowHistory(
   return exchanges.slice(cut).flat();
 }
 
-/** Earlier complete exchanges of a conversation. Failed and cancelled replies are skipped. */
+/** The ask_followup call a user turn answers: the id of its last leading tool_result. */
+function answeredToolUseId(turn: Anthropic.MessageParam | undefined): string | null {
+  if (!turn || typeof turn.content === 'string') return null;
+  let id: string | null = null;
+  for (const b of turn.content) {
+    if (b.type !== 'tool_result') break;
+    id = b.tool_use_id;
+  }
+  return id;
+}
+
+/**
+ * Earlier complete exchanges of a conversation. Failed and cancelled replies are skipped. An
+ * answer to follow-up questions (Story 4.4) joins the exchange that asked, right after the
+ * ask_followup call, so a window cut never separates a tool_result from its call.
+ */
 export async function historyBefore(
   db: Db,
   conversationId: string,
@@ -579,13 +592,26 @@ export async function historyBefore(
     .orderBy(asc(agentMessages.seq));
   const exchanges: Anthropic.MessageParam[][] = [];
   let open: Anthropic.MessageParam[] | null = null;
+  // The exchange whose reply ended on unanswered questions, by ask_followup tool_use id.
+  let asked: { toolUseId: string } | null = null;
   for (const r of rows) {
     if (r.role === 'user') {
-      open = ((r.content as { turns?: Anthropic.MessageParam[] }).turns ?? []).map(withoutDocument);
+      const turns = ((r.content as { turns?: Anthropic.MessageParam[] }).turns ?? []).map(
+        withoutDocument,
+      );
+      // Answers reopen the asking exchange (always the newest); their reply continues it.
+      open =
+        asked && answeredToolUseId(turns[0]) === asked.toolUseId
+          ? [...exchanges.pop()!, ...turns]
+          : turns;
+      asked = null;
     } else if (r.role === 'assistant' && open) {
       // An exchange counts only with a complete reply (a user turn alone would break alternation).
-      if (r.status === 'complete')
-        exchanges.push([...open, ...((r.content as RunContent).turns ?? [])]);
+      if (r.status === 'complete') {
+        const c = r.content as RunContent & { questions?: { toolUseId: string } | null };
+        exchanges.push([...open, ...(c.turns ?? [])]);
+        if (c.questions) asked = { toolUseId: c.questions.toolUseId };
+      }
       open = null;
     }
   }
