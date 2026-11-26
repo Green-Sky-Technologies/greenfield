@@ -3,15 +3,33 @@
  * is the only credential the sandbox sees.
  */
 import type { JobRunner, StartJob } from '@greenfield/contracts';
-import { getDb } from '@greenfield/db';
+import { getDb, type Db } from '@greenfield/db';
 import { VercelSandboxRunner, type PreparedJob, type SandboxApi } from '@greenfield/sandbox-runner';
-import { defaultDesignFileStorage } from '../design-files';
+import { defaultDesignFileStorage, type DesignFileStorage } from '../design-files';
 import { prepareAgentJob } from './agent-jobs';
+import { AgentUnavailableError } from '../types';
 
-/** Build a job's sandbox spec (Story 4.5): a copy of the file, the CLI pin, the job token. */
-export function prepareJob(job: StartJob): Promise<PreparedJob> {
-  return prepareAgentJob(getDb(), defaultDesignFileStorage(), job);
+/**
+ * Build a job's sandbox spec (Story 4.5): a copy of the file, the CLI pin, the job token. A
+ * sandbox runs in Vercel's cloud and calls the app back, so a loopback app URL fails the job at
+ * once (retrying can't help) instead of leaving it queued.
+ */
+export async function prepareJob(
+  job: StartJob,
+  env: Record<string, string | undefined> = process.env,
+  db: Db = getDb(),
+  storage: DesignFileStorage = defaultDesignFileStorage(),
+): Promise<PreparedJob> {
+  const prepared = await prepareAgentJob(db, storage, job, env);
+  const url = appUrl(env);
+  if (LOOPBACK.test(new URL(url).hostname))
+    throw new AgentUnavailableError(
+      `Agent jobs run in a Vercel Sandbox, which can't reach this app at ${url}. Set GREENFIELD_APP_URL to a public URL of this deployment.`,
+    );
+  return prepared;
 }
+
+const LOOPBACK = /^(localhost|127(\.\d+){3}|0\.0\.0\.0|\[::1?\])$/;
 
 /**
  * Base URL sandboxes call back to (LLM proxy, job API). GREENFIELD_APP_URL wins. Otherwise a preview

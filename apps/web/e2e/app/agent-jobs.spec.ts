@@ -1,9 +1,9 @@
 /**
  * Agent jobs and turn endpoints through the real app (Stories 4.4, 4.5, 4.7), signed in through
- * real Clerk, with no model call: in a deployment without a pinned Linux figcraft-cli a job is
- * accepted, fails at once with a clear error, and its events replay from the start; viewers
- * can't start jobs; the answer, revert and version endpoints are workspace-scoped (404 for what
- * isn't there).
+ * real Clerk, with no model call: in a deployment without a Linux figcraft-cli (the suite's
+ * server runs with GREENFIELD_FIGCRAFT_CLI_URL=off) a job is accepted, fails at once with a clear
+ * error, and its events replay from the start; viewers can't start jobs; the answer, revert and
+ * version endpoints are workspace-scoped (404 for what isn't there).
  */
 import { createProject, pageFetch, uniqueName } from './support/app';
 import { expect, test } from './support/fixtures';
