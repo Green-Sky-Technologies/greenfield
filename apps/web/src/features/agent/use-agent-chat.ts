@@ -110,10 +110,18 @@ export function useAgentChat(projectId: string, editor: () => Editor | null) {
       next[i] = view;
       return next;
     });
-    if (!view.toolCalls.length) return;
-    // The view only carries the current step's calls: keep every step's for the turn's list.
+    // The view only carries the current step's calls: keep every step's for the turn's list. A
+    // call still running that the view no longer carries has been answered.
     setActivity((all) => {
-      const items = new Map((all[view.id] ?? []).map((a) => [a.id, a]));
+      const before = all[view.id] ?? [];
+      if (!view.toolCalls.length && !before.some((a) => a.status === 'running')) return all;
+      const current = new Set(view.toolCalls.map((c) => c.id));
+      const items = new Map(
+        before.map((a) => [
+          a.id,
+          a.status === 'running' && !current.has(a.id) ? { ...a, status: 'done' as const } : a,
+        ]),
+      );
       for (const call of view.toolCalls) {
         const status = view.activity.find((a) => a.id === call.id)?.status ?? 'running';
         items.set(call.id, { id: call.id, label: activityLabel(call, view.checking), status });
