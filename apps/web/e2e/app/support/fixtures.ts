@@ -9,7 +9,10 @@
  * API calls aren't challenged by bot protection.
  *
  * Every spec doubles as a health check of the pages it drives: an uncaught exception in the
- * browser or a 5xx from the app fails the test.
+ * browser or a 5xx from the app fails the test. Three reports are the browser's, not the app's,
+ * and are dropped: WebKit's "access control checks" error for a fetch to the app or Clerk that it
+ * cancelled (the page navigated away), the same for Clerk's token-poller worker, and a Clerk UI
+ * chunk whose load the browser cancelled the same way (Firefox and WebKit).
  */
 import { clerkSetup, setupClerkTestingToken } from '@clerk/testing/playwright';
 import { test as base, expect, type BrowserContext, type Page } from '@playwright/test';
@@ -69,7 +72,18 @@ export const test = base.extend<AppFixtures, { clerkToken: void }>({
 });
 
 function watch(context: BrowserContext, who: string, baseURL: string, problems: string[]) {
-  context.on('weberror', (e) => problems.push(`[${who}] page error: ${e.error().message}`));
+  const clerk = `https://${process.env.CLERK_FAPI}`;
+  const origins = new Set([new URL(baseURL).origin, clerk]);
+  context.on('weberror', (e) => {
+    const error = e.error();
+    if (
+      isWebKitCancelledFetch(error, origins) ||
+      isWebKitClerkWorkerBlobError(error) ||
+      isClerkUiChunkError(error, clerk)
+    )
+      return;
+    problems.push(`[${who}] page error: ${error.message}`);
+  });
   // Story 8.1: the editor and the pages that embed it run under a CSP; any violation fails.
   context.on('console', (m) => {
     if (/content.security.policy/i.test(m.text())) problems.push(`[${who}] CSP: ${m.text()}`);
@@ -78,6 +92,25 @@ function watch(context: BrowserContext, who: string, baseURL: string, problems: 
     if (r.status() >= 500 && r.url().startsWith(baseURL))
       problems.push(`[${who}] ${r.status()} ${r.request().method()} ${new URL(r.url()).pathname}`);
   });
+}
+
+function isWebKitCancelledFetch(error: Error, origins: Set<string>): boolean {
+  const first = error.stack?.split('\n', 1)[0] ?? '';
+  const url = /^Fetch API cannot load (\S+) due to access control checks\.$/.exec(first)?.[1];
+  return !!url && URL.canParse(url) && origins.has(new URL(url).origin);
+}
+
+function isWebKitClerkWorkerBlobError(error: Error): boolean {
+  const [first = '', ...frames] = error.stack?.split('\n') ?? [];
+  return (
+    /^Cannot load blob:\S+ due to access control checks\.$/.test(first) &&
+    frames.some((f) => f.includes('/npm/@clerk/clerk-js@'))
+  );
+}
+
+function isClerkUiChunkError(error: Error, clerk: string): boolean {
+  const m = /^(ChunkLoadError: )?Loading chunk \S+ failed\.\n\(error: (\S+)\)$/.exec(error.message);
+  return !!m?.[2]?.startsWith(`${clerk}/npm/@clerk/ui@`);
 }
 
 async function closeAll(contexts: BrowserContext[]) {

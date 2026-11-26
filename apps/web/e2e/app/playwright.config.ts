@@ -2,14 +2,17 @@ import { defineConfig, devices } from '@playwright/test';
 import { loadEnv } from './support/env';
 
 /**
- * App suite: the real app (`next build` + `next start`) with real Clerk sign-in, on Chromium.
+ * App suite: the real app (`next build` + `next start`) with real Clerk sign-in, in Chromium,
+ * WebKit and Firefox.
  *
- *   pnpm --filter @greenfield/web e2e:app
+ *   pnpm --filter @greenfield/web e2e:app                    # all three engines
+ *   pnpm --filter @greenfield/web e2e:app --project chromium
  *
  * Needs Clerk development keys (apps/web/.env.local or the environment), CREDENTIALS_MASTER_KEYS
  * and a migrated DATABASE_URL. The `setup` project creates this run's Clerk users and
  * organizations and signs each role in; `teardown` deletes them again (support/run-state.ts).
- * The web server builds first unless E2E_SKIP_BUILD=1 (CI builds in its own step).
+ * The web server builds first unless E2E_SKIP_BUILD=1 (CI builds in its own step). It runs
+ * without the figcraft-cli pin, so agent jobs fail at once instead of starting a Vercel Sandbox.
  */
 loadEnv();
 const PORT = Number(process.env.E2E_PORT ?? 3200);
@@ -35,17 +38,24 @@ export default defineConfig({
   projects: [
     { name: 'setup', testMatch: /global\.setup\.ts/, teardown: 'teardown' },
     { name: 'teardown', testMatch: /global\.teardown\.ts/ },
-    {
-      name: 'app',
+    ...(
+      [
+        ['chromium', 'Desktop Chrome'],
+        ['webkit', 'Desktop Safari'],
+        ['firefox', 'Desktop Firefox'],
+      ] as const
+    ).map(([name, device]) => ({
+      name,
       testMatch: /\.spec\.ts$/,
       dependencies: ['setup'],
-      use: { ...devices['Desktop Chrome'], viewport },
-    },
+      use: { ...devices[device], viewport },
+    })),
   ],
   webServer: {
     command: `${process.env.E2E_SKIP_BUILD ? '' : 'pnpm build && '}pnpm start --port ${PORT}`,
     cwd: '../..',
     url: `http://localhost:${PORT}`,
+    env: { GREENFIELD_FIGCRAFT_CLI_URL: 'off' },
     reuseExistingServer: !process.env.CI,
     timeout: 600_000,
     stdout: 'ignore',
