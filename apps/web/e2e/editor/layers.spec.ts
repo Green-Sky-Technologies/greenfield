@@ -223,9 +223,7 @@ test('layers and pages: the tree follows the editor, and edits from it reach the
   expect(inspectsDuringEdits).toBe(0);
 
   // Known noise from outside the panel (as in shell.spec.ts): Clerk's FAPI retries fail CORS in
-  // Playwright WebKit now and then, and in WebKit the editor's keyboard input trips its own
-  // style-src CSP (the fork's to fix).
-  const noise =
-    /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+  // Playwright WebKit now and then.
+  const noise = /clerk\.accounts\.dev.*access control checks/;
   problems.splice(0, problems.length, ...problems.filter((p) => !noise.test(p)));
 });

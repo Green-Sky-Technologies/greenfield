@@ -205,8 +205,7 @@ test('comment or ask on an element, and the comments list', async ({
     anchor: swatch.id,
   });
 
-  const noise =
-    /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+  const noise = /clerk\.accounts\.dev.*access control checks/;
   problems.splice(0, problems.length, ...problems.filter((p) => !noise.test(p)));
 });
 

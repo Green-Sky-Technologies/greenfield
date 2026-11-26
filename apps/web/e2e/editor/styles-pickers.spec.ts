@@ -75,10 +75,8 @@ test('5.9 and 5.11: styles, variables, instances, pickers and export', async ({
   problems,
 }, testInfo) => {
   // Known noise from outside this lane, ignored whenever it arrives (it can land after the last
-  // step): Clerk's FAPI retries fail CORS in Playwright WebKit now and then, and in WebKit the
-  // editor's keyboard input trips its own style-src CSP (on main as well; the fork's to fix).
-  const noise =
-    /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+  // step): Clerk's FAPI retries fail CORS in Playwright WebKit now and then.
+  const noise = /clerk\.accounts\.dev.*access control checks/;
   const push = problems.push.bind(problems);
   // Not enumerable, so the fixture's `toEqual([])` still compares a plain list.
   Object.defineProperty(problems, 'push', {
@@ -308,8 +306,7 @@ test('5.8 and 5.10 open the real colour picker: a drag is one undo step, Esc rev
   run,
   problems,
 }) => {
-  const noise =
-    /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+  const noise = /clerk\.accounts\.dev.*access control checks/;
   const page = await as('editor');
   const projectId = await createProject(page, run.org.slug, uniqueName('Pickers'));
   const editor = await openEditor(page, { hostPath: `/w/${run.org.slug}/p/${projectId}` });

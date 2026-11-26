@@ -75,14 +75,7 @@ async function versionTwo(file: string) {
 test('build a system from a Tailwind repo; Claude’s check holds files to it; updates reach files', async ({
   as,
   run: e2e,
-  problems,
 }, testInfo) => {
-  // Known gap in the fork: in WebKit the editor's keyboard input trips its own style-src CSP.
-  const noise = /\[\w+\] CSP: Refused to apply a stylesheet/;
-  const push = problems.push.bind(problems);
-  Object.defineProperty(problems, 'push', {
-    value: (...items: string[]) => push(...items.filter((p) => !noise.test(p))),
-  });
   const slug = e2e.org.slug;
   const base = `/w/${slug}/settings/design-systems`;
   const name = uniqueName('Voirdire');
