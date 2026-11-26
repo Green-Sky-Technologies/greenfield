@@ -10,7 +10,9 @@ import { loadEnv } from '../app/support/env';
  *
  * Reuses the app suite's setup/teardown (Clerk users and orgs for this run, deleted afterwards).
  * The web server is `next dev` on 3101 (its `predev` fetches the editor if it's missing). Set
- * DATABASE_URL to a migrated local database; it wins over apps/web/.env.local.
+ * DATABASE_URL to a migrated local database; it wins over apps/web/.env.local. The server runs
+ * without the figcraft-cli pin, so a real job start fails at once instead of starting a Vercel
+ * Sandbox (a reused server must be started the same way).
  */
 loadEnv();
 const PORT = Number(process.env.E2E_PORT ?? 3101);
@@ -51,6 +53,7 @@ export default defineConfig({
   ],
   webServer: {
     command: `pnpm dev --port ${PORT}`,
+    env: { GREENFIELD_FIGCRAFT_CLI_URL: 'off' },
     cwd: '../..',
     url: `http://localhost:${PORT}/editor/index.html`,
     reuseExistingServer: true,

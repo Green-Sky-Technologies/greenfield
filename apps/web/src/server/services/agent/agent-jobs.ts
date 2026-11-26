@@ -47,12 +47,14 @@ export const JOB_MAX_TURNS = 40;
 
 /**
  * The Linux `figcraft-cli` the sandbox runs, pinned by sha256. It ships with the fork's release
- * (`editor-release.json` → `cli`, lane W1-A); GREENFIELD_FIGCRAFT_CLI_URL and _SHA256 override it.
+ * (`editor-release.json` → `cli`, lane W1-A); GREENFIELD_FIGCRAFT_CLI_URL and _SHA256 override it,
+ * and GREENFIELD_FIGCRAFT_CLI_URL=off runs without one (the app e2e suite, so it starts no sandbox).
  */
 export function editorCliPin(
   env: Record<string, string | undefined> = process.env,
   release: { cli?: Partial<CliPin> } = editorRelease as { cli?: Partial<CliPin> },
 ): CliPin | null {
+  if (env.GREENFIELD_FIGCRAFT_CLI_URL === 'off') return null;
   const url = env.GREENFIELD_FIGCRAFT_CLI_URL || release.cli?.url;
   const sha256 = env.GREENFIELD_FIGCRAFT_CLI_SHA256 || release.cli?.sha256;
   if (!url || !sha256 || !/^[0-9a-f]{64}$/.test(sha256) || !url.startsWith('https://')) return null;

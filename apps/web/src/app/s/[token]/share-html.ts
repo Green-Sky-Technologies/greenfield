@@ -12,9 +12,10 @@ export function shareHeaders(extra: Record<string, string> = {}): HeadersInit {
     'referrer-policy': 'no-referrer',
     'x-content-type-options': 'nosniff',
     'x-frame-options': 'DENY',
-    // No scripts, images or fonts: the page is a notice with an inline style.
+    // No scripts or fonts, and no image but the app's own icon: the page is a notice with an
+    // inline style. Without a declared icon, browsers request /favicon.ico and the CSP blocks it.
     'content-security-policy':
-      "default-src 'none'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      "default-src 'none'; img-src 'self'; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
     ...extra,
   };
 }
@@ -24,6 +25,7 @@ function page(title: string, body: string): string {
     `<!doctype html>\n<html lang="en"><head><meta charset="utf-8">` +
     `<meta name="viewport" content="width=device-width, initial-scale=1">` +
     `<meta name="robots" content="noindex, nofollow"><title>${esc(title)}</title>` +
+    `<link rel="icon" href="/icon.svg" type="image/svg+xml">` +
     `<style>body{margin:0;display:grid;place-items:center;min-height:100vh;font:15px/1.5 system-ui,sans-serif;background:#0b0c0a;color:#b9b5ac;color-scheme:dark}h1{color:#ece8de}main{max-width:28rem;padding:24px;text-align:center}a{color:#3fd67f}` +
     `@media (prefers-color-scheme:light){body{background:#f3f0e8;color:#55534c;color-scheme:light}h1{color:#14150f}a{color:#1b733f}}</style>` +
     `</head><body><main><h1 style="font-size:18px">${esc(title)}</h1>${body}</main></body></html>\n`

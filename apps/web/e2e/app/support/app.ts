@@ -30,7 +30,11 @@ export async function expectEditorReady(page: Page) {
   });
 }
 
-/** fetch() from inside the page, so the request carries the live (auto-refreshed) Clerk session. */
+/**
+ * fetch() from inside the page, so the request carries the live Clerk session. It asks Clerk for
+ * the session token first, which renews the session cookie if it has expired since the last
+ * background refresh (seen in Firefox, late in a three-engine run).
+ */
 export async function pageFetch(
   page: Page,
   url: string,
@@ -43,6 +47,7 @@ export async function pageFetch(
 ): Promise<{ status: number; body: string }> {
   return page.evaluate(
     async ({ url, init }) => {
+      await window.Clerk?.session?.getToken();
       const body =
         init.bytes !== undefined
           ? new Uint8Array(init.bytes)

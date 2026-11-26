@@ -1,7 +1,7 @@
 import { afterAll, beforeEach, describe, expect, it } from 'vitest';
 import { ForbiddenError } from '@greenfield/authz';
 import { eq, projects, shareLinks } from '@greenfield/db';
-import { renderShareError, shareHeaders } from '@/app/s/[token]/share-html';
+import { renderShareError, renderSharePending, shareHeaders } from '@/app/s/[token]/share-html';
 import { createProject } from '@/server/services/projects';
 import {
   clientIp,
@@ -219,13 +219,15 @@ describe('share viewer helpers', () => {
     expect(shareRateKey(new Headers({ 'x-real-ip': '1.2.3.4' }), 'x')).toBe('ip:1.2.3.4');
   });
 
-  it('sends noindex, no-store and a script-free CSP', () => {
+  it('sends noindex, no-store and a script-free CSP that allows only its own icon', () => {
     const h = new Headers(shareHeaders());
     expect(h.get('x-robots-tag')).toContain('noindex');
     expect(h.get('cache-control')).toContain('no-store');
     expect(h.get('content-security-policy')).toContain("default-src 'none'");
     expect(h.get('content-security-policy')).not.toContain('script-src');
-    expect(h.get('content-security-policy')).not.toMatch(/img-src|font-src/);
+    expect(h.get('content-security-policy')).toContain("img-src 'self';");
+    expect(h.get('content-security-policy')).not.toContain('font-src');
+    expect(renderSharePending()).toContain('<link rel="icon" href="/icon.svg"');
     expect(renderShareError({ status: 404, signInHref: '/sign-in?x="y"' })).toContain(
       '/sign-in?x=&quot;y&quot;',
     );

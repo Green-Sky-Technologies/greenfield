@@ -30,6 +30,7 @@ import {
   startAgentJob,
 } from '@/server/services/agent/agent-jobs';
 import { JobTokenError } from '@/server/services/agent/job-tokens';
+import { prepareJob } from '@/server/services/agent/runner';
 import { saveCredential } from '@/server/services/credentials';
 import { localFsStorage, saveDesignFile } from '@/server/services/design-files';
 import { acquireLock } from '@/server/services/locks';
@@ -129,6 +130,28 @@ describe('agent jobs (Story 4.5)', () => {
       url: 'https://x/cli',
       sha256: 'c'.repeat(64),
     });
+    expect(
+      editorCliPin(
+        { GREENFIELD_FIGCRAFT_CLI_URL: 'off' },
+        { cli: { url: 'https://x/cli', sha256: 'c'.repeat(64) } },
+      ),
+    ).toBeNull();
+  });
+
+  it('fails at once, without retries, when a sandbox could not call this app back', async () => {
+    const s = await setup();
+    const job = await startAgentJob(db, s.editor, alternatives(s));
+    const api = recordingSandboxApi();
+    const runner = new VercelSandboxRunner({
+      appUrl: 'http://localhost:3000',
+      api,
+      prepare: (j) => prepareJob(j, { ...PIN, PORT: '3000' }, db, s.storage),
+    });
+    expect(await startJob(db, job.id, { runner })).toMatchObject({ status: 'failed' });
+    const failed = await getJob(db, s.editor, job.id);
+    expect(failed.error).toContain('GREENFIELD_APP_URL');
+    expect(failed.attempts).toBe(1);
+    expect(api.sandboxes.size).toBe(0);
   });
 
   it('sends a copy of the file, the pin and the contract tools; no provider key (4.6)', async () => {
