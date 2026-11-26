@@ -13,7 +13,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { registerPickers } from '@/features/pickers/open';
 import { DesignTab } from './design-tab';
 
-vi.mock('next/navigation', () => ({ useParams: () => ({ projectId: 'p1' }) }));
+vi.mock('next/navigation', () => ({ useParams: () => ({ slug: 'acme', projectId: 'p1' }) }));
 
 (globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
 
@@ -162,6 +162,12 @@ describe('Design tab', () => {
     expect(section()?.textContent).toContain('Voirdire · v3');
     expect(section()?.textContent).toContain('Components41');
     expect(section()?.textContent).toContain('v4 is published');
+    // The system is a menu: it opens the system in Settings, to review the newer version.
+    const toggle = section()!.querySelector<HTMLButtonElement>('[aria-haspopup="menu"]')!;
+    act(() => toggle.click());
+    const item = section()!.querySelector<HTMLAnchorElement>('[role="menuitem"]')!;
+    expect(item.textContent).toBe('Review v4 in Settings');
+    expect(item.getAttribute('href')).toBe('/w/acme/settings/design-systems/s1');
     mount([rect]);
     await flush();
     expect(section()?.textContent).toContain('Voirdire · v3');

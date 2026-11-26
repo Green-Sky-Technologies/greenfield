@@ -55,7 +55,8 @@ test('top bar, and focus and shortcuts between the shell and the editor', async 
   expect(frameBox.y).toBeGreaterThanOrEqual(barBox.y + barBox.height);
 
   // Zoom goes through the bridge.
-  await bar.getByRole('button', { name: 'Zoom in' }).click();
+  await bar.getByRole('button', { name: /^Zoom level/ }).click();
+  await bar.getByRole('menuitem', { name: 'Zoom in' }).click();
   await expect(bar.getByRole('button', { name: /^Zoom level (?!100%)/ })).toBeVisible();
   await bar.getByRole('button', { name: /^Zoom level/ }).click();
   await bar.getByRole('menuitem', { name: 'Zoom to 100%' }).click();

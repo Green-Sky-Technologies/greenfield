@@ -9,6 +9,7 @@
 import type { Editor } from '@greenfield/bridge';
 import Link from 'next/link';
 import type { Ref } from 'react';
+import { Logo } from '@/components/logo';
 import { ExportMenu } from '@/features/export/export-menu';
 import { People, type Person } from './people';
 import type { ShellMenu } from './project-shell';
@@ -59,17 +60,19 @@ export function TopBar({
       <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-1.5">
         <Link
           href={`/w/${slug}`}
-          className="shell-focus shrink-0 px-1.5 py-1 text-muted hover:bg-surface-2 hover:text-text"
+          aria-label="All projects"
+          title="All projects"
+          className="shell-focus flex shrink-0 items-center p-1.5 hover:bg-surface-2"
         >
-          All projects
+          <Logo compact />
         </Link>
-        <span aria-hidden className="text-border">
-          /
-        </span>
-        <span className="truncate font-medium text-text" title={project.name}>
+        <span className="truncate text-muted" title={project.name}>
           {project.name}
         </span>
-        <span className="truncate text-xs text-muted max-lg:sr-only" title={fileName}>
+        <span aria-hidden className="text-muted max-lg:hidden">
+          /
+        </span>
+        <span className="truncate text-text max-lg:sr-only" title={fileName}>
           <span className="sr-only">File: </span>
           {fileName}
         </span>
@@ -82,19 +85,28 @@ export function TopBar({
 
       <div className="flex items-center gap-2">
         <ToolRow />
+        <span aria-hidden className="h-5 w-px bg-border" />
         <button
           type="button"
           onClick={() => toggle('comment')}
           aria-expanded={menu === 'comment'}
           aria-keyshortcuts="C"
           aria-label="Comment or ask Claude"
-          className="shell-focus group flex h-8 w-[min(22rem,40vw)] items-center gap-2 border border-border bg-bg px-2.5 text-left text-muted hover:border-muted aria-expanded:border-user"
+          className="shell-focus group flex h-8 items-center gap-2 px-2.5 text-agent hover:bg-surface-2 aria-expanded:bg-agent aria-expanded:text-ember-ink"
         >
-          <span aria-hidden className="size-1.5 shrink-0 bg-agent" />
-          <span className="flex-1 truncate">Comment or ask</span>
-          <kbd className="border border-border px-1 font-sans text-[11px] leading-4 text-muted">
-            C
-          </kbd>
+          <svg
+            aria-hidden
+            width="16"
+            height="16"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.25"
+          >
+            <path d="M2 2.5h12v8.5H7l-3 2.5V11H2z" />
+          </svg>
+          <span className="whitespace-nowrap">Comment or ask</span>
+          <kbd className="font-sans text-[11px] leading-4 opacity-70">C</kbd>
         </button>
       </div>
 

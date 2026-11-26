@@ -12,6 +12,7 @@ import { useUser } from '@clerk/nextjs';
 import type { Editor } from '@greenfield/bridge';
 import { useDocument, useEditorStore, useSelection } from '@greenfield/editor-state/react';
 import { useEffect, useRef, useState } from 'react';
+import { Mic, NotYet, Paperclip } from '@/components/icons';
 import { modelName } from './format';
 import { ClaudeMessage, UserMessage } from './message';
 import { SelectionChip } from './selection-chip';
@@ -131,7 +132,15 @@ export function AgentPane({ projectId, editor }: Props) {
               : 'Ask about the selection, or describe a new screen'
           }
         />
-        <div className="flex items-center justify-end gap-3">
+        <div className="flex items-center gap-3">
+          <span className="mr-auto flex gap-1">
+            <NotYet label="Attach files" story="Story 12.1">
+              <Paperclip />
+            </NotYet>
+            <NotYet label="Talk to Claude" story="Story 16.1">
+              <Mic />
+            </NotYet>
+          </span>
           <span className="font-mono text-[11px] text-muted">
             {model ? `${model} · this file` : 'this file'}
           </span>

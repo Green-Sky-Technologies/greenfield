@@ -1,7 +1,7 @@
 'use client';
 
 /**
- * Zoom (Story 5.1), through the bridge's `view.*` commands. The level is read back with
+ * Zoom (Story 5.1), through the bridge's `view.*` commands: the level, and a menu to zoom. The level is read back with
  * `view.get` after each command and once a second, since the canvas zooms with the wheel and
  * trackpad too.
  */
@@ -11,6 +11,8 @@ import { useEffect, useState } from 'react';
 const POLL_MS = 1000;
 
 const PRESETS: { command: CommandId; label: string }[] = [
+  { command: 'view.zoomIn', label: 'Zoom in' },
+  { command: 'view.zoomOut', label: 'Zoom out' },
   { command: 'view.zoomFit', label: 'Zoom to fit' },
   { command: 'view.zoomSelection', label: 'Zoom to selection' },
   { command: 'view.zoom100', label: 'Zoom to 100%' },
@@ -34,19 +36,10 @@ export function ZoomControl({ editor, open, onToggle }: Props) {
   const pct = zoom.level === null ? '–' : `${Math.round(zoom.level * 100)}%`;
 
   return (
-    <div className="relative flex items-center border border-border" role="group" aria-label="Zoom">
+    <div className="relative flex items-center" role="group" aria-label="Zoom">
       <button
         type="button"
-        className="shell-focus flex size-7 items-center justify-center text-muted hover:bg-surface-2 hover:text-text disabled:opacity-40"
-        onClick={() => run('view.zoomOut')}
-        disabled={disabled}
-        aria-label="Zoom out"
-      >
-        <span aria-hidden>−</span>
-      </button>
-      <button
-        type="button"
-        className="shell-focus h-7 w-14 border-x border-border text-xs tabular-nums text-text hover:bg-surface-2 disabled:opacity-40"
+        className="shell-focus h-7 px-2 text-xs tabular-nums text-muted hover:bg-surface-2 hover:text-text disabled:opacity-40 aria-expanded:text-text"
         onClick={onToggle}
         disabled={disabled}
         aria-expanded={open}
@@ -54,15 +47,6 @@ export function ZoomControl({ editor, open, onToggle }: Props) {
         aria-label={`Zoom level ${pct}, zoom options`}
       >
         {pct}
-      </button>
-      <button
-        type="button"
-        className="shell-focus flex size-7 items-center justify-center text-muted hover:bg-surface-2 hover:text-text disabled:opacity-40"
-        onClick={() => run('view.zoomIn')}
-        disabled={disabled}
-        aria-label="Zoom in"
-      >
-        <span aria-hidden>+</span>
       </button>
       {open && (
         <ul

@@ -11,8 +11,34 @@ export interface ChangeRow {
   what: string;
 }
 
-/** `fontSize` → `font size`. */
+/** `maxWidth` → `max width`. */
 const words = (field: string) => field.replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
+
+/** What the inspector calls a property, where its `node.get` key says something else. */
+const LABELS: Record<string, string> = {
+  fills: 'fill',
+  strokes: 'stroke',
+  strokeWeight: 'stroke width',
+  cornerRadius: 'radius',
+  characters: 'text',
+  fontSize: 'size',
+  fontFamily: 'font',
+  blend: 'blend mode',
+  visible: 'visibility',
+  textAutoResize: 'text resizing',
+  'layout.mode': 'auto layout',
+  'layout.gap': 'gap',
+  'layout.padding': 'padding',
+  'layout.mainAlign': 'alignment',
+  'layout.crossAlign': 'cross alignment',
+  'sizing.horizontal': 'width',
+  'sizing.vertical': 'height',
+};
+
+const label = (field: string) => LABELS[field] ?? words(field.slice(field.lastIndexOf('.') + 1));
+
+const isRecord = (v: unknown): v is Record<string, unknown> =>
+  typeof v === 'object' && v !== null && !Array.isArray(v);
 
 /** A property value, short: colours and numbers as they are, paint lists by their colour. */
 export function formatValue(v: unknown): string {
@@ -24,6 +50,7 @@ export function formatValue(v: unknown): string {
     if (!v.length) return 'none';
     const colours = v.map((p) => (p as { color?: unknown } | null)?.color);
     if (colours.every((c) => typeof c === 'string')) return colours.join(', ');
+    if (v.every((x) => x === v[0]) && typeof v[0] === 'number') return formatValue(v[0]);
     if (v.every((x) => typeof x === 'number')) return v.map(formatValue).join(', ');
     return `${v.length} items`;
   }
@@ -31,16 +58,39 @@ export function formatValue(v: unknown): string {
   return json.length > 32 ? `${json.slice(0, 31)}…` : json;
 }
 
+function formatField(field: string, v: unknown): string {
+  if (field === 'opacity' && typeof v === 'number') return `${Math.round(v * 100)}%`;
+  if (field === 'visible' && typeof v === 'boolean') return v ? 'shown' : 'hidden';
+  if (field === 'characters' && typeof v === 'string') return `“${formatValue(v)}”`;
+  return formatValue(v);
+}
+
+/** One `label before → after` per property; grouped fields (auto layout, sizing) per part. */
+function describeField(field: string, before: unknown, after: unknown): string[] {
+  if ((isRecord(before) || before == null) && (isRecord(after) || after == null)) {
+    const b = before ?? {};
+    const a = after ?? {};
+    const keys = [...new Set([...Object.keys(b), ...Object.keys(a)])].filter(
+      (k) => JSON.stringify(b[k]) !== JSON.stringify(a[k]),
+    );
+    if (keys.length && (isRecord(before) || isRecord(after)))
+      return keys.flatMap((k) => describeField(`${field}.${k}`, b[k], a[k]));
+  }
+  return [`${label(field)} ${formatField(field, before)} → ${formatField(field, after)}`];
+}
+
 /** One row per changed property, one per added or removed layer, in the turn's order. */
 export function changeRows(changes: readonly LayerChange[]): ChangeRow[] {
   return changes.flatMap((c): ChangeRow[] => {
     const layer = c.name || `Layer ${c.id}`;
     if (c.kind !== 'changed') return [{ key: `${c.id}`, layer, what: c.kind }];
-    return c.fields.map((f) => ({
-      key: `${c.id}:${f.field}`,
-      layer,
-      what: `${words(f.field)} ${formatValue(f.before)} → ${formatValue(f.after)}`,
-    }));
+    return c.fields.flatMap((f) =>
+      describeField(f.field, f.before, f.after).map((what, i) => ({
+        key: `${c.id}:${f.field}:${i}`,
+        layer,
+        what,
+      })),
+    );
   });
 }
 
