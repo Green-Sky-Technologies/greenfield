@@ -1,9 +1,9 @@
 {
   "version": "0.18.1",
-  "url": "https://github.com/Green-Sky-Technologies/greenfield-editor/releases/download/editor-29af8688e00e/greenfield-editor-29af8688e00e.zip",
-  "sha256": "e6332d22d64ccd749ddc8a939c1d4d083274a664509653df135fc0eda7aa0832",
+  "url": "https://github.com/Green-Sky-Technologies/greenfield-editor/releases/download/editor-f0fd92846eab/greenfield-editor-f0fd92846eab.zip",
+  "sha256": "a8d16043746e80e49dfaca544a3de691dccd65fef44bd31a975a2360bbe5956b",
   "cli": {
-    "url": "https://github.com/Green-Sky-Technologies/greenfield-editor/releases/download/editor-29af8688e00e/figcraft-cli-29af8688e00e-linux-x86_64.tar.gz",
-    "sha256": "c76efa4227b68ce4b190a754fcfdd6789795a95ad913736926d38376213db31a"
+    "url": "https://github.com/Green-Sky-Technologies/greenfield-editor/releases/download/editor-f0fd92846eab/figcraft-cli-f0fd92846eab-linux-x86_64.tar.gz",
+    "sha256": "de5451cf5153a0463c7bfd1f7922cfd780d6cc6a9ab4734ffa43e34e765c76fc"
   }
 }

@@ -49,10 +49,10 @@ test('prototype and code tabs: links, flows and generated code for the selection
   run,
 }, testInfo) => {
   const page = await as('editor');
-  // Chromium only: a WebKit screenshot here sets off a CSP report from the editor's frame.
   const screenshot = async (name: string) => {
-    if (testInfo.project.name !== 'chromium') return;
-    await page.screenshot({ path: `${testInfo.project.outputDir}/${name}-chromium.png` });
+    await page.screenshot({
+      path: `${testInfo.project.outputDir}/${name}-${testInfo.project.name}.png`,
+    });
   };
   const projectId = await createProject(page, run.org.slug, uniqueName('Prototype'));
   // openEditor reloads the page: let Clerk's requests finish first (WebKit reports an aborted
@@ -127,6 +127,14 @@ test('prototype and code tabs: links, flows and generated code for the selection
   await editor.execute('edit.undo', {});
   await expect(card.getByLabel('Interaction 1 easing')).toHaveValue('easeOut');
   await screenshot('prototype-tab');
+
+  // The canvas draws the link (and the selection's connection handle) only under this tab.
+  const canvas = page.getByTitle('Design canvas');
+  const withLinks = await canvas.screenshot();
+  await right.getByRole('tab', { name: 'Design' }).click();
+  await expect.poll(async () => (await canvas.screenshot()).equals(withLinks)).toBe(false);
+  await right.getByRole('tab', { name: 'Prototype' }).click();
+  await expect.poll(async () => (await canvas.screenshot()).equals(withLinks)).toBe(true);
 
   // A flow starting at Home, renamed, then removed.
   await editor.execute('select.set', { ids: [home!.id] });

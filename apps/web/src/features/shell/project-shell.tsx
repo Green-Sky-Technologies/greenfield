@@ -100,6 +100,13 @@ function Shell({
   const leftRef = useRef<HTMLElement>(null);
   const rightRef = useRef<HTMLElement>(null);
 
+  // The canvas draws prototype links while our Prototype tab shows (5.12).
+  const prototypeShown = canvasMode && editPanel && right === 'prototype';
+  useEffect(() => {
+    if (!handle || !canvasMode) return;
+    store.run(prototypeShown ? 'view.prototype' : 'view.design', {}).catch(() => {});
+  }, [handle, store, canvasMode, prototypeShown]);
+
   const setCanvasMode = (on: boolean) => {
     store.run('view.canvasMode', { on }).catch(() => {}); // not ready yet: the button stays as is
   };
