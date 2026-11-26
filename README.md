@@ -97,7 +97,9 @@ Then fill in `apps/web/.env.local`:
   keys. Then run `pnpm setup:clerk` once to turn on organizations and create the roles.
 - **`CREDENTIALS_MASTER_KEYS`:** `openssl rand -base64 32`.
 - **Models (pick one):**
-  - `vercel link && vercel env pull` gives you an OIDC token for AI Gateway.
+  - `vercel link && vercel env pull` gives you an OIDC token for AI Gateway. Also set
+    `GREENFIELD_AI_GATEWAY=on`: off Vercel the gateway turns itself on only for
+    `AI_GATEWAY_API_KEY`, not for an OIDC token alone.
   - Or set `AI_GATEWAY_API_KEY`.
   - Or set `GREENFIELD_AI_GATEWAY=off` and add a credential under Settings → Model access.
 
@@ -139,7 +141,7 @@ The project was renamed from CrunchDesign to Greenfield.
 | `pnpm setup:clerk`                           | Configure the Clerk instance in `CLERK_SECRET_KEY` (idempotent)              |
 | `pnpm keygen [id]`                           | Print a named credential master key (`id:base64`) for rotation               |
 | `pnpm --filter @greenfield/web fetch-editor` | Download the pinned editor release (`--force` to re-download)                |
-| `pnpm --filter @greenfield/web e2e:app`      | Signed-in end-to-end suite with real Clerk users, roles and workspaces       |
+| `pnpm --filter @greenfield/web e2e:app`      | Signed-in suite (real Clerk users, roles, workspaces) in all three engines   |
 | `pnpm --filter @greenfield/web e2e:editor`   | The embedded editor (open, edit, save, reopen) in Chromium, WebKit, Firefox  |
 
 Integration tests use `TEST_DATABASE_URL` (default
@@ -149,8 +151,9 @@ automatically.
 `e2e:app` builds the app, starts it on port 3200 and signs in real Clerk users. It needs Clerk
 **development** keys, `CREDENTIALS_MASTER_KEYS` and a migrated database of its own (for example,
 `greenfield_e2e`). Each run creates and then deletes its own users and organizations. If a run dies
-first, the next run cleans up, or run `pnpm exec tsx apps/web/e2e/app/cleanup.ts`. `e2e:editor`
-uses the same setup with `next dev` on port 3101.
+first, the next run cleans up, or run `pnpm exec tsx apps/web/e2e/app/cleanup.ts`. The server runs
+with `GREENFIELD_FIGCRAFT_CLI_URL=off`, so agent jobs fail at once instead of starting a Vercel
+Sandbox. `e2e:editor` uses the same setup with `next dev` on port 3101.
 
 ## Repository layout
 

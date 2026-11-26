@@ -383,16 +383,29 @@ The fork is [`Green-Sky-Technologies/greenfield-editor`](https://github.com/Gree
   `docs/brand/README.md` (field green for selection, Plex for frame labels). The editor's
   panels keep their own look for the fallback (5.13); their 333 hard-coded corner radii are out
   of scope. AC: matches the brand sheet; the host switches dark and light with `view.themeDark` /
-  `view.themeLight`.
+  `view.themeLight`; in canvas mode the canvas background and the empty-canvas dot grid follow
+  the theme without editing the document (built: `#0b0c0a` dark, `#f3f0e8` light, ink at 9%,
+  1 px every 16 px).
 - **2.2 Remove ArtCraft marks.** Replace the FigCraft name, wordmark, logo, app icon and loading
   screen with Greenfield's; keep the MIT/Apache licence texts, `NOTICE` and `ATTRIBUTION.md`. AC: a CI check fails on the
   FigCraft or ArtCraft name or logo in user-visible strings and assets (code identifiers may
   stay).
-- **2.3 Host events (required for canvas mode).** Post `document changed` (with changed node ids and whether a person or the
-  control channel made the change) and `selection changed` to the host in host mode. AC: the
-  host learns about every edit within one frame; agent edits are labelled as such; no events
-  when the page is not hosted. Also post `tool changed`, `text editing started/ended` and
-  `viewport changed` (zoom and scroll), which our toolbar, floating toolbar and overlays need.
+- **2.3 Host events (required for canvas mode). Done, with payloads.** In host mode the editor
+  posts `{type: 'figcraft:event', name, data}` to the host, at most once a frame per event.
+  `document.changed` fires on content changes (edits, undo, redo, gesture previews), never on
+  zoom or pan:
+  - `selection.changed {document, page, ids, nodes}`: `nodes` are the selected layers' fields
+    (`node.get` at depth 0), so the inspector needs no read;
+  - `document.changed {document, revision, undoDepth, agent, resync, nodes, added, removed,
+    moved}`: changed layers with their changed fields, and `{id, parent, index}` for added,
+    removed and moved layers; `agent` names the agent whose command ran that frame, or is null;
+  - `tool.changed {tool}`, `text.editing {document, id}`, `viewport.changed {document, zoom, x,
+    y}` and `interaction.changed {document, active, label, host}` (`host: false` while the canvas
+    runs its own drag; `edit.begin` fails meanwhile).
+
+  `window.figcraft` calls resolve when the frame that ran them ends, with no 16 ms reply poll.
+  AC: with an event, our inspector paints within one frame of the canvas (ADR 0005's floor: 9 to
+  11 ms in Chrome and Firefox); agent edits are labelled; no events when the page is not hosted.
 - **2.4 Claude's presence.** FigCraft already shows an agent like a person in a live session:
   commands run through the control channel with `agent: "<name>"` (`engine.execute`, then
   `Session::execute_as`) set `AgentPresence`, and the canvas outlines the layers it last edited
@@ -403,6 +416,10 @@ The fork is [`Green-Sky-Technologies/greenfield-editor`](https://github.com/Gree
   - presence is posted to the host (so our people row shows Claude's avatar), and `batch` carries
     the `agent` name like `engine.execute` (check that it does today);
   - optional: a cursor that glides to the layer being edited, reusing the live-session cursor.
+
+  As built: the command `agent.presence {name, active}`; the host event `agent.presence {active,
+  name, held, layers}`; and `window.figcraft.executeAs(agent, command, params)` for single
+  commands. The name is shown as the app passes it ("Claude").
 
   AC: during a turn the outline and tag stay on every layer Claude touched; they never appear in
   exports or `ui.render`; the user's own selection still draws in green on top.
@@ -431,13 +448,21 @@ The fork is [`Green-Sky-Technologies/greenfield-editor`](https://github.com/Gree
   Built on the existing `ui_hidden` path in `ui-egui/src/app.rs`. Right-click and the editor's
   popovers (colour picker, font menu) post a request to the host instead of opening, with the
   position and target, so the shell draws its own (5.10, 5.11). Keyboard shortcuts keep working
-  in the canvas. AC: in canvas mode the iframe shows nothing but the canvas and its overlays; the
-  fallback (5.13) can turn the editor's panels back on without reloading.
+  in the canvas. The requests arrive as `ui.request {kind, screen, data}`: `contextMenu` (with the
+  selection ids), `colorPicker` (with its target), `comment.new` (a page point), and from keys
+  `dialog.*`, `panel.*`, `palette.*`, `home*`, `present*`, `preview*` and `layers.rename`.
+  Commands sent through the control channel raise none, so the host never waits for one. AC: in
+  canvas mode the iframe shows nothing but the canvas and its overlays; the fallback (5.13) can
+  turn the editor's panels back on without reloading.
 - **2.12 Gesture commands.** Expose the engine's gestures, which the editor's own panels use for
   scrubbing (`begin_interaction`, `preview`, `commit_interaction` and `cancel_interaction` in
   `engine/src/session/undo.rs`), as commands: `edit.begin {label}`, `edit.preview {commands}`,
   `edit.commit`, `edit.cancel`. AC: dragging a value in our inspector updates the canvas every
-  frame and makes one undo step; Esc during a drag restores the value.
+  frame and makes one undo step; Esc during a drag restores the value. Each preview resets the
+  document to the gesture start, so its values are absolute; the host keeps two previews in
+  flight (the first on a large file can take 60 to 90 ms). `edit.begin` fails while a gesture is
+  open, so the host cancels a stale one, and it starts no scrub while `interaction.changed` says
+  the canvas has its own drag open.
 
 ### Epic 3 — Files, versions and sharing (TS lane)
 *Demo: edits autosave; a named version restores; a public link opens the design read-only.*
@@ -528,8 +553,8 @@ The agent is switched off until this epic wires it up (Story 1.2).
 ### Epic 5 — Greenfield chrome in canvas mode (React lane)
 *Demo: the Editor mockup, working: our toolbar, layers and inspector edit a design on the
 FigCraft canvas, and Claude edits beside you.* Panels read one store, `packages/editor-state`,
-fed by the bridge's events (2.3; polling `document.inspect` until it lands) and write only
-through bridge commands and gestures (2.12). After 5.0 and 5.6, stories 5.7 to 5.11 are separate
+fed by the bridge's events (2.3, with payloads; no polling, see D32) and write only through
+bridge commands and gestures (2.12). After 5.0 and 5.6, stories 5.7 to 5.11 are separate
 lanes.
 
 - **5.0 Canvas-mode spike (gate).** Prove the risky parts before building panels:
@@ -540,8 +565,10 @@ lanes.
   - Claude's presence from a command sent with `agent: "Claude"`.
 
   Measure the time from canvas click to inspector update and from scrub to canvas repaint. AC: a
-  written go/no-go with numbers in `docs/adr/0005-canvas-mode.md`; each feels as fast as the
-  editor's own panels (target: under one frame of added latency at 60 fps).
+  written go/no-go with numbers in `docs/adr/0005-canvas-mode.md`; the latency added over the
+  canvas, at p50, is under one frame at the browser's cadence, with events that carry their data.
+  **Done:** go, on three conditions (2.3 payloads, no polling in 5.6, a real-Safari pass in
+  8.3); see ADR 0005.
 - **5.1 Top bar.** File name and project, the tool row (`tool.*` commands, active tool from 2.3
   events), "Comment or ask", the people row with Claude's avatar, zoom, Present, Share, Export.
 - **5.2 Agent pane.** Chat with streaming, the selection chip, the change list (4.7), follow-up
@@ -558,8 +585,10 @@ lanes.
   set; the change list's "Show on canvas" selects and zooms to the layers.
 - **5.6 Editor state store.** `packages/editor-state`: selection, the selected nodes' properties,
   the page tree, active tool, viewport and dirty state, as React hooks (`useSelection`,
-  `useNode(id)`, `usePageTree`, `useTool`). AC: one subscription per panel; a 30k-node file keeps
-  the layers panel responsive (virtualised).
+  `useNode(id)`, `usePageTree`, `useTool`). It applies event payloads and patches the page tree;
+  it reads the whole tree only on open and on a file change, never on a timer. It cancels a stale
+  gesture before starting a scrub. AC: one subscription per panel; a 30k-node file keeps the
+  layers panel responsive (virtualised).
 - **5.7 Layers and pages.** Page list; layer tree with expand and collapse, rename, reorder by
   drag, lock, hide, multi-select; component and instance rows marked.
 - **5.8 Inspector: core.** For the selection: position, size and constraints; auto layout
@@ -576,7 +605,9 @@ lanes.
   the Code tab shows FigCraft's generated code for the selection (7.2).
 - **5.13 Fallback to the editor's panels.** A menu item turns the editor's own panels back on
   for anything our chrome doesn't cover yet. Remove it when 5.7–5.12 cover the commands people
-  use. AC: switching back and forth keeps the selection and undo history.
+  use. `view.canvasMode {on: false}` redraws the editor's panels without a reload (proven in
+  5.0); they bring the editor's own look back with them. AC: switching back and forth keeps the
+  selection and undo history.
 
 ### Epic 6 — Comments and Ask Claude (TS lane)
 *Demo: a teammate comments on a heading; the owner turns a comment into an agent request.*
@@ -624,10 +655,15 @@ lanes.
 - **8.2 Caching and budgets.** Brotli, immutable hashed assets (the `/editor/` cache headers from
   Story 0.1 are in place), and the 25 MiB wasm budget from 2.9. Add a performance budget for
   effects at device pixel ratio 2, with the effects-heavy dashboard example as the test file.
+  A large file means 269 nodes (the biggest FigCraft example) and 5,002 generated nodes, as in
+  5.0, and 30,000 for the layers list (5.6). Above a few hundred nodes, panels patch rather than
+  re-read the tree (a full read costs 18 ms at 269 nodes and 64 ms at 5,002).
 - **8.3 Tests through the iframe.** Extend the Playwright suites to drive the real editor via
   the bridge helper (1.3). Get Firefox running on CI: headless Firefox on GPU-less Linux runners
   has no WebGL2, so the editor can't start (try a headed run under xvfb). AC: open, edit, save,
-  reopen, and an agent turn with a stubbed model, in all three engines on CI.
+  reopen, and an agent turn with a stubbed model, in all three engines on CI. Before Epic 5
+  ships, also run a pass on real Safari (by hand or with `safaridriver`): headless Playwright
+  WebKit runs the editor at about 33 ms a frame, so its numbers say nothing about Safari.
 - **8.4 Licences.** Ship FigCraft's licence texts, `NOTICE` and attribution; legal review of
   MIT/Apache code in an AGPL-3.0 product.
 - **8.5 Carried over.** Environments, observability, authorization tests per route, data
@@ -653,7 +689,10 @@ publish it; every new file starts from it and Claude's output matches it.* A des
 - **10.2 Build from sources.** A job reads a GitHub repository or uploaded code (tokens, Tailwind
   config, CSS variables, React components), a `.fig` file, or images, decks and PDFs, and writes
   the library file and guide. AC: from a typical Tailwind repo it produces the colour, type and
-  spacing variables and the core components (button, input, card, nav).
+  spacing variables and the core components (button, input, card, nav). **As built:** the build
+  runs in the request, not as a sandbox job, and reads code only: a public GitHub repository or
+  uploaded code (files or a `.zip`) and SVGs. No `.fig`, image, deck or PDF sources yet; those
+  wait for Epic 12 and the job runner (4.5).
 - **10.3 Review.** A review page: each colour group, type style and component with keep or drop;
   dropped ones are removed before publishing.
 - **10.4 Publish and default.** Published systems are available to the workspace; the default is
@@ -758,6 +797,7 @@ New decisions:
 | D29 | Claude appears as a collaborator, built on FigCraft's agent presence (`execute_as`) | It already draws an agent like a person in a live session; we restyle it and hold it for the turn. |
 | D30 | Tweaks return, bound to variables and properties (reverses the D16 drop) | One of Claude Design's signature features; zero-token tuning fits the cost rules (§2). |
 | D31 | Standalone Claude Design is the feature baseline; §6a's ten come first | It closes 2026-12-14; its AI workflow is what Greenfield must match. |
+| D32 | Panels read the editor's events, which carry their data; they never poll | A read across the iframe costs at least a frame; only an event with its data paints within one (ADR 0005). |
 
 Superseded from CrunchDesign: **D1** (live HTML frames) by D19; **D2** (flow-first drag) and
 **D15** (breakpoint overrides) by the editor's auto layout and constraints; **D11** (export v1)
