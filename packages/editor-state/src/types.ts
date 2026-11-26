@@ -150,7 +150,7 @@ export interface DocumentChanged {
   document: number;
   revision: number;
   undoDepth: number;
-  /** The agent that ran a command in this change, e.g. `"Claude (agent)"`. */
+  /** The agent that ran a command in this change, e.g. `"Claude"`. */
   agent?: string | null;
   /** The editor couldn't patch (a new file, or too many layers changed): read it again. */
   resync?: boolean;

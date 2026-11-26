@@ -189,7 +189,6 @@ test('Layers tab on a 30,000-layer page: per update and while scrolling', async 
   const report = { browser: testInfo.project.name, ...result };
   console.log(JSON.stringify(report, null, 1));
   await testInfo.attach('layers-perf.json', { body: JSON.stringify(report, null, 1) });
-  const noise =
-    /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+  const noise = /clerk\.accounts\.dev.*access control checks/;
   problems.splice(0, problems.length, ...problems.filter((p) => !noise.test(p)));
 });

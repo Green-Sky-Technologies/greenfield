@@ -95,8 +95,7 @@ async function seedClaudeTurn(projectId: string, id: number, before: unknown, af
   }
 }
 
-const NOISE =
-  /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+const NOISE = /clerk\.accounts\.dev.*access control checks/;
 
 test('the Design tab edits the selection through the real editor', async ({
   as,
@@ -267,6 +266,6 @@ test('the Design tab edits the selection through the real editor', async ({
   await expect(note).toBeHidden();
   expect(await undoDepth(editor)).toBe(beforeRevert + 1);
   // Known WebKit noise from outside the inspector (as in canvas-mode.spec.ts): Clerk's FAPI
-  // retries fail CORS now and then, and keyboard input trips the editor's own style-src CSP.
+  // retries fail CORS now and then.
   problems.splice(0, problems.length, ...problems.filter((p) => !NOISE.test(p)));
 });

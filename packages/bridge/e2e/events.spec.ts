@@ -111,7 +111,7 @@ test('document.changed patches: changed fields, added, removed, moved, agent', a
     agent: 'Claude',
   });
   d = await next(editor, mark, 'document.changed', (x) => x.nodes.some((n) => n.id === c));
-  expect(d.agent).toBe('Claude (agent)');
+  expect(d.agent).toBe('Claude');
 });
 
 test('tool.changed, text.editing and viewport.changed', async ({ editor }) => {

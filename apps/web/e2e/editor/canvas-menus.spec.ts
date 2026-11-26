@@ -72,8 +72,7 @@ async function layers(editor: RemoteEditor) {
   return out;
 }
 
-const noise =
-  /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+const noise = /clerk\.accounts\.dev.*access control checks/;
 
 test('tool row, context menu and floating toolbar on the real canvas', async ({
   as,

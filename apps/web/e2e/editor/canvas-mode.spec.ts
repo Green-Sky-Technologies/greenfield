@@ -155,9 +155,7 @@ test('canvas mode: panels follow the canvas, F6 cycles the panes, the fallback r
   await expect.poll(() => undoDepth(editor)).toBe(1);
 
   // Known noise from outside the shell: Clerk's FAPI retries fail CORS in Playwright WebKit now
-  // and then (see editor.spec.ts), and in WebKit the editor's keyboard input trips its own
-  // style-src CSP (on main as well; the fork's to fix).
-  const noise =
-    /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+  // and then (see editor.spec.ts).
+  const noise = /clerk\.accounts\.dev.*access control checks/;
   problems.splice(0, problems.length, ...problems.filter((p) => !noise.test(p)));
 });

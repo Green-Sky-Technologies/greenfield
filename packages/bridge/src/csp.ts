@@ -19,13 +19,20 @@ export function inlineHashes(indexHtml: string): { scripts: string[]; styles: st
   return { scripts: blocks('script'), styles: blocks('style') };
 }
 
+/**
+ * The empty stylesheet Playwright adds to every frame of a WebKit page to settle animations before
+ * a screenshot. It styles nothing; allowing it keeps the e2e suites' strict CSP check meaningful
+ * in WebKit.
+ */
+export const SCREENSHOT_SYNC_STYLE = 'body {}';
+
 /** The policy for everything under `/editor/`, from the pinned release's index.html. */
 export function editorCsp(indexHtml: string): string {
   const { scripts, styles } = inlineHashes(indexHtml);
   return [
     "default-src 'self'",
     ["script-src 'self' 'wasm-unsafe-eval'", ...scripts].join(' '),
-    ["style-src 'self'", ...styles].join(' '),
+    ["style-src 'self'", ...styles, hash(SCREENSHOT_SYNC_STYLE)].join(' '),
     "object-src 'none'",
     "base-uri 'self'",
     "form-action 'none'",

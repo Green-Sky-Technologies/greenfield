@@ -40,7 +40,7 @@ export interface EditorEventMap {
     document: number | null;
     revision: number;
     undoDepth: number;
-    /** The agent (`"Claude (agent)"`) when one ran a command in that frame, else null. */
+    /** The agent (`"Claude"`, as the host named it) when one ran a command in that frame, else null. */
     agent: string | null;
     /** The first frame of a file, another file in front, or over 1000 layers changed at once. */
     resync: boolean;

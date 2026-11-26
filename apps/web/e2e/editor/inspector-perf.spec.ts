@@ -97,8 +97,7 @@ function instrument(page: Page) {
   });
 }
 
-const NOISE =
-  /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+const NOISE = /clerk\.accounts\.dev.*access control checks/;
 
 test('inspector latency: canvas click to inspector, scrub to canvas', async ({
   as,
@@ -191,7 +190,7 @@ test('inspector latency: canvas click to inspector, scrub to canvas', async ({
   };
   console.log(JSON.stringify(result));
   // Known WebKit noise from outside the inspector (as in canvas-mode.spec.ts): Clerk's FAPI
-  // retries fail CORS now and then, and keyboard input trips the editor's own style-src CSP.
+  // retries fail CORS now and then.
   problems.splice(0, problems.length, ...problems.filter((p) => !NOISE.test(p)));
   await testInfo.attach('inspector-perf.json', {
     body: JSON.stringify(result, null, 2),

@@ -126,8 +126,7 @@ const replies = (page: Page) =>
   page.getByTestId('agent-message').and(page.locator('[data-role="assistant"]'));
 
 // Known noise from outside the pane (see canvas-mode.spec.ts).
-const NOISE =
-  /clerk\.accounts\.dev.*access control checks|\[editor\] CSP: Refused to apply a stylesheet/;
+const NOISE = /clerk\.accounts\.dev.*access control checks/;
 
 test('a turn on the selection: its changes listed, shown on the canvas and undone', async ({
   as,
@@ -208,6 +207,56 @@ test('a turn on the selection: its changes listed, shown on the canvas and undon
   await page.reload();
   await expect(replies(page).last().getByTestId('change-summary')).toHaveText('Undone.');
 
+  problems.splice(0, problems.length, ...problems.filter((p) => !NOISE.test(p)));
+});
+
+test('Claude’s turn keeps the selection and outlines every layer it touched, tagged "Claude" (2.4)', async ({
+  as,
+  run,
+  problems,
+}, testInfo) => {
+  await connectModel(await as('admin'), run.org.slug);
+  const page = await as('editor');
+  const { editor } = await openProject(page, run.org.slug, 'Agent outline');
+  await page.evaluate(() => {
+    const w = window as unknown as { editorEvents: { name: string; data: unknown }[] };
+    w.editorEvents = [];
+    window.addEventListener('message', (e: MessageEvent) => {
+      const m = e.data as { type?: string; name: string; data: unknown } | null;
+      if (m?.type === 'figcraft:event') w.editorEvents.push({ name: m.name, data: m.data });
+    });
+  });
+  const card = await addCard(editor);
+
+  await send(page, '[heading] Make the card ember with a heading');
+  const reply = replies(page).last();
+  await expect(reply).toHaveAttribute('data-status', 'complete', { timeout: 60_000 });
+  const tree = (await editor.getNode(card, { depth: 1, fields: ['name'] })) as unknown as {
+    children: { id: number; name: string }[];
+  };
+  const heading = tree.children.find((c) => c.name === 'Hello')!.id;
+
+  expect((await editor.inspect({ depth: 0, fields: [] })).selection).toEqual([card]);
+  const seen = await page.evaluate(
+    () => (window as unknown as { editorEvents: { name: string; data: unknown }[] }).editorEvents,
+  );
+  const presence = seen.flatMap((e) =>
+    e.name === 'agent.presence'
+      ? [e.data as { active: boolean; name: string; layers: number[] }]
+      : [],
+  );
+  const during = presence.filter((p) => p.active);
+  expect(during.at(-1)?.layers).toEqual([card, heading]);
+  expect(new Set(presence.map((p) => p.name))).toEqual(new Set(['Claude']));
+  const agents = seen.flatMap((e) => {
+    const d = e.data as { agent?: string | null };
+    return e.name === 'document.changed' && d.agent ? [d.agent] : [];
+  });
+  expect(agents.length).toBeGreaterThan(0);
+  expect(new Set(agents)).toEqual(new Set(['Claude']));
+  await page.screenshot({
+    path: `${testInfo.project.outputDir}/agent-outline-${testInfo.project.name}.png`,
+  });
   problems.splice(0, problems.length, ...problems.filter((p) => !NOISE.test(p)));
 });
 

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { EMBEDDING_PAGE_CSP, editorCsp, inlineHashes } from '../src/csp';
+import { EMBEDDING_PAGE_CSP, SCREENSHOT_SYNC_STYLE, editorCsp, inlineHashes } from '../src/csp';
 import { EDITOR_RELEASE_SHA256, EDITOR_VERSION } from '../src/generated/commands';
 
 const sha = (s: string) => `'sha256-${createHash('sha256').update(s).digest('base64')}'`;
@@ -38,7 +38,9 @@ describe('editor CSP', () => {
     expect(csp).toContain(
       `script-src 'self' 'wasm-unsafe-eval' ${sha("import init from './a.js';")}`,
     );
-    expect(csp).toContain(`style-src 'self' ${sha('body { margin: 0 }')}`);
+    expect(csp).toContain(
+      `style-src 'self' ${sha('body { margin: 0 }')} ${sha(SCREENSHOT_SYNC_STYLE)};`,
+    );
     expect(csp).toContain("default-src 'self'");
     expect(csp).toContain("frame-ancestors 'self'");
     expect(csp).not.toMatch(/'unsafe-eval'|'unsafe-inline'|https?:|\*/);

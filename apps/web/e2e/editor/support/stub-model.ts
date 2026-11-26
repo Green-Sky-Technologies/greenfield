@@ -10,6 +10,8 @@
  * - `[job]`: an offer of three alternatives as a background job (`suggest_generation_job`);
  * - `[slow]`: text streamed over ~15 s the first time a prompt is seen (to stop it), then fast;
  * - `[fail]`: a provider error, the first time a prompt is seen (to retry it);
+ * - `[heading]`: one `run_batch` that makes the first selected layer ember and adds a "Hello" text
+ *   layer inside it;
  * - anything else: one `run_batch` that makes the first selected layer ember and renames it.
  */
 import { createServer, type Server } from 'node:http';
@@ -110,6 +112,21 @@ function reply(messages: Turn[], seen: Map<string, number>): Reply {
   if (prompt.includes('[say]')) return { kind: 'text', text: 'Hello from the stub.' };
   const id = scope[0];
   if (!id) return { kind: 'text', text: 'Select a layer first.' };
+  if (prompt.includes('[heading]'))
+    return {
+      kind: 'tool',
+      name: 'run_batch',
+      input: {
+        label: 'Ember card with a heading',
+        commands: [
+          { command: 'node.set', params: { id, props: { fill: STUB_FILL } } },
+          {
+            command: 'node.create',
+            params: { type: 'text', parent: id, characters: 'Hello', x: 24, y: 24 },
+          },
+        ],
+      },
+    };
   return {
     kind: 'tool',
     name: 'run_batch',
